@@ -17,6 +17,7 @@
         </div>
         <nav class="header-nav">
             <button class="nav-btn" onclick="location.href='index.html'">로비</button>
+            <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
         </nav>
     </header>
 
@@ -102,10 +103,12 @@
     <!-- 스크립트 -->
     <script src="js/core/firebase-config.js"></script>
     <script src="js/core/chip-manager.js"></script>
+    <script src="js/core/sound-manager.js"></script>
     <script src="js/games/blackjack.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             ChipManager.init();
+            SoundManager.init();
             ChipManager.onBalanceChange(() => {
                 document.getElementById('headerChips').textContent = ChipManager.formatBalance();
             });

@@ -1,17 +1,15 @@
 /* ============================================
    ItemGame - 공통 다크 카지노 테마
-   네온/골드 컬러 스킴
+   네온/골드 컬러 스킴 + 고품질 UI
    ============================================ */
 
 /* === CSS 변수 === */
 :root {
-    /* 배경 */
     --bg-primary: #0a0a1a;
     --bg-secondary: #111128;
     --bg-card: #1a1a3e;
     --bg-card-hover: #222255;
 
-    /* 네온 컬러 */
     --neon-gold: #ffd700;
     --neon-gold-dim: #b8960f;
     --neon-green: #00ff88;
@@ -20,18 +18,15 @@
     --neon-purple: #aa44ff;
     --neon-pink: #ff66aa;
 
-    /* 텍스트 */
     --text-primary: #ffffff;
     --text-secondary: #aabbcc;
     --text-dim: #667788;
 
-    /* 그림자/글로우 */
     --glow-gold: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
     --glow-green: 0 0 10px rgba(0, 255, 136, 0.5), 0 0 20px rgba(0, 255, 136, 0.3);
     --glow-red: 0 0 10px rgba(255, 51, 102, 0.5);
     --glow-blue: 0 0 10px rgba(0, 187, 255, 0.5);
 
-    /* 간격 */
     --radius: 12px;
     --radius-sm: 8px;
     --radius-lg: 16px;
@@ -83,13 +78,43 @@ a:hover {
     text-shadow: var(--glow-gold);
 }
 
+/* === 페이지 진입 애니메이션 === */
+main.container {
+    animation: pageIn 0.4s ease;
+}
+
+@keyframes pageIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === 커스텀 스크롤바 (다크 테마) === */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 215, 0, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 215, 0, 0.4);
+}
+
 /* === 헤더 === */
 .header {
     position: sticky;
     top: 0;
     z-index: 100;
     background: rgba(10, 10, 26, 0.95);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255, 215, 0, 0.2);
     padding: 0 24px;
     height: 60px;
@@ -105,6 +130,11 @@ a:hover {
     text-shadow: var(--glow-gold);
     letter-spacing: 2px;
     cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.header-logo:hover {
+    transform: scale(1.03);
 }
 
 .header-logo span {
@@ -142,12 +172,23 @@ a:hover {
     color: var(--neon-gold);
     min-width: 80px;
     text-align: right;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.chip-balance.pop {
+    animation: chipPop 0.3s ease;
+}
+
+@keyframes chipPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); color: var(--neon-green); }
+    100% { transform: scale(1); }
 }
 
 .header-nav {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .nav-btn {
@@ -165,6 +206,27 @@ a:hover {
     border-color: var(--neon-gold);
     color: var(--neon-gold);
     text-shadow: var(--glow-gold);
+}
+
+/* 사운드 토글 버튼 */
+.sound-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.sound-toggle:hover {
+    border-color: var(--neon-gold);
+    color: var(--neon-gold);
 }
 
 /* === 메인 컨테이너 === */
@@ -204,13 +266,27 @@ a:hover {
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0);
+    transition: background 0.2s;
+}
+
+.btn:active::after {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .btn:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
 }
 
 .btn-gold {
@@ -266,9 +342,10 @@ a:hover {
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
     transform: none !important;
+    box-shadow: none !important;
 }
 
 /* === 베팅 컨트롤 === */
@@ -313,6 +390,11 @@ a:hover {
 .bet-btn:hover {
     background: rgba(255, 215, 0, 0.15);
     box-shadow: var(--glow-gold);
+    transform: scale(1.1);
+}
+
+.bet-btn:active {
+    transform: scale(0.95);
 }
 
 /* === 결과 표시 === */
@@ -327,6 +409,7 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .result-win {
@@ -334,18 +417,27 @@ a:hover {
     border: 1px solid rgba(0, 255, 136, 0.3);
     color: var(--neon-green);
     text-shadow: var(--glow-green);
+    animation: resultPop 0.4s ease;
 }
 
 .result-lose {
     background: rgba(255, 51, 102, 0.1);
     border: 1px solid rgba(255, 51, 102, 0.3);
     color: var(--neon-red);
+    animation: resultPop 0.4s ease;
 }
 
 .result-push {
     background: rgba(0, 187, 255, 0.1);
     border: 1px solid rgba(0, 187, 255, 0.3);
     color: var(--neon-blue);
+    animation: resultPop 0.4s ease;
+}
+
+@keyframes resultPop {
+    0% { transform: scale(0.9); opacity: 0; }
+    60% { transform: scale(1.03); }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 /* === 모달 === */
@@ -389,7 +481,7 @@ a:hover {
     margin-bottom: 24px;
 }
 
-/* === 토스트 알림 === */
+/* === 토스트 알림 (아이콘 + 슬라이드) === */
 .toast-container {
     position: fixed;
     top: 80px;
@@ -404,12 +496,16 @@ a:hover {
     background: var(--bg-card);
     border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: var(--radius-sm);
-    padding: 12px 20px;
+    padding: 14px 20px;
     color: var(--text-primary);
     font-size: 0.9rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    animation: toastSlideIn 0.3s ease, toastFadeOut 0.3s ease 2.7s;
+    animation: toastSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), toastFadeOut 0.3s ease 2.7s;
     animation-fill-mode: forwards;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(8px);
 }
 
 .toast-success {
@@ -417,13 +513,25 @@ a:hover {
     color: var(--neon-green);
 }
 
+.toast-success::before {
+    content: '✓';
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
 .toast-error {
     border-color: rgba(255, 51, 102, 0.5);
     color: var(--neon-red);
 }
 
+.toast-error::before {
+    content: '✕';
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
 @keyframes toastSlideIn {
-    from { transform: translateX(100%); opacity: 0; }
+    from { transform: translateX(120%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
 
@@ -449,7 +557,7 @@ a:hover {
 .gap-1 { gap: 8px; }
 .gap-2 { gap: 16px; }
 
-/* 포인트 애니메이션 */
+/* === 애니메이션 === */
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -470,9 +578,20 @@ a:hover {
     to { transform: rotate(360deg); }
 }
 
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
 .animate-pulse { animation: pulse 2s infinite; }
 .animate-glow { animation: glow 1.5s infinite; }
 .animate-slideUp { animation: slideUp 0.5s ease; }
+.slide-in { animation: slideIn 0.3s ease; }
 
 /* === 반응형 === */
 @media (max-width: 768px) {
@@ -509,7 +628,7 @@ a:hover {
 }
 
 @media (max-width: 480px) {
-    .header-nav {
+    .header-nav .nav-btn:not(:first-child) {
         display: none;
     }
 

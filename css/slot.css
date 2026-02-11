@@ -1,5 +1,5 @@
 /* ============================================
-   슬롯머신 전용 스타일
+   슬롯머신 전용 스타일 (고품질 개선)
    ============================================ */
 
 .slot-container {
@@ -34,6 +34,8 @@
     padding: 8px;
     border: 2px solid rgba(170, 68, 255, 0.3);
     margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
 }
 
 .reels-grid {
@@ -54,7 +56,7 @@
 .reel-strip {
     position: absolute;
     width: 100%;
-    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: transform;
 }
 
 .reel-symbol {
@@ -64,18 +66,18 @@
     justify-content: center;
     font-size: 2.5rem;
     border-bottom: 1px solid rgba(170, 68, 255, 0.08);
+    transition: transform 0.3s, background 0.3s;
 }
 
-/* 스핀 중 애니메이션 */
-.reel.spinning .reel-strip {
-    transition: none;
-}
-
-/* 당첨 라인 하이라이트 */
+/* 당첨 심볼 하이라이트 + 확대 */
 .reel-symbol.highlight {
     background: rgba(255, 215, 0, 0.15);
     box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.3);
     animation: symbolPulse 0.5s ease infinite alternate;
+}
+
+.reel-symbol.win-scale {
+    animation: symbolWinScale 0.6s ease infinite alternate;
 }
 
 @keyframes symbolPulse {
@@ -83,23 +85,46 @@
     to { background: rgba(255, 215, 0, 0.25); }
 }
 
-/* 페이라인 표시 */
-.payline-indicator {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 80px;
-    border: 2px solid var(--neon-gold);
-    border-radius: 4px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 5;
+@keyframes symbolWinScale {
+    from { transform: scale(1); }
+    to { transform: scale(1.15); }
 }
 
-.payline-indicator.active {
-    opacity: 1;
-    box-shadow: var(--glow-gold);
+/* 승리 파티클 효과 */
+.win-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--neon-gold);
+    border-radius: 50%;
+    top: 0;
+    animation: particleFall linear forwards;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+}
+
+.win-particle:nth-child(odd) {
+    background: var(--neon-purple);
+    box-shadow: 0 0 6px rgba(170, 68, 255, 0.8);
+}
+
+.win-particle:nth-child(3n) {
+    background: var(--neon-green);
+    box-shadow: 0 0 6px rgba(0, 255, 136, 0.8);
+    width: 4px;
+    height: 4px;
+}
+
+@keyframes particleFall {
+    0% {
+        transform: translateY(-10px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(300px) rotate(360deg);
+        opacity: 0;
+    }
 }
 
 /* 컨트롤 패널 */
@@ -120,14 +145,32 @@
     font-size: 1.3rem;
     font-weight: 900;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 -4px 10px rgba(0, 0, 0, 0.2);
     text-transform: uppercase;
     letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+.spin-button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+    transition: transform 0.5s;
+    transform: translateX(-100%) rotate(45deg);
+}
+
+.spin-button:hover:not(:disabled)::after {
+    transform: translateX(100%) rotate(45deg);
 }
 
 .spin-button:hover:not(:disabled) {
-    transform: scale(1.05);
+    transform: scale(1.08);
     box-shadow: var(--glow-gold), 0 0 40px rgba(255, 215, 0, 0.5);
 }
 
@@ -178,6 +221,11 @@
 .quick-bet:hover {
     background: rgba(170, 68, 255, 0.15);
     border-color: var(--neon-purple);
+    transform: translateY(-1px);
+}
+
+.quick-bet:active {
+    transform: scale(0.95);
 }
 
 .quick-bet.active {
@@ -214,6 +262,11 @@
     padding: 8px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.paytable-item:hover {
+    background: rgba(170, 68, 255, 0.1);
 }
 
 .paytable-symbol {
@@ -230,7 +283,7 @@
     font-weight: 700;
 }
 
-/* 승리 애니메이션 */
+/* 승리 오버레이 */
 .win-overlay {
     position: fixed;
     top: 0;
@@ -242,10 +295,17 @@
     justify-content: center;
     z-index: 500;
     pointer-events: none;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s;
 }
 
 .win-overlay.active {
     display: flex;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.win-overlay.big-win {
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .win-text {
@@ -257,6 +317,13 @@
     text-align: center;
 }
 
+.big-win .win-text {
+    font-size: 5rem;
+    animation: bigWinBounce 0.8s ease;
+    color: #fff;
+    text-shadow: 0 0 20px var(--neon-gold), 0 0 40px var(--neon-gold), 0 0 80px rgba(255, 215, 0, 0.5);
+}
+
 .win-text .amount {
     display: block;
     font-size: 2.5rem;
@@ -264,10 +331,21 @@
     text-shadow: var(--glow-green);
 }
 
+.big-win .win-text .amount {
+    font-size: 3rem;
+}
+
 @keyframes winBounce {
     0% { transform: scale(0.3); opacity: 0; }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bigWinBounce {
+    0% { transform: scale(0.2) rotate(-5deg); opacity: 0; }
+    40% { transform: scale(1.2) rotate(3deg); }
+    70% { transform: scale(0.95) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 /* 자동 스핀 */
@@ -289,6 +367,10 @@
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
+}
+
+.auto-spin-toggle:hover {
+    border-color: rgba(0, 255, 136, 0.3);
 }
 
 .auto-spin-toggle.active {
@@ -335,5 +417,10 @@
 
     .reel {
         height: 150px;
+    }
+
+    .quick-bet {
+        padding: 4px 10px;
+        font-size: 0.75rem;
     }
 }

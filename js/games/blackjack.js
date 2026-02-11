@@ -6,6 +6,8 @@
  * - 딜러 소프트17 스탠드
  * - Hit / Stand / Double Down / Split
  * - 블랙잭 3:2 배당
+ * - 카드 딜/뒤집기 애니메이션
+ * - 사운드 효과 연동
  */
 
 const Blackjack = (() => {
@@ -16,11 +18,11 @@ const Blackjack = (() => {
     const MAX_BET = 5000;
 
     let shoe = [];
-    let playerHands = []; // [{cards:[], bet:0, standing:false, doubled:false}]
+    let playerHands = [];
     let activeHandIdx = 0;
     let dealerCards = [];
     let currentBet = 100;
-    let gamePhase = 'betting'; // 'betting' | 'playing' | 'dealer' | 'result'
+    let gamePhase = 'betting'; // 'betting' | 'dealing' | 'playing' | 'dealer' | 'result'
 
     /**
      * 카드 생성
@@ -45,7 +47,6 @@ const Blackjack = (() => {
                 }
             }
         }
-        // 셔플
         for (let i = shoe.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shoe[i], shoe[j]] = [shoe[j], shoe[i]];
@@ -56,7 +57,7 @@ const Blackjack = (() => {
      * 카드 한 장 뽑기
      */
     function _drawCard() {
-        if (shoe.length < 20) _createShoe(); // 리셔플
+        if (shoe.length < 20) _createShoe();
         return shoe.pop();
     }
 
@@ -68,8 +69,10 @@ const Blackjack = (() => {
         let aces = 0;
 
         cards.forEach(card => {
-            score += card.value;
-            if (card.rank === 'A') aces++;
+            if (!card.faceDown) {
+                score += card.value;
+                if (card.rank === 'A') aces++;
+            }
         });
 
         while (score > 21 && aces > 0) {
@@ -81,17 +84,28 @@ const Blackjack = (() => {
     }
 
     /**
-     * 블랙잭 여부 (첫 2장 21)
+     * 실제 점수 (faceDown 무시)
      */
-    function _isBlackjack(cards) {
-        return cards.length === 2 && _calcScore(cards) === 21;
+    function _calcRealScore(cards) {
+        let score = 0;
+        let aces = 0;
+        cards.forEach(card => {
+            score += card.value;
+            if (card.rank === 'A') aces++;
+        });
+        while (score > 21 && aces > 0) {
+            score -= 10;
+            aces--;
+        }
+        return score;
     }
 
-    /**
-     * 버스트 여부
-     */
+    function _isBlackjack(cards) {
+        return cards.length === 2 && _calcRealScore(cards) === 21;
+    }
+
     function _isBust(cards) {
-        return _calcScore(cards) > 21;
+        return _calcRealScore(cards) > 21;
     }
 
     /**
@@ -109,6 +123,7 @@ const Blackjack = (() => {
     function setBet(amount) {
         if (gamePhase !== 'betting') return;
         currentBet = Math.max(MIN_BET, Math.min(MAX_BET, amount));
+        if (typeof SoundManager !== 'undefined') SoundManager.playChipPlace();
         _render();
     }
 
@@ -119,13 +134,14 @@ const Blackjack = (() => {
     function clearBet() {
         if (gamePhase !== 'betting') return;
         currentBet = MIN_BET;
+        if (typeof SoundManager !== 'undefined') SoundManager.playClick();
         _render();
     }
 
     /**
-     * 딜 시작
+     * 딜 시작 (애니메이션 포함)
      */
-    function deal() {
+    async function deal() {
         if (gamePhase !== 'betting') return;
         if (!ChipManager.deductChips(currentBet)) {
             _showStatus('칩이 부족합니다!');
@@ -141,23 +157,36 @@ const Blackjack = (() => {
         activeHandIdx = 0;
         dealerCards = [];
 
-        // 카드 배분: 플레이어-딜러-플레이어-딜러(뒤집기)
+        gamePhase = 'dealing';
+        _render();
+
+        // 순차적 카드 딜 애니메이션
+        await _delay(200);
         playerHands[0].cards.push(_drawCard());
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
+        _render();
+
+        await _delay(300);
         dealerCards.push(_drawCard());
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
+        _render();
+
+        await _delay(300);
         playerHands[0].cards.push(_drawCard());
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
+        _render();
+
+        await _delay(300);
         dealerCards.push({ ..._drawCard(), faceDown: true });
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
 
         gamePhase = 'playing';
 
         // 블랙잭 체크
         if (_isBlackjack(playerHands[0].cards)) {
-            // 딜러도 블랙잭이면 푸시, 아니면 3:2 배당
             _revealDealer();
-            if (_isBlackjack(dealerCards)) {
-                _endRound();
-            } else {
-                _endRound();
-            }
+            await _delay(500);
+            _endRound();
             return;
         }
 
@@ -167,15 +196,18 @@ const Blackjack = (() => {
     /**
      * Hit
      */
-    function hit() {
+    async function hit() {
         if (gamePhase !== 'playing') return;
         const hand = playerHands[activeHandIdx];
         if (hand.standing) return;
 
         hand.cards.push(_drawCard());
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
 
-        if (_isBust(hand.cards) || _calcScore(hand.cards) === 21) {
+        if (_isBust(hand.cards) || _calcRealScore(hand.cards) === 21) {
             hand.standing = true;
+            _render();
+            await _delay(400);
             _nextHand();
         } else {
             _render();
@@ -187,6 +219,7 @@ const Blackjack = (() => {
      */
     function stand() {
         if (gamePhase !== 'playing') return;
+        if (typeof SoundManager !== 'undefined') SoundManager.playClick();
         playerHands[activeHandIdx].standing = true;
         _nextHand();
     }
@@ -194,7 +227,7 @@ const Blackjack = (() => {
     /**
      * Double Down
      */
-    function doubleDown() {
+    async function doubleDown() {
         if (gamePhase !== 'playing') return;
         const hand = playerHands[activeHandIdx];
         if (hand.cards.length !== 2) return;
@@ -203,26 +236,33 @@ const Blackjack = (() => {
             return;
         }
 
+        if (typeof SoundManager !== 'undefined') SoundManager.playChipPlace();
+
         hand.doubled = true;
         hand.bet *= 2;
         hand.cards.push(_drawCard());
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
         hand.standing = true;
+        _render();
+        await _delay(500);
         _nextHand();
     }
 
     /**
      * Split
      */
-    function split() {
+    async function split() {
         if (gamePhase !== 'playing') return;
         const hand = playerHands[activeHandIdx];
         if (hand.cards.length !== 2) return;
         if (hand.cards[0].rank !== hand.cards[1].rank) return;
-        if (playerHands.length >= 4) return; // 최대 4 핸드
+        if (playerHands.length >= 4) return;
         if (!ChipManager.deductChips(hand.bet)) {
             _showStatus('스플릿 칩 부족!');
             return;
         }
+
+        if (typeof SoundManager !== 'undefined') SoundManager.playChipPlace();
 
         const splitCard = hand.cards.pop();
         hand.cards.push(_drawCard());
@@ -235,16 +275,16 @@ const Blackjack = (() => {
         };
 
         playerHands.splice(activeHandIdx + 1, 0, newHand);
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
         _render();
     }
 
     /**
-     * 다음 핸드로 이동
+     * 다음 핸드
      */
     function _nextHand() {
         activeHandIdx++;
         if (activeHandIdx >= playerHands.length) {
-            // 모든 핸드 완료 → 딜러 턴
             _dealerTurn();
         } else {
             _render();
@@ -256,6 +296,7 @@ const Blackjack = (() => {
      */
     function _revealDealer() {
         dealerCards.forEach(card => { card.faceDown = false; });
+        if (typeof SoundManager !== 'undefined') SoundManager.playCardFlip();
     }
 
     /**
@@ -266,28 +307,27 @@ const Blackjack = (() => {
         _revealDealer();
         _render();
 
-        // 모든 플레이어 핸드가 버스트면 딜러 드로우 불필요
         const allBust = playerHands.every(h => _isBust(h.cards));
         if (!allBust) {
-            // 딜러는 17 미만이면 히트
-            while (_calcScore(dealerCards) < 17) {
-                await _delay(500);
+            while (_calcRealScore(dealerCards) < 17) {
+                await _delay(600);
                 dealerCards.push(_drawCard());
+                if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
                 _render();
             }
         }
 
-        await _delay(300);
+        await _delay(400);
         _endRound();
     }
 
     /**
-     * 라운드 종료 - 결과 계산
+     * 라운드 종료
      */
     function _endRound() {
         gamePhase = 'result';
         _revealDealer();
-        const dealerScore = _calcScore(dealerCards);
+        const dealerScore = _calcRealScore(dealerCards);
         const dealerBJ = _isBlackjack(dealerCards);
         const dealerBust = _isBust(dealerCards);
 
@@ -295,7 +335,7 @@ const Blackjack = (() => {
         const results = [];
 
         playerHands.forEach((hand, idx) => {
-            const playerScore = _calcScore(hand.cards);
+            const playerScore = _calcRealScore(hand.cards);
             const playerBJ = _isBlackjack(hand.cards);
             const playerBust = _isBust(hand.cards);
             let result, payout;
@@ -331,28 +371,58 @@ const Blackjack = (() => {
             ChipManager.addChips(totalPayout);
         }
 
+        // 사운드
+        const totalBet = playerHands.reduce((sum, h) => sum + h.bet, 0);
+        const netWin = totalPayout - totalBet;
+        if (netWin > 0) {
+            if (typeof SoundManager !== 'undefined') {
+                if (results.some(r => r.result === 'BLACKJACK!')) {
+                    SoundManager.playBigWin();
+                } else {
+                    SoundManager.playWin();
+                }
+            }
+        } else if (netWin < 0) {
+            if (typeof SoundManager !== 'undefined') SoundManager.playLose();
+        }
+
         _renderResults(results, totalPayout);
     }
 
-    /**
-     * 유틸: 딜레이
-     */
     function _delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     /**
-     * 카드 HTML 생성
+     * 고품질 카드 HTML 생성
      */
-    function _cardHTML(card) {
+    function _cardHTML(card, animDelay) {
+        const delay = animDelay ? `style="animation-delay:${animDelay}ms"` : '';
+
         if (card.faceDown) {
-            return '<div class="card-item face-down"></div>';
+            return `<div class="card-item face-down" ${delay}>
+                <div class="card-back-pattern"></div>
+            </div>`;
         }
+
+        // 카드 앞면: 실제 카드 모양
+        const isRed = card.color === 'red';
+        const colorClass = isRed ? 'red' : 'black';
+        const suitSmall = card.suit;
+
         return `
-            <div class="card-item face-up ${card.color}">
-                <span class="card-suit">${card.suit}</span>
-                <span class="card-rank">${card.rank}</span>
-                <span class="card-suit">${card.suit}</span>
+            <div class="card-item face-up ${colorClass}" ${delay}>
+                <div class="card-corner card-top-left">
+                    <span class="card-corner-rank">${card.rank}</span>
+                    <span class="card-corner-suit">${suitSmall}</span>
+                </div>
+                <div class="card-center">
+                    <span class="card-center-suit">${card.suit}</span>
+                </div>
+                <div class="card-corner card-bottom-right">
+                    <span class="card-corner-rank">${card.rank}</span>
+                    <span class="card-corner-suit">${suitSmall}</span>
+                </div>
             </div>
         `;
     }
@@ -364,29 +434,31 @@ const Blackjack = (() => {
         const tableEl = document.getElementById('bjTable');
         if (!tableEl) return;
 
-        const dealerScore = dealerCards.some(c => c.faceDown)
-            ? _calcScore(dealerCards.filter(c => !c.faceDown))
-            : _calcScore(dealerCards);
+        const hasFaceDown = dealerCards.some(c => c.faceDown);
+        const dealerScore = hasFaceDown
+            ? _calcScore(dealerCards)
+            : _calcRealScore(dealerCards);
 
-        const dealerScoreText = dealerCards.some(c => c.faceDown)
+        const dealerScoreText = hasFaceDown
             ? `${dealerScore} + ?`
-            : dealerScore;
+            : (dealerCards.length > 0 ? dealerScore : '-');
 
         let dealerScoreClass = '';
-        if (!dealerCards.some(c => c.faceDown)) {
-            if (_calcScore(dealerCards) > 21) dealerScoreClass = 'bust';
+        if (!hasFaceDown && dealerCards.length > 0) {
+            const realScore = _calcRealScore(dealerCards);
+            if (realScore > 21) dealerScoreClass = 'bust';
             else if (_isBlackjack(dealerCards)) dealerScoreClass = 'blackjack';
         }
 
         // 딜러 영역
         let html = `
-            <div class="hand-area">
+            <div class="hand-area dealer-area">
                 <div class="hand-label">
-                    <span class="name">딜러</span>
+                    <span class="name"><span class="hand-icon">🎩</span> 딜러</span>
                     <span class="score ${dealerScoreClass}">${dealerCards.length > 0 ? dealerScoreText : '-'}</span>
                 </div>
                 <div class="cards-row">
-                    ${dealerCards.map(c => _cardHTML(c)).join('')}
+                    ${dealerCards.map((c, i) => _cardHTML(c, i * 150)).join('')}
                 </div>
             </div>
             <div class="table-divider"></div>
@@ -396,7 +468,7 @@ const Blackjack = (() => {
         if (playerHands.length > 1) {
             html += '<div class="split-hands">';
             playerHands.forEach((hand, idx) => {
-                const score = _calcScore(hand.cards);
+                const score = _calcRealScore(hand.cards);
                 let scoreClass = '';
                 if (score > 21) scoreClass = 'bust';
                 else if (_isBlackjack(hand.cards)) scoreClass = 'blackjack';
@@ -409,7 +481,7 @@ const Blackjack = (() => {
                             <span class="score ${scoreClass}">${score}</span>
                         </div>
                         <div class="cards-row">
-                            ${hand.cards.map(c => _cardHTML(c)).join('')}
+                            ${hand.cards.map((c, i) => _cardHTML(c, i * 100)).join('')}
                         </div>
                     </div>
                 `;
@@ -417,19 +489,19 @@ const Blackjack = (() => {
             html += '</div>';
         } else if (playerHands.length === 1) {
             const hand = playerHands[0];
-            const score = _calcScore(hand.cards);
+            const score = _calcRealScore(hand.cards);
             let scoreClass = '';
             if (score > 21) scoreClass = 'bust';
             else if (_isBlackjack(hand.cards)) scoreClass = 'blackjack';
 
             html += `
-                <div class="hand-area">
+                <div class="hand-area player-area">
                     <div class="hand-label">
-                        <span class="name">플레이어 (베팅: ${ChipManager.formatBalance(hand.bet)})</span>
+                        <span class="name"><span class="hand-icon">👤</span> 플레이어 (베팅: ${ChipManager.formatBalance(hand.bet)})</span>
                         <span class="score ${scoreClass}">${hand.cards.length > 0 ? score : '-'}</span>
                     </div>
                     <div class="cards-row">
-                        ${hand.cards.map(c => _cardHTML(c)).join('')}
+                        ${hand.cards.map((c, i) => _cardHTML(c, i * 100)).join('')}
                     </div>
                 </div>
             `;
@@ -437,20 +509,17 @@ const Blackjack = (() => {
 
         tableEl.innerHTML = html;
 
-        // 액션 버튼 업데이트
         _updateActions();
 
-        // 칩 표시 업데이트
         const chipEl = document.getElementById('headerChips');
         if (chipEl) chipEl.textContent = ChipManager.formatBalance();
 
-        // 베팅 금액 표시
         const betEl = document.getElementById('currentBet');
         if (betEl) betEl.textContent = currentBet.toLocaleString();
     }
 
     /**
-     * 액션 버튼 상태 업데이트
+     * 액션 버튼 상태
      */
     function _updateActions() {
         const hitBtn = document.getElementById('btnHit');
@@ -466,7 +535,10 @@ const Blackjack = (() => {
             if (actionArea) actionArea.style.display = 'none';
         } else if (gamePhase === 'playing') {
             if (betArea) betArea.style.display = 'none';
-            if (actionArea) actionArea.style.display = 'flex';
+            if (actionArea) {
+                actionArea.style.display = 'flex';
+                actionArea.classList.add('slide-in');
+            }
 
             const hand = playerHands[activeHandIdx];
             const canDouble = hand && hand.cards.length === 2 && ChipManager.getBalance() >= hand.bet;
@@ -508,7 +580,6 @@ const Blackjack = (() => {
             resultText = `LOSE −${Math.abs(netWin).toLocaleString()} 칩`;
         }
 
-        // 핸드별 상세 결과
         const details = results.map(r =>
             `핸드${results.length > 1 ? (r.handIdx + 1) : ''}: ${r.result}`
         ).join(' | ');
@@ -516,20 +587,16 @@ const Blackjack = (() => {
         resultEl.className = `result-display ${resultClass}`;
         resultEl.innerHTML = `${resultText}<br><small style="font-size:0.75em;opacity:0.8">${details}</small>`;
 
-        // 베팅 영역 다시 표시
+        // 베팅 영역 + 새 게임 버튼 표시
         const betArea = document.getElementById('betArea');
         if (betArea) betArea.style.display = 'flex';
 
-        // 새 게임 버튼 표시
         const newGameBtn = document.getElementById('btnNewGame');
         if (newGameBtn) newGameBtn.style.display = 'inline-flex';
 
         gamePhase = 'betting';
     }
 
-    /**
-     * 상태 메시지 표시
-     */
     function _showStatus(text) {
         const el = document.getElementById('bjStatus');
         if (el) {
@@ -546,6 +613,8 @@ const Blackjack = (() => {
         playerHands = [];
         dealerCards = [];
         activeHandIdx = 0;
+
+        if (typeof SoundManager !== 'undefined') SoundManager.playClick();
 
         const resultEl = document.getElementById('bjResult');
         if (resultEl) {

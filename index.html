@@ -105,6 +105,22 @@
             font-size: 4rem;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .game-card:hover .game-card-visual .game-emoji {
+            animation: emojiFloat 1s ease infinite;
+        }
+
+        .game-emoji {
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s;
+        }
+
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.1); }
         }
 
         .game-card-visual::before {
@@ -231,6 +247,7 @@
         </div>
         <nav class="header-nav">
             <button class="nav-btn" onclick="showDailyBonus()">보너스</button>
+            <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
         </nav>
     </header>
 
@@ -256,7 +273,7 @@
         <div class="games-grid">
             <!-- 슬롯머신 -->
             <div class="game-card game-slot" onclick="location.href='slot.html'">
-                <div class="game-card-visual">🎰</div>
+                <div class="game-card-visual"><span class="game-emoji">🎰</span></div>
                 <div class="game-card-body">
                     <h3>슬롯머신</h3>
                     <p>5x3 릴 슬롯! 다양한 심볼 조합으로 대박을 노리세요. RTP 96%의 공정한 게임.</p>
@@ -269,7 +286,7 @@
 
             <!-- 블랙잭 -->
             <div class="game-card game-blackjack" onclick="location.href='blackjack.html'">
-                <div class="game-card-visual">🃏</div>
+                <div class="game-card-visual"><span class="game-emoji">🃏</span></div>
                 <div class="game-card-body">
                     <h3>블랙잭</h3>
                     <p>21에 가장 가까운 사람이 승리! Hit, Stand, Double, Split 전략을 구사하세요.</p>
@@ -282,7 +299,7 @@
 
             <!-- 룰렛 -->
             <div class="game-card game-roulette" onclick="location.href='roulette.html'">
-                <div class="game-card-visual">🎡</div>
+                <div class="game-card-visual"><span class="game-emoji">🎡</span></div>
                 <div class="game-card-body">
                     <h3>룰렛</h3>
                     <p>유럽식 37칸 룰렛! 숫자, 색상, 홀짝 등 다양한 베팅으로 최대 36배 당첨.</p>
@@ -313,10 +330,12 @@
     <!-- 스크립트 -->
     <script src="js/core/firebase-config.js"></script>
     <script src="js/core/chip-manager.js"></script>
+    <script src="js/core/sound-manager.js"></script>
     <script>
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
             ChipManager.init();
+            SoundManager.init();
             updateChipDisplay();
             checkDailyBonus();
 
@@ -341,6 +360,7 @@
         function claimBonus() {
             const amount = ChipManager.claimDailyBonus();
             if (amount > 0) {
+                SoundManager.playBonus();
                 showToast(`🎁 데일리 보너스 +${amount.toLocaleString()} 칩!`, 'success');
                 checkDailyBonus();
             } else {

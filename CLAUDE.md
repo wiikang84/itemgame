@@ -13,7 +13,10 @@
 
 ## 기술 스택
 - HTML5 + CSS3 + Vanilla JS (프레임워크 없음)
-- Canvas API (슬롯 릴, 룰렛 휠 애니메이션)
+- Canvas API (룰렛 휠 애니메이션, HiDPI 지원)
+- Web Audio API (프로그래매틱 효과음, 외부 파일 없음)
+- CSS Transform 기반 릴 애니메이션 (슬롯)
+- CSS 3D Perspective 카드 애니메이션 (블랙잭)
 - Firebase (Firestore + Auth)
 - GitHub Pages 호스팅
 
@@ -32,7 +35,8 @@ itemgame/
 ├── js/
 │   ├── core/
 │   │   ├── firebase-config.js  # Firebase 설정
-│   │   └── chip-manager.js     # 칩 잔액 관리
+│   │   ├── chip-manager.js     # 칩 잔액 관리
+│   │   └── sound-manager.js    # Web Audio API 사운드 매니저
 │   └── games/
 │       ├── slot-machine.js     # 슬롯머신 로직
 │       ├── blackjack.js        # 블랙잭 로직
@@ -58,3 +62,9 @@ python -m http.server 8080
 
 ## 변경 로그
 - **2026-02-11**: 프로젝트 초기 생성, 전체 게임(로비/슬롯/블랙잭/룰렛) 구현
+- **2026-02-11**: 품질 대폭 개선 (5 Phase)
+  - Phase 1: roulette.js var_gold() 버그 수정, 슬롯 베팅 단계 버그 수정
+  - Phase 2: 슬롯머신 릴 애니메이션 CSS Transform 기반 재작성, 승리 파티클/카운트업/빅윈 오버레이
+  - Phase 3: 블랙잭 카드 비주얼 완전 재설계 (코너/센터/뒷면 패턴), 3D 딜/플립 애니메이션
+  - Phase 4: 룰렛 Canvas 400px HiDPI, 골드 외곽링, 볼 애니메이션, 우클릭 베팅 제거
+  - Phase 5: SoundManager (Web Audio API) 신규, 공통 CSS 강화 (페이지 전환/스크롤바/토스트), 사운드 토글 버튼, 게임카드 hover 효과

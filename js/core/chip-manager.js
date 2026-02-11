@@ -22,6 +22,16 @@ const ChipManager = (() => {
         _chips = _loadChips();
         _notifyListeners();
         console.log(`[ChipManager] 초기화 완료: ${_chips.toLocaleString()} 칩`);
+
+        // BFCache 복원 시 (뒤로가기) 최신 잔액으로 동기화
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) {
+                _chips = _loadChips();
+                _notifyListeners();
+                console.log(`[ChipManager] BFCache 복원 → 잔액 동기화: ${_chips.toLocaleString()} 칩`);
+            }
+        });
+
         return _chips;
     }
 
