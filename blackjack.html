@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블랙잭 - ItemGame</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/blackjack.css">
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-logo" onclick="location.href='index.html'" style="cursor:pointer">ITEM<span>GAME</span></div>
+        <div class="header-chips">
+            <div class="chip-icon">$</div>
+            <div class="chip-balance" id="headerChips">0</div>
+        </div>
+        <nav class="header-nav">
+            <button class="nav-btn" onclick="location.href='index.html'">로비</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container">
+        <div class="bj-container">
+            <!-- 블랙잭 테이블 -->
+            <div class="bj-table">
+                <div class="bj-title">🃏 BLACKJACK</div>
+
+                <!-- 테이블 영역 (JS 렌더링) -->
+                <div id="bjTable">
+                    <div class="hand-area">
+                        <div class="hand-label">
+                            <span class="name">딜러</span>
+                            <span class="score">-</span>
+                        </div>
+                        <div class="cards-row"></div>
+                    </div>
+                    <div class="table-divider"></div>
+                    <div class="hand-area">
+                        <div class="hand-label">
+                            <span class="name">플레이어</span>
+                            <span class="score">-</span>
+                        </div>
+                        <div class="cards-row"></div>
+                    </div>
+                </div>
+
+                <!-- 결과 표시 -->
+                <div class="result-display" id="bjResult"></div>
+
+                <!-- 액션 버튼 -->
+                <div class="bj-actions" id="actionArea" style="display:none">
+                    <button class="action-btn hit" id="btnHit" onclick="Blackjack.hit()">HIT</button>
+                    <button class="action-btn stand" id="btnStand" onclick="Blackjack.stand()">STAND</button>
+                    <button class="action-btn double" id="btnDouble" onclick="Blackjack.doubleDown()">DOUBLE</button>
+                    <button class="action-btn split" id="btnSplit" onclick="Blackjack.split()">SPLIT</button>
+                </div>
+
+                <!-- 상태 메시지 -->
+                <div class="bj-status" id="bjStatus"></div>
+            </div>
+
+            <!-- 베팅 영역 -->
+            <div class="bj-bet-area" id="betArea">
+                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center">
+                    <div class="bet-controls">
+                        <span class="bet-label">BET</span>
+                        <span class="bet-amount" id="currentBet">100</span>
+                    </div>
+                    <div class="chip-buttons">
+                        <button class="chip-btn chip-50" onclick="Blackjack.addBet(50)">50</button>
+                        <button class="chip-btn chip-100" onclick="Blackjack.addBet(100)">100</button>
+                        <button class="chip-btn chip-500" onclick="Blackjack.addBet(500)">500</button>
+                        <button class="chip-btn chip-1000" onclick="Blackjack.addBet(1000)">1K</button>
+                        <button class="chip-btn chip-5000" onclick="Blackjack.addBet(5000)">5K</button>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="Blackjack.clearBet()">초기화</button>
+                </div>
+                <button class="deal-btn" id="btnDeal" onclick="Blackjack.deal()">DEAL</button>
+                <button class="btn btn-green btn-sm" id="btnNewGame" onclick="Blackjack.newGame()" style="display:none">새 게임</button>
+            </div>
+
+            <!-- 규칙 -->
+            <div class="card mt-3" style="padding:20px">
+                <h3 class="text-gold mb-1">📋 블랙잭 규칙</h3>
+                <ul style="color:var(--text-secondary);font-size:0.85rem;line-height:2;padding-left:20px">
+                    <li>21에 가장 가까운 쪽이 승리 (21 초과 시 버스트)</li>
+                    <li>블랙잭 (첫 2장 21) → <strong class="text-gold">1.5배 배당</strong></li>
+                    <li>딜러는 17 미만이면 반드시 히트</li>
+                    <li><strong>Hit</strong>: 카드 추가 | <strong>Stand</strong>: 현재 패로 승부</li>
+                    <li><strong>Double</strong>: 베팅 2배 + 카드 1장만 추가</li>
+                    <li><strong>Split</strong>: 같은 랭크 카드 → 2핸드로 분리</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- 토스트 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 스크립트 -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script src="js/games/blackjack.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            ChipManager.init();
+            ChipManager.onBalanceChange(() => {
+                document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            });
+            document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+
+            Blackjack.init();
+        });
+    </script>
+</body>
+</html>

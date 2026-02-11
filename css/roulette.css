@@ -1,0 +1,414 @@
+/* ============================================
+   룰렛 전용 스타일
+   ============================================ */
+
+.roulette-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* 룰렛 프레임 */
+.roulette-frame {
+    background: linear-gradient(180deg, #330000 0%, #1a0000 100%);
+    border: 2px solid rgba(255, 51, 102, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 0 30px rgba(255, 51, 102, 0.1), inset 0 0 40px rgba(0, 0, 0, 0.3);
+}
+
+.roulette-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--neon-red);
+    text-shadow: var(--glow-red);
+    margin-bottom: 20px;
+    letter-spacing: 3px;
+}
+
+/* 휠 영역 */
+.wheel-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.wheel-wrapper {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+
+.wheel-canvas {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 4px solid var(--neon-gold);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 화살표 마커 */
+.wheel-marker {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 20px solid var(--neon-gold);
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    z-index: 10;
+}
+
+/* 결과 숫자 표시 */
+.result-number {
+    text-align: center;
+    margin: 16px 0;
+}
+
+.result-number .number-display {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    font-size: 1.8rem;
+    font-weight: 900;
+    border: 3px solid;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.number-display.green {
+    background: #006600;
+    border-color: #00cc00;
+    color: #fff;
+}
+
+.number-display.red {
+    background: #cc0000;
+    border-color: #ff3333;
+    color: #fff;
+}
+
+.number-display.black {
+    background: #111;
+    border-color: #666;
+    color: #fff;
+}
+
+/* 베팅 테이블 */
+.betting-table {
+    background: #003300;
+    border: 2px solid #006600;
+    border-radius: var(--radius);
+    padding: 12px;
+    overflow-x: auto;
+}
+
+/* 숫자 그리드 */
+.number-grid {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.bet-cell {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    transition: all 0.2s;
+    position: relative;
+    user-select: none;
+}
+
+.bet-cell:hover {
+    transform: scale(1.1);
+    z-index: 5;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.bet-cell.selected {
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5), inset 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.bet-cell .chip-marker {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    background: var(--neon-gold);
+    border-radius: 50%;
+    font-size: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-weight: 800;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.bet-cell.green-cell {
+    background: #006600;
+    color: #fff;
+}
+
+.bet-cell.red-cell {
+    background: #cc0000;
+    color: #fff;
+}
+
+.bet-cell.black-cell {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+/* 0 셀 */
+.bet-cell.zero-cell {
+    grid-row: span 3;
+    background: #006600;
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+/* 외부 베팅 영역 */
+.outside-bets {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.outside-bet {
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: all 0.2s;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.outside-bet:hover {
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.outside-bet.selected {
+    border-color: var(--neon-gold);
+    background: rgba(255, 215, 0, 0.15);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.outside-bet.red-bg {
+    background: rgba(204, 0, 0, 0.3);
+}
+
+.outside-bet.black-bg {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* 2:1 베팅 (줄) */
+.column-bets {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+/* 베팅 컨트롤 */
+.roulette-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.bet-chip-selector {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.bet-chip-option {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid;
+    font-weight: 800;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+}
+
+.bet-chip-option:hover {
+    opacity: 0.9;
+    transform: scale(1.1);
+}
+
+.bet-chip-option.active {
+    opacity: 1;
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.bet-chip-option.c10 {
+    background: #888;
+    border-color: #aaa;
+    color: #fff;
+}
+.bet-chip-option.c50 {
+    background: #cc0000;
+    border-color: #ff4444;
+    color: #fff;
+}
+.bet-chip-option.c100 {
+    background: #0044cc;
+    border-color: #4488ff;
+    color: #fff;
+}
+.bet-chip-option.c500 {
+    background: #008822;
+    border-color: #44ee66;
+    color: #fff;
+}
+.bet-chip-option.c1000 {
+    background: #111;
+    border-color: #888;
+    color: #fff;
+}
+
+.total-bet-display {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.total-bet-display strong {
+    color: var(--neon-gold);
+    font-size: 1.2rem;
+}
+
+.roulette-action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.spin-roulette-btn {
+    padding: 14px 40px;
+    background: linear-gradient(135deg, var(--neon-red), #cc0044);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.spin-roulette-btn:hover:not(:disabled) {
+    box-shadow: var(--glow-red), 0 0 30px rgba(255, 51, 102, 0.4);
+    transform: scale(1.05);
+}
+
+.spin-roulette-btn:disabled {
+    background: #444;
+    color: #888;
+    cursor: not-allowed;
+}
+
+/* 히스토리 */
+.history-bar {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-sm);
+    min-height: 36px;
+    align-items: center;
+}
+
+.history-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.history-num.h-green { background: #006600; }
+.history-num.h-red { background: #cc0000; }
+.history-num.h-black { background: #222; border: 1px solid #555; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .roulette-frame {
+        padding: 16px;
+    }
+
+    .wheel-wrapper {
+        width: 220px;
+        height: 220px;
+    }
+
+    .wheel-canvas {
+        width: 220px;
+        height: 220px;
+    }
+
+    .bet-cell {
+        min-width: 28px;
+        height: 32px;
+        font-size: 0.7rem;
+    }
+
+    .outside-bets {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .bet-chip-option {
+        width: 40px;
+        height: 40px;
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .number-grid {
+        font-size: 0.65rem;
+    }
+
+    .bet-cell {
+        min-width: 24px;
+        height: 28px;
+    }
+}

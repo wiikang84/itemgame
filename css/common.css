@@ -1,0 +1,520 @@
+/* ============================================
+   ItemGame - 공통 다크 카지노 테마
+   네온/골드 컬러 스킴
+   ============================================ */
+
+/* === CSS 변수 === */
+:root {
+    /* 배경 */
+    --bg-primary: #0a0a1a;
+    --bg-secondary: #111128;
+    --bg-card: #1a1a3e;
+    --bg-card-hover: #222255;
+
+    /* 네온 컬러 */
+    --neon-gold: #ffd700;
+    --neon-gold-dim: #b8960f;
+    --neon-green: #00ff88;
+    --neon-red: #ff3366;
+    --neon-blue: #00bbff;
+    --neon-purple: #aa44ff;
+    --neon-pink: #ff66aa;
+
+    /* 텍스트 */
+    --text-primary: #ffffff;
+    --text-secondary: #aabbcc;
+    --text-dim: #667788;
+
+    /* 그림자/글로우 */
+    --glow-gold: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
+    --glow-green: 0 0 10px rgba(0, 255, 136, 0.5), 0 0 20px rgba(0, 255, 136, 0.3);
+    --glow-red: 0 0 10px rgba(255, 51, 102, 0.5);
+    --glow-blue: 0 0 10px rgba(0, 187, 255, 0.5);
+
+    /* 간격 */
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+}
+
+/* === 리셋 & 기본 === */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* 배경 그라디언트 효과 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(170, 68, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 187, 255, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+a {
+    color: var(--neon-gold);
+    text-decoration: none;
+}
+
+a:hover {
+    text-shadow: var(--glow-gold);
+}
+
+/* === 헤더 === */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 10, 26, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--neon-gold);
+    text-shadow: var(--glow-gold);
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.header-logo span {
+    color: var(--text-primary);
+    font-weight: 400;
+}
+
+.header-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    padding: 8px 16px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.chip-icon {
+    width: 24px;
+    height: 24px;
+    background: var(--neon-gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #000;
+    box-shadow: var(--glow-gold);
+}
+
+.chip-balance {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--neon-gold);
+    min-width: 80px;
+    text-align: right;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.nav-btn:hover {
+    border-color: var(--neon-gold);
+    color: var(--neon-gold);
+    text-shadow: var(--glow-gold);
+}
+
+/* === 메인 컨테이너 === */
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+/* === 카드 컴포넌트 === */
+.card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255, 215, 0, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* === 버튼 === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn-gold {
+    background: linear-gradient(135deg, var(--neon-gold), #ffaa00);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.btn-gold:hover {
+    box-shadow: var(--glow-gold), 0 4px 20px rgba(255, 215, 0, 0.6);
+    transform: translateY(-1px);
+}
+
+.btn-green {
+    background: linear-gradient(135deg, var(--neon-green), #00cc66);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.btn-green:hover {
+    box-shadow: var(--glow-green), 0 4px 20px rgba(0, 255, 136, 0.5);
+}
+
+.btn-red {
+    background: linear-gradient(135deg, var(--neon-red), #cc0044);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+}
+
+.btn-red:hover {
+    box-shadow: var(--glow-red), 0 4px 20px rgba(255, 51, 102, 0.5);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--neon-gold);
+    color: var(--neon-gold);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 215, 0, 0.1);
+    box-shadow: var(--glow-gold);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+.btn-lg {
+    padding: 16px 40px;
+    font-size: 1.15rem;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* === 베팅 컨트롤 === */
+.bet-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-secondary);
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bet-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.bet-amount {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--neon-gold);
+    min-width: 80px;
+    text-align: center;
+}
+
+.bet-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: var(--bg-card);
+    color: var(--neon-gold);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.bet-btn:hover {
+    background: rgba(255, 215, 0, 0.15);
+    box-shadow: var(--glow-gold);
+}
+
+/* === 결과 표시 === */
+.result-display {
+    text-align: center;
+    padding: 16px;
+    border-radius: var(--radius);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 12px 0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.result-win {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    color: var(--neon-green);
+    text-shadow: var(--glow-green);
+}
+
+.result-lose {
+    background: rgba(255, 51, 102, 0.1);
+    border: 1px solid rgba(255, 51, 102, 0.3);
+    color: var(--neon-red);
+}
+
+.result-push {
+    background: rgba(0, 187, 255, 0.1);
+    border: 1px solid rgba(0, 187, 255, 0.3);
+    color: var(--neon-blue);
+}
+
+/* === 모달 === */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal h2 {
+    color: var(--neon-gold);
+    margin-bottom: 16px;
+    font-size: 1.5rem;
+}
+
+.modal p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+/* === 토스트 알림 === */
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 12px 20px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    animation: toastSlideIn 0.3s ease, toastFadeOut 0.3s ease 2.7s;
+    animation-fill-mode: forwards;
+}
+
+.toast-success {
+    border-color: rgba(0, 255, 136, 0.5);
+    color: var(--neon-green);
+}
+
+.toast-error {
+    border-color: rgba(255, 51, 102, 0.5);
+    color: var(--neon-red);
+}
+
+@keyframes toastSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toastFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* === 유틸리티 === */
+.text-gold { color: var(--neon-gold); }
+.text-green { color: var(--neon-green); }
+.text-red { color: var(--neon-red); }
+.text-blue { color: var(--neon-blue); }
+.text-dim { color: var(--text-dim); }
+.text-center { text-align: center; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-1 { gap: 8px; }
+.gap-2 { gap: 16px; }
+
+/* 포인트 애니메이션 */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes glow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-pulse { animation: pulse 2s infinite; }
+.animate-glow { animation: glow 1.5s infinite; }
+.animate-slideUp { animation: slideUp 0.5s ease; }
+
+/* === 반응형 === */
+@media (max-width: 768px) {
+    .header {
+        padding: 0 12px;
+        height: 56px;
+    }
+
+    .header-logo {
+        font-size: 1.2rem;
+    }
+
+    .header-chips {
+        padding: 6px 12px;
+    }
+
+    .chip-balance {
+        font-size: 0.95rem;
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    .btn-lg {
+        padding: 14px 28px;
+        font-size: 1rem;
+    }
+
+    .nav-btn {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-nav {
+        display: none;
+    }
+
+    .bet-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

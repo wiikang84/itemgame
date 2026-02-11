@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ItemGame - 소셜 카지노</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* === 로비 전용 스타일 === */
+        .hero {
+            text-align: center;
+            padding: 48px 0 32px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--neon-gold);
+            text-shadow: var(--glow-gold);
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        /* 데일리 보너스 배너 */
+        .daily-bonus-banner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(170, 68, 255, 0.1));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .daily-bonus-banner:hover {
+            border-color: var(--neon-gold);
+            box-shadow: var(--glow-gold);
+        }
+
+        .daily-bonus-banner.claimed {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .daily-bonus-banner.claimed:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+            box-shadow: none;
+        }
+
+        .bonus-info h3 {
+            color: var(--neon-gold);
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .bonus-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .bonus-amount {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--neon-gold);
+            text-shadow: var(--glow-gold);
+        }
+
+        /* 게임 그리드 */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .game-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            border-color: rgba(255, 215, 0, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+
+        .game-card-visual {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card-visual::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+        }
+
+        .game-slot .game-card-visual {
+            background: linear-gradient(135deg, #1a0033, #330066);
+        }
+
+        .game-slot .game-card-visual::before {
+            background: radial-gradient(circle at 50% 50%, rgba(170, 68, 255, 0.4), transparent 70%);
+        }
+
+        .game-blackjack .game-card-visual {
+            background: linear-gradient(135deg, #002200, #004400);
+        }
+
+        .game-blackjack .game-card-visual::before {
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.3), transparent 70%);
+        }
+
+        .game-roulette .game-card-visual {
+            background: linear-gradient(135deg, #330000, #660000);
+        }
+
+        .game-roulette .game-card-visual::before {
+            background: radial-gradient(circle at 50% 50%, rgba(255, 51, 102, 0.3), transparent 70%);
+        }
+
+        .game-card-body {
+            padding: 20px;
+        }
+
+        .game-card-body h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .game-card-body p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .game-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-card-meta .bet-range {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .game-card-meta .play-btn {
+            background: linear-gradient(135deg, var(--neon-gold), #ffaa00);
+            color: #000;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .game-card-meta .play-btn:hover {
+            box-shadow: var(--glow-gold);
+            transform: scale(1.05);
+        }
+
+        /* 하단 정보 */
+        .footer {
+            text-align: center;
+            padding: 40px 0 20px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        .footer p {
+            margin-bottom: 4px;
+        }
+
+        /* 칩 리셋 버튼 */
+        .reset-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .daily-bonus-banner {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-logo">ITEM<span>GAME</span></div>
+        <div class="header-chips">
+            <div class="chip-icon">$</div>
+            <div class="chip-balance" id="headerChips">0</div>
+        </div>
+        <nav class="header-nav">
+            <button class="nav-btn" onclick="showDailyBonus()">보너스</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container">
+        <!-- 히어로 -->
+        <section class="hero">
+            <h1 class="hero-title">ITEM GAME</h1>
+            <p class="hero-subtitle">소셜 카지노 - 가상 칩으로 즐기는 카지노 게임</p>
+        </section>
+
+        <!-- 데일리 보너스 -->
+        <div class="daily-bonus-banner" id="dailyBonusBanner" onclick="claimBonus()">
+            <div class="bonus-info">
+                <h3 id="bonusTitle">🎁 데일리 보너스</h3>
+                <p id="bonusDesc">매일 무료 칩을 받으세요!</p>
+            </div>
+            <div class="bonus-amount" id="bonusAmount">+1,000</div>
+        </div>
+
+        <!-- 게임 선택 -->
+        <h2 class="text-gold mb-2">게임 선택</h2>
+        <div class="games-grid">
+            <!-- 슬롯머신 -->
+            <div class="game-card game-slot" onclick="location.href='slot.html'">
+                <div class="game-card-visual">🎰</div>
+                <div class="game-card-body">
+                    <h3>슬롯머신</h3>
+                    <p>5x3 릴 슬롯! 다양한 심볼 조합으로 대박을 노리세요. RTP 96%의 공정한 게임.</p>
+                    <div class="game-card-meta">
+                        <span class="bet-range">베팅: 10 ~ 1,000</span>
+                        <button class="play-btn">PLAY</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 블랙잭 -->
+            <div class="game-card game-blackjack" onclick="location.href='blackjack.html'">
+                <div class="game-card-visual">🃏</div>
+                <div class="game-card-body">
+                    <h3>블랙잭</h3>
+                    <p>21에 가장 가까운 사람이 승리! Hit, Stand, Double, Split 전략을 구사하세요.</p>
+                    <div class="game-card-meta">
+                        <span class="bet-range">베팅: 50 ~ 5,000</span>
+                        <button class="play-btn">PLAY</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 룰렛 -->
+            <div class="game-card game-roulette" onclick="location.href='roulette.html'">
+                <div class="game-card-visual">🎡</div>
+                <div class="game-card-body">
+                    <h3>룰렛</h3>
+                    <p>유럽식 37칸 룰렛! 숫자, 색상, 홀짝 등 다양한 베팅으로 최대 36배 당첨.</p>
+                    <div class="game-card-meta">
+                        <span class="bet-range">베팅: 10 ~ 10,000</span>
+                        <button class="play-btn">PLAY</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 칩 리셋 (테스트용) -->
+        <div class="reset-section">
+            <button class="btn btn-outline btn-sm" onclick="resetChips()">칩 리셋 (10,000)</button>
+        </div>
+
+        <!-- 푸터 -->
+        <footer class="footer">
+            <p>ItemGame은 소셜 카지노 게임입니다. 실제 현금 거래가 아닙니다.</p>
+            <p>가상 칩은 환전이 불가하며, 유저간 거래가 불가합니다.</p>
+            <p class="mt-1">© 2026 ItemGame. All rights reserved.</p>
+        </footer>
+    </main>
+
+    <!-- 토스트 컨테이너 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 스크립트 -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script>
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            ChipManager.init();
+            updateChipDisplay();
+            checkDailyBonus();
+
+            // 칩 변경 리스너
+            ChipManager.onBalanceChange(updateChipDisplay);
+        });
+
+        function updateChipDisplay() {
+            document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+        }
+
+        function checkDailyBonus() {
+            const banner = document.getElementById('dailyBonusBanner');
+            if (!ChipManager.canClaimDailyBonus()) {
+                banner.classList.add('claimed');
+                document.getElementById('bonusTitle').textContent = '✅ 오늘의 보너스 수령 완료';
+                document.getElementById('bonusDesc').textContent = '내일 다시 받을 수 있습니다!';
+                document.getElementById('bonusAmount').textContent = '수령완료';
+            }
+        }
+
+        function claimBonus() {
+            const amount = ChipManager.claimDailyBonus();
+            if (amount > 0) {
+                showToast(`🎁 데일리 보너스 +${amount.toLocaleString()} 칩!`, 'success');
+                checkDailyBonus();
+            } else {
+                showToast('이미 오늘의 보너스를 받았습니다.', 'error');
+            }
+        }
+
+        function showDailyBonus() {
+            document.getElementById('dailyBonusBanner').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetChips() {
+            if (confirm('칩을 10,000으로 리셋하시겠습니까?')) {
+                ChipManager.reset();
+                showToast('칩이 10,000으로 리셋되었습니다.', 'success');
+            }
+        }
+
+        function showToast(message, type = '') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type ? 'toast-' + type : ''}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

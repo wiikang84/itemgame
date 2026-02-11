@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>슬롯머신 - ItemGame</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/slot.css">
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-logo" onclick="location.href='index.html'" style="cursor:pointer">ITEM<span>GAME</span></div>
+        <div class="header-chips">
+            <div class="chip-icon">$</div>
+            <div class="chip-balance" id="headerChips">0</div>
+        </div>
+        <nav class="header-nav">
+            <button class="nav-btn" onclick="location.href='index.html'">로비</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container">
+        <div class="slot-container">
+            <!-- 슬롯머신 -->
+            <div class="slot-machine">
+                <div class="slot-title">🎰 MEGA SLOTS</div>
+
+                <!-- 릴 영역 -->
+                <div class="reels-container">
+                    <div class="reels-grid">
+                        <!-- JS로 생성 -->
+                    </div>
+                </div>
+
+                <!-- 결과 표시 -->
+                <div class="result-display" id="slotResult">SPIN을 눌러 시작하세요!</div>
+
+                <!-- 컨트롤 -->
+                <div class="slot-controls">
+                    <!-- 베팅 -->
+                    <div class="slot-bet-area">
+                        <div class="bet-controls">
+                            <button class="bet-btn" onclick="SlotMachine.decreaseBet()">−</button>
+                            <span class="bet-label">BET</span>
+                            <span class="bet-amount" id="betAmount">100</span>
+                            <button class="bet-btn" onclick="SlotMachine.increaseBet()">+</button>
+                        </div>
+                        <div class="quick-bet-buttons">
+                            <button class="quick-bet" data-bet="10" onclick="SlotMachine.setBet(10)">10</button>
+                            <button class="quick-bet" data-bet="50" onclick="SlotMachine.setBet(50)">50</button>
+                            <button class="quick-bet active" data-bet="100" onclick="SlotMachine.setBet(100)">100</button>
+                            <button class="quick-bet" data-bet="500" onclick="SlotMachine.setBet(500)">500</button>
+                            <button class="quick-bet" data-bet="1000" onclick="SlotMachine.setBet(1000)">MAX</button>
+                        </div>
+                    </div>
+
+                    <!-- 스핀 버튼 -->
+                    <button class="spin-button" id="spinButton" onclick="SlotMachine.spin()">SPIN</button>
+
+                    <!-- 자동 스핀 -->
+                    <div class="auto-spin-controls">
+                        <button class="auto-spin-toggle" id="autoSpinBtn" onclick="SlotMachine.toggleAutoSpin()">🔄 자동 스핀</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 페이테이블 -->
+            <div class="paytable">
+                <h3>💰 페이테이블 (베팅 x 배수)</h3>
+                <div class="paytable-grid" id="paytableGrid">
+                    <!-- JS로 생성 -->
+                </div>
+                <p class="text-dim text-center mt-2" style="font-size:0.8rem">
+                    9개 페이라인 | 3개 이상 연속 매칭 시 당첨 | RTP ~96%
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- 승리 오버레이 -->
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-text">
+            WIN!
+            <span class="amount">+0</span>
+        </div>
+    </div>
+
+    <!-- 토스트 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 스크립트 -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script src="js/games/slot-machine.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            ChipManager.init();
+            ChipManager.onBalanceChange(() => {
+                document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            });
+            document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+
+            SlotMachine.init();
+            _buildPaytable();
+        });
+
+        // 페이테이블 생성
+        function _buildPaytable() {
+            const grid = document.getElementById('paytableGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            SlotMachine.SYMBOLS.forEach(sym => {
+                const item = document.createElement('div');
+                item.className = 'paytable-item';
+                item.innerHTML = `
+                    <span class="paytable-symbol">${sym.emoji}</span>
+                    <span class="paytable-info">
+                        ${sym.name}<br>
+                        <span class="multiplier">x${sym.pay[0]}</span> /
+                        <span class="multiplier">x${sym.pay[1]}</span> /
+                        <span class="multiplier">x${sym.pay[2]}</span>
+                    </span>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !SlotMachine.getIsSpinning()) {
+                e.preventDefault();
+                SlotMachine.spin();
+            }
+        });
+    </script>
+</body>
+</html>
