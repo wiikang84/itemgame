@@ -1,19 +1,14 @@
 /**
- * SlotMachine v2.0 - PHARAOH'S FORTUNE
+ * SlotMachine v3.0 - LUCKY SEVENS (클래식 카지노)
  * ItemGame - 소셜 카지노
  *
- * [v1.0 코드는 git history에 보존됨 - commit fd342be]
+ * [v1.0: commit fd342be / v2.0: commit bbeba0e]
  *
- * v2.0 주요 업그레이드:
- * - 이집트 테마 심볼셋 (파라오/아이오브라/스카라브/코브라/호루스 + A/K/Q/J)
- * - 와일드 심볼 (모든 심볼 대체, 스캐터 제외)
- * - 스캐터 심볼 (3개+ → 프리스핀 발동)
- * - 프리스핀 시스템 (10/15/25회, 프로그레시브 멀티플라이어)
- * - 5단계 승리 연출 (Small/Nice/Big/Mega/Epic Win)
- * - 갬블/더블업 기능 (카드 색상 맞추기)
- * - 페이라인 SVG 시각화
- * - 릴 앤티시페이션 (마지막 릴 서스펜스)
- * - 자동 스핀 횟수 제한
+ * v3.0: 실제 카지노 스타일 리뉴얼
+ * - 클래식 카지노 심볼 (7/BAR/Cherry/Bell/Diamond + A/K/Q/J + Wild/Scatter)
+ * - 카지노 캐비닛 UI (메탈릭 프레임, LED 디스플레이, 빨간 스핀 버튼)
+ * - 와일드 심볼 대체, 스캐터 프리스핀, 갬블/더블업
+ * - 5단계 승리 연출, 페이라인 SVG, 앤티시페이션
  */
 
 const SlotMachine = (() => {
@@ -22,19 +17,19 @@ const SlotMachine = (() => {
     const SYM_WILD = 'wild';
     const SYM_SCATTER = 'scatter';
 
-    // ═══ 심볼 정의 (이집트 테마) ═══
+    // ═══ 심볼 정의 (클래식 카지노) ═══
     const SYMBOLS = [
-        { emoji: '👑', name: 'Pharaoh', pay: [25, 75, 250], type: SYM_NORMAL, cls: 'sym-high' },
-        { emoji: '👁️', name: 'Eye of Ra', pay: [20, 50, 200], type: SYM_NORMAL, cls: 'sym-high' },
-        { emoji: '🪲', name: 'Scarab', pay: [15, 40, 150], type: SYM_NORMAL, cls: 'sym-high' },
-        { emoji: '🐍', name: 'Cobra', pay: [10, 30, 100], type: SYM_NORMAL, cls: 'sym-mid' },
-        { emoji: '🦅', name: 'Horus', pay: [8, 20, 75], type: SYM_NORMAL, cls: 'sym-mid' },
-        { emoji: 'A', name: 'Ace', pay: [3, 10, 30], type: SYM_NORMAL, cls: 'sym-card' },
-        { emoji: 'K', name: 'King', pay: [3, 8, 25], type: SYM_NORMAL, cls: 'sym-card' },
-        { emoji: 'Q', name: 'Queen', pay: [2, 5, 20], type: SYM_NORMAL, cls: 'sym-card' },
-        { emoji: 'J', name: 'Jack', pay: [2, 5, 20], type: SYM_NORMAL, cls: 'sym-card' },
-        { emoji: '⭐', name: 'WILD', pay: [30, 100, 500], type: SYM_WILD, cls: 'sym-wild' },
-        { emoji: '📜', name: 'SCATTER', pay: [2, 10, 50], type: SYM_SCATTER, cls: 'sym-scatter' },
+        { emoji: '7️⃣', name: 'Lucky 7', label: '7', pay: [25, 75, 250], type: SYM_NORMAL, cls: 'sym-high' },
+        { emoji: '🍒', name: 'Cherry', label: '🍒', pay: [20, 50, 200], type: SYM_NORMAL, cls: 'sym-high' },
+        { emoji: '🔔', name: 'Bell', label: '🔔', pay: [15, 40, 150], type: SYM_NORMAL, cls: 'sym-high' },
+        { emoji: '💎', name: 'Diamond', label: '💎', pay: [10, 30, 100], type: SYM_NORMAL, cls: 'sym-mid' },
+        { emoji: '🍋', name: 'Lemon', label: '🍋', pay: [8, 20, 75], type: SYM_NORMAL, cls: 'sym-mid' },
+        { emoji: 'A', name: 'Ace', label: 'A', pay: [3, 10, 30], type: SYM_NORMAL, cls: 'sym-card' },
+        { emoji: 'K', name: 'King', label: 'K', pay: [3, 8, 25], type: SYM_NORMAL, cls: 'sym-card' },
+        { emoji: 'Q', name: 'Queen', label: 'Q', pay: [2, 5, 20], type: SYM_NORMAL, cls: 'sym-card' },
+        { emoji: 'J', name: 'Jack', label: 'J', pay: [2, 5, 20], type: SYM_NORMAL, cls: 'sym-card' },
+        { emoji: '⭐', name: 'WILD', label: 'W', pay: [30, 100, 500], type: SYM_WILD, cls: 'sym-wild' },
+        { emoji: '💰', name: 'BONUS', label: '$', pay: [2, 10, 50], type: SYM_SCATTER, cls: 'sym-scatter' },
     ];
 
     // 릴 가중치 (인덱스 = SYMBOLS 순서)
@@ -900,7 +895,17 @@ const SlotMachine = (() => {
         const el = document.getElementById('slotResult');
         if (el) {
             el.textContent = text;
-            el.className = `result-display result-${type}`;
+            el.className = `info-value result-text result-${type}`;
+        }
+        // WIN 디스플레이 업데이트
+        const winEl = document.getElementById('winDisplay');
+        if (winEl) {
+            if (type === 'win') {
+                const numMatch = text.match(/[\d,]+/);
+                winEl.textContent = numMatch ? numMatch[0] : '0';
+            } else {
+                winEl.textContent = '0';
+            }
         }
     }
 
@@ -912,25 +917,35 @@ const SlotMachine = (() => {
         const betEl = document.getElementById('betAmount');
         if (betEl) betEl.textContent = currentBet.toLocaleString();
 
+        // TOTAL BET 업데이트
+        const totalBetEl = document.getElementById('totalBet');
+        if (totalBetEl) totalBetEl.textContent = currentBet.toLocaleString();
+
         const chipEl = document.getElementById('headerChips');
         if (chipEl) chipEl.textContent = ChipManager.formatBalance();
 
-        document.querySelectorAll('.quick-bet').forEach(btn => {
-            const val = parseInt(btn.dataset.bet);
-            btn.classList.toggle('active', val === currentBet);
+        // CREDIT 디스플레이 업데이트
+        const creditEl = document.getElementById('creditDisplay');
+        if (creditEl) creditEl.textContent = ChipManager.getBalance().toLocaleString();
+
+        // 프리스핀 중 베팅 버튼 비활성화
+        document.querySelectorAll('.cab-btn-bet, .cab-btn-maxbet').forEach(btn => {
+            if (isFreeSpinMode) {
+                btn.style.opacity = '0.4';
+                btn.style.pointerEvents = 'none';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            }
         });
 
-        // 프리스핀 중 베팅 비활성화
-        const betArea = document.querySelector('.slot-bet-area');
-        if (betArea) {
-            betArea.style.opacity = isFreeSpinMode ? '0.5' : '1';
-            betArea.style.pointerEvents = isFreeSpinMode ? 'none' : 'auto';
-        }
-
-        // 스핀 버튼 텍스트
+        // 스핀 버튼 텍스트 (내부 span으로)
         const spinBtn = document.getElementById('spinButton');
         if (spinBtn && !isSpinning) {
-            spinBtn.textContent = isFreeSpinMode ? 'FREE' : 'SPIN';
+            const labelEl = spinBtn.querySelector('.cab-btn-label');
+            if (labelEl) {
+                labelEl.textContent = isFreeSpinMode ? 'FREE' : 'SPIN';
+            }
         }
 
         // 통계 업데이트
@@ -996,9 +1011,10 @@ const SlotMachine = (() => {
         const btn = document.getElementById('autoSpinBtn');
         if (btn) {
             btn.classList.add('active');
-            btn.textContent = autoSpinLimit === -1
-                ? '🔄 자동 중지'
-                : `🔄 ${autoSpinLimit - autoSpinCount}`;
+            const labelEl = btn.querySelector('.cab-btn-label');
+            if (labelEl) {
+                labelEl.textContent = autoSpinLimit === -1 ? 'STOP' : `${autoSpinLimit - autoSpinCount}`;
+            }
         }
 
         if (typeof SoundManager !== 'undefined') SoundManager.playClick();
@@ -1012,7 +1028,8 @@ const SlotMachine = (() => {
         const btn = document.getElementById('autoSpinBtn');
         if (btn) {
             btn.classList.remove('active');
-            btn.textContent = '🔄 AUTO';
+            const labelEl = btn.querySelector('.cab-btn-label');
+            if (labelEl) labelEl.textContent = 'AUTO';
         }
     }
 

@@ -84,3 +84,11 @@ python -m http.server 8080
   - 갬블/더블업: Red/Black 50/50 카드 게임, 연속 갬블 가능
   - UI/UX: 이집트 골드/틸 테마, SVG 페이라인, 반응형 디자인, 프리스핀 카운터/멀티플라이어 표시
   - 변경 파일: slot.html, css/slot.css, js/games/slot-machine.js, js/core/sound-manager.js (4파일 전면 재작성)
+- **2026-02-12**: 슬롯머신 v3.0 "LUCKY SEVENS" 실제 카지노 스타일 리뉴얼
+  - 이집트(파라오) 테마 전면 제거 → 클래식 카지노 스타일로 전환
+  - 심볼: 7/Cherry/Bell/Diamond/Lemon + A/K/Q/J + Wild/Bonus
+  - CSS 전면 재작성: 카지노 캐비닛 UI (메탈릭 프레임, LED 디스플레이, 빨간 스핀 버튼, 크롬 베젤)
+  - 색상 팔레트: 검정+골드+빨강+크롬 (실제 카지노 벤치마킹)
+  - 릴 비네트(상하 그라데이션), 릴 구분선, 물리적 버튼 눌림 효과
+  - JS 셀렉터 수정: 새 HTML 캐비닛 구조(info-bar, cabinet-belly, cab-btn 등)에 맞게 업데이트
+  - 변경 파일: slot.html, css/slot.css, js/games/slot-machine.js, CLAUDE.md

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHARAOH'S FORTUNE - ItemGame</title>
+    <title>LUCKY SEVENS - ItemGame</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/slot.css">
 </head>
@@ -23,76 +23,104 @@
 
     <!-- 메인 -->
     <main class="container">
-        <div class="slot-container">
-            <!-- 게임 타이틀 -->
-            <div class="game-title-area">
-                <div class="game-title">PHARAOH'S FORTUNE</div>
-                <div class="game-subtitle">9 Lines | RTP ~96%</div>
+        <div class="slot-cabinet">
+
+            <!-- ═══ 탑 박스 (타이틀 + 잭팟) ═══ -->
+            <div class="cabinet-top">
+                <div class="cabinet-corner-light left"></div>
+                <div class="cabinet-corner-light right"></div>
+                <div class="game-title">LUCKY SEVENS</div>
+                <div class="game-subtitle">9 Lines &bull; RTP ~96%</div>
             </div>
 
-            <!-- 프리스핀 카운터 (기본 숨김) -->
+            <!-- ═══ 프리스핀 / 멀티플라이어 ═══ -->
             <div class="free-spin-counter" id="freeSpinCounter" style="display:none">
                 <span class="fs-label">FREE SPINS</span>
                 <span class="fs-count">0</span>
             </div>
-
-            <!-- 멀티플라이어 (기본 숨김) -->
             <div class="multiplier-display" id="multiplierDisplay" style="display:none">
                 <span class="mult-label">MULTIPLIER</span>
                 <span class="mult-value">x1</span>
             </div>
 
-            <!-- 슬롯머신 -->
-            <div class="slot-machine">
-                <!-- 릴 영역 -->
-                <div class="reels-container">
-                    <div class="reels-grid">
-                        <!-- JS로 생성 -->
+            <!-- ═══ 릴 프레임 (캐비닛 메인 바디) ═══ -->
+            <div class="reels-frame">
+                <div class="reels-container" id="reelsContainer">
+                    <div class="reels-grid" id="reelsGrid">
+                        <!-- JS 생성 -->
                     </div>
-                </div>
-
-                <!-- 결과 표시 -->
-                <div class="result-display" id="slotResult">SPIN TO BEGIN</div>
-
-                <!-- 게임 통계 -->
-                <div class="game-stats" id="gameStats">
-                    <span>SPINS: 0</span>
-                    <span>WINS: 0</span>
-                    <span>BEST: 0</span>
+                    <!-- 비네트 오버레이 -->
+                    <div class="reel-vignette"></div>
                 </div>
             </div>
 
-            <!-- 하단 컨트롤 바 -->
-            <div class="control-bar">
-                <!-- 베팅 영역 -->
-                <div class="bet-section">
-                    <div class="bet-controls">
-                        <button class="bet-btn" onclick="SlotMachine.decreaseBet()">−</button>
-                        <div class="bet-display">
-                            <span class="bet-label">BET</span>
-                            <span class="bet-amount" id="betAmount">100</span>
-                        </div>
-                        <button class="bet-btn" onclick="SlotMachine.increaseBet()">+</button>
-                    </div>
-                    <div class="quick-bet-buttons">
-                        <button class="quick-bet" data-bet="10" onclick="SlotMachine.setBet(10)">10</button>
-                        <button class="quick-bet" data-bet="50" onclick="SlotMachine.setBet(50)">50</button>
-                        <button class="quick-bet active" data-bet="100" onclick="SlotMachine.setBet(100)">100</button>
-                        <button class="quick-bet" data-bet="500" onclick="SlotMachine.setBet(500)">500</button>
-                        <button class="quick-bet" data-bet="1000" onclick="SlotMachine.setBet(1000)">MAX</button>
-                    </div>
+            <!-- ═══ 인포 바 (LED 디스플레이) ═══ -->
+            <div class="info-bar">
+                <div class="info-cell">
+                    <span class="info-label">CREDIT</span>
+                    <span class="info-value led-display" id="creditDisplay">0</span>
                 </div>
-
-                <!-- 스핀 버튼 -->
-                <button class="spin-button" id="spinButton" onclick="SlotMachine.spin()">SPIN</button>
-
-                <!-- 오토 스핀 -->
-                <div class="auto-section">
-                    <button class="auto-spin-toggle" id="autoSpinBtn" onclick="SlotMachine.toggleAutoSpin()">🔄 AUTO</button>
+                <div class="info-cell result-cell">
+                    <span class="info-value result-text" id="slotResult">PRESS SPIN</span>
+                </div>
+                <div class="info-cell">
+                    <span class="info-label">WIN</span>
+                    <span class="info-value led-display" id="winDisplay">0</span>
                 </div>
             </div>
 
-            <!-- 갬블(더블업) 패널 -->
+            <!-- 게임 통계 -->
+            <div class="game-stats" id="gameStats">
+                <span>SPINS: 0</span>
+                <span>WINS: 0</span>
+                <span>BEST: 0</span>
+            </div>
+
+            <!-- ═══ 캐비닛 벨리 (컨트롤 영역) ═══ -->
+            <div class="cabinet-belly">
+                <!-- 베팅 정보 바 -->
+                <div class="bet-info-bar">
+                    <div class="bet-info-item">
+                        <span class="bet-info-label">BET</span>
+                        <span class="bet-info-value led-small" id="betAmount">100</span>
+                    </div>
+                    <div class="bet-info-item">
+                        <span class="bet-info-label">LINES</span>
+                        <span class="bet-info-value led-small">9</span>
+                    </div>
+                    <div class="bet-info-item">
+                        <span class="bet-info-label">TOTAL BET</span>
+                        <span class="bet-info-value led-small" id="totalBet">100</span>
+                    </div>
+                </div>
+
+                <!-- 캐비닛 버튼 바 -->
+                <div class="cabinet-button-bar">
+                    <button class="cab-btn cab-btn-info" onclick="togglePaytable()" title="페이테이블">
+                        <span class="cab-btn-icon">i</span>
+                        <span class="cab-btn-label">PAYS</span>
+                    </button>
+                    <button class="cab-btn cab-btn-bet" onclick="SlotMachine.decreaseBet()">
+                        <span class="cab-btn-icon">&minus;</span>
+                        <span class="cab-btn-label">BET</span>
+                    </button>
+                    <button class="cab-btn cab-btn-bet" onclick="SlotMachine.increaseBet()">
+                        <span class="cab-btn-icon">+</span>
+                        <span class="cab-btn-label">BET</span>
+                    </button>
+                    <button class="cab-btn cab-btn-maxbet" onclick="SlotMachine.setBet(1000)">
+                        <span class="cab-btn-label">MAX<br>BET</span>
+                    </button>
+                    <button class="cab-btn cab-btn-spin" id="spinButton" onclick="SlotMachine.spin()">
+                        <span class="cab-btn-label">SPIN</span>
+                    </button>
+                    <button class="cab-btn cab-btn-auto" id="autoSpinBtn" onclick="SlotMachine.toggleAutoSpin()">
+                        <span class="cab-btn-label">AUTO</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ═══ 갬블 패널 ═══ -->
             <div class="gamble-panel" id="gamblePanel" style="display:none">
                 <div class="gamble-header">
                     DOUBLE UP? <span class="gamble-amount">0</span> CHIPS
@@ -101,47 +129,41 @@
                     <div class="gamble-card" id="gambleCard">?</div>
                 </div>
                 <div class="gamble-buttons">
-                    <button class="gamble-btn gamble-red" onclick="SlotMachine.gambleDouble('red')">
-                        ♥ RED
-                    </button>
-                    <button class="gamble-btn gamble-black" onclick="SlotMachine.gambleDouble('black')">
-                        ♠ BLACK
-                    </button>
-                    <button class="gamble-btn gamble-collect" onclick="SlotMachine.gambleCollect()">
-                        COLLECT
-                    </button>
+                    <button class="gamble-btn gamble-red" onclick="SlotMachine.gambleDouble('red')">&#9829; RED</button>
+                    <button class="gamble-btn gamble-black" onclick="SlotMachine.gambleDouble('black')">&#9824; BLACK</button>
+                    <button class="gamble-btn gamble-collect" onclick="SlotMachine.gambleCollect()">COLLECT</button>
                 </div>
             </div>
 
-            <!-- 페이테이블 -->
-            <div class="paytable">
+            <!-- ═══ 페이테이블 (기본 숨김, PAYS 버튼으로 토글) ═══ -->
+            <div class="paytable" id="paytableSection" style="display:none">
                 <h3 class="paytable-title">PAYTABLE</h3>
                 <div class="paytable-special">
                     <div class="paytable-special-item">
-                        <span class="paytable-symbol wild-badge">⭐ WILD</span>
+                        <span class="paytable-symbol wild-badge">WILD</span>
                         <span class="paytable-desc">Substitutes all symbols except Scatter</span>
                     </div>
                     <div class="paytable-special-item">
-                        <span class="paytable-symbol scatter-badge">📜 SCATTER</span>
+                        <span class="paytable-symbol scatter-badge">BONUS</span>
                         <span class="paytable-desc">3+ anywhere triggers FREE SPINS (10/15/25)</span>
                     </div>
                 </div>
                 <div class="paytable-grid" id="paytableGrid">
-                    <!-- JS로 생성 -->
+                    <!-- JS 생성 -->
                 </div>
                 <p class="paytable-footer">
-                    9 PAYLINES | 3+ CONSECUTIVE MATCH | WILD SUBSTITUTES | SCATTER FREE SPINS
+                    9 PAYLINES &bull; 3+ CONSECUTIVE MATCH &bull; WILD SUBSTITUTES &bull; SCATTER FREE SPINS
                 </p>
             </div>
+
         </div>
     </main>
 
-    <!-- 프리스핀 배너 오버레이 -->
+    <!-- ═══ 오버레이 ═══ -->
     <div class="free-spin-banner" id="freeSpinBanner">
         <div class="fs-text">FREE SPINS!</div>
     </div>
 
-    <!-- 승리 오버레이 (5단계) -->
     <div class="win-overlay" id="winOverlay">
         <div class="win-content">
             <div class="win-tier-text">WIN!</div>
@@ -149,7 +171,6 @@
         </div>
     </div>
 
-    <!-- 토스트 -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- 스크립트 -->
@@ -158,13 +179,24 @@
     <script src="js/core/sound-manager.js"></script>
     <script src="js/games/slot-machine.js"></script>
     <script>
+        // 페이테이블 토글
+        let _paytableVisible = false;
+        function togglePaytable() {
+            const section = document.getElementById('paytableSection');
+            if (!section) return;
+            _paytableVisible = !_paytableVisible;
+            section.style.display = _paytableVisible ? 'block' : 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             ChipManager.init();
             SoundManager.init();
             ChipManager.onBalanceChange(() => {
                 document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+                document.getElementById('creditDisplay').textContent = ChipManager.getBalance().toLocaleString();
             });
             document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            document.getElementById('creditDisplay').textContent = ChipManager.getBalance().toLocaleString();
 
             SlotMachine.init();
             _buildPaytable();
@@ -175,16 +207,12 @@
             const grid = document.getElementById('paytableGrid');
             if (!grid) return;
             grid.innerHTML = '';
-
             SlotMachine.SYMBOLS.forEach(sym => {
-                if (sym.type === 'wild' || sym.type === 'scatter') return; // 이미 특별 섹션에 표시
+                if (sym.type === 'wild' || sym.type === 'scatter') return;
                 const item = document.createElement('div');
                 item.className = 'paytable-item';
-                const emojiHtml = sym.cls === 'sym-card'
-                    ? `<span class="pt-card-letter">${sym.emoji}</span>`
-                    : `<span class="pt-emoji">${sym.emoji}</span>`;
                 item.innerHTML = `
-                    ${emojiHtml}
+                    <span class="pt-symbol">${sym.label || sym.name}</span>
                     <span class="paytable-info">
                         <span class="pt-name">${sym.name}</span>
                         <span class="pt-pays">
@@ -198,9 +226,9 @@
             });
         }
 
-        // 키보드 단축키
+        // 키보드: Space=스핀, Space 중 스핀=퀵스톱
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !SlotMachine.getIsSpinning()) {
+            if (e.code === 'Space') {
                 e.preventDefault();
                 SlotMachine.spin();
             }
