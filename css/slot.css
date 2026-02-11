@@ -1,56 +1,161 @@
 /* ============================================
-   슬롯머신 전용 스타일 (고품질 개선)
+   PHARAOH'S FORTUNE - 이집트 테마 슬롯머신
+   v2.0 전면 업그레이드
+   [v1.0은 git history에 보존 - commit fd342be]
    ============================================ */
 
+/* ═══ 이집트 테마 색상 변수 ═══ */
+:root {
+    --egypt-gold: #d4a017;
+    --egypt-gold-light: #f5d56e;
+    --egypt-blue: #1a3a5c;
+    --egypt-blue-deep: #0a1628;
+    --egypt-sand: #c4a35a;
+    --egypt-teal: #2d8b8b;
+    --egypt-red: #8b2020;
+    --egypt-purple: #4a1a6b;
+    --glow-gold-strong: 0 0 20px rgba(212, 160, 23, 0.6), 0 0 40px rgba(212, 160, 23, 0.3);
+}
+
+.slot-page {
+    background: linear-gradient(180deg, #0a0e1a 0%, #0f1a2e 50%, #0a0e1a 100%);
+}
+
 .slot-container {
-    max-width: 700px;
+    max-width: 720px;
     margin: 0 auto;
 }
 
-/* 슬롯머신 프레임 */
-.slot-machine {
-    background: linear-gradient(180deg, #1a0033 0%, #0d001a 100%);
-    border: 2px solid rgba(170, 68, 255, 0.4);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 0 30px rgba(170, 68, 255, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.3);
-}
-
-.slot-title {
+/* ═══ 게임 타이틀 ═══ */
+.game-title-area {
     text-align: center;
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--neon-purple);
-    text-shadow: 0 0 10px rgba(170, 68, 255, 0.6);
-    margin-bottom: 20px;
-    letter-spacing: 3px;
+    margin-bottom: 12px;
+    padding: 8px;
 }
 
-/* 릴 영역 */
+.game-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--egypt-gold);
+    text-shadow: var(--glow-gold-strong);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #f5d56e 0%, #d4a017 50%, #8b6914 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.game-subtitle {
+    font-size: 0.75rem;
+    color: var(--egypt-sand);
+    letter-spacing: 3px;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+/* ═══ 프리스핀 카운터 ═══ */
+.free-spin-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 20px;
+    background: linear-gradient(135deg, rgba(45, 139, 139, 0.3), rgba(74, 26, 107, 0.3));
+    border: 2px solid var(--egypt-teal);
+    border-radius: 30px;
+    margin-bottom: 10px;
+    animation: fsPulse 1.5s ease infinite;
+}
+
+.fs-label {
+    font-size: 0.85rem;
+    color: var(--egypt-teal);
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.fs-count {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 10px var(--egypt-teal);
+    min-width: 40px;
+    text-align: center;
+}
+
+@keyframes fsPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(45, 139, 139, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(45, 139, 139, 0.6); }
+}
+
+/* ═══ 멀티플라이어 ═══ */
+.multiplier-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 16px;
+    margin-bottom: 10px;
+}
+
+.mult-label {
+    font-size: 0.7rem;
+    color: var(--egypt-gold);
+    letter-spacing: 2px;
+}
+
+.mult-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--egypt-gold-light);
+    text-shadow: var(--glow-gold-strong);
+    animation: multBounce 0.5s ease;
+}
+
+@keyframes multBounce {
+    0% { transform: scale(1.5); }
+    50% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+}
+
+/* ═══ 슬롯머신 프레임 ═══ */
+.slot-machine {
+    background: linear-gradient(180deg, #0d1b30 0%, #0a1220 50%, #080e18 100%);
+    border: 2px solid rgba(212, 160, 23, 0.4);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 0 30px rgba(212, 160, 23, 0.1), inset 0 0 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+/* ═══ 릴 영역 ═══ */
 .reels-container {
-    background: #000;
-    border-radius: var(--radius);
+    background: linear-gradient(180deg, #050a14 0%, #080e18 100%);
+    border-radius: 10px;
     padding: 8px;
-    border: 2px solid rgba(170, 68, 255, 0.3);
-    margin-bottom: 20px;
+    border: 2px solid rgba(212, 160, 23, 0.25);
+    margin-bottom: 12px;
     position: relative;
     overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
 }
 
 .reels-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
+    gap: 3px;
 }
 
 .reel {
     position: relative;
-    height: 240px;
+    height: 252px;
     overflow: hidden;
-    background: #0a0015;
+    background: linear-gradient(180deg, rgba(10, 22, 40, 0.9), rgba(5, 10, 20, 0.9));
     border-radius: 6px;
-    border: 1px solid rgba(170, 68, 255, 0.2);
+    border: 1px solid rgba(212, 160, 23, 0.15);
 }
 
 .reel-strip {
@@ -60,19 +165,56 @@
 }
 
 .reel-symbol {
-    height: 80px;
+    height: 84px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
-    border-bottom: 1px solid rgba(170, 68, 255, 0.08);
+    font-size: 2.8rem;
+    border-bottom: 1px solid rgba(212, 160, 23, 0.06);
     transition: transform 0.3s, background 0.3s;
+    position: relative;
 }
 
-/* 당첨 심볼 하이라이트 + 확대 */
+/* 심볼 스타일 */
+.sym-high { text-shadow: 0 2px 8px rgba(212, 160, 23, 0.3); }
+.sym-mid { text-shadow: 0 2px 6px rgba(139, 139, 139, 0.2); }
+
+.sym-card .card-letter {
+    font-size: 2rem;
+    font-weight: 900;
+    font-style: italic;
+    background: linear-gradient(180deg, #ccc, #888);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 와일드 심볼 */
+.wild-symbol {
+    background: radial-gradient(ellipse, rgba(212, 160, 23, 0.15) 0%, transparent 70%);
+    animation: wildGlow 2s ease infinite;
+}
+
+@keyframes wildGlow {
+    0%, 100% { background: radial-gradient(ellipse, rgba(212, 160, 23, 0.1) 0%, transparent 70%); }
+    50% { background: radial-gradient(ellipse, rgba(212, 160, 23, 0.25) 0%, transparent 70%); }
+}
+
+/* 스캐터 심볼 */
+.scatter-symbol {
+    background: radial-gradient(ellipse, rgba(45, 139, 139, 0.15) 0%, transparent 70%);
+    animation: scatterGlow 2s ease infinite;
+}
+
+@keyframes scatterGlow {
+    0%, 100% { background: radial-gradient(ellipse, rgba(45, 139, 139, 0.1) 0%, transparent 70%); }
+    50% { background: radial-gradient(ellipse, rgba(45, 139, 139, 0.25) 0%, transparent 70%); }
+}
+
+/* 당첨 하이라이트 */
 .reel-symbol.highlight {
-    background: rgba(255, 215, 0, 0.15);
-    box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.3);
+    background: rgba(212, 160, 23, 0.2) !important;
+    box-shadow: inset 0 0 15px rgba(212, 160, 23, 0.4);
     animation: symbolPulse 0.5s ease infinite alternate;
 }
 
@@ -81,76 +223,198 @@
 }
 
 @keyframes symbolPulse {
-    from { background: rgba(255, 215, 0, 0.1); }
-    to { background: rgba(255, 215, 0, 0.25); }
+    from { background: rgba(212, 160, 23, 0.15); }
+    to { background: rgba(212, 160, 23, 0.35); }
 }
 
 @keyframes symbolWinScale {
     from { transform: scale(1); }
-    to { transform: scale(1.15); }
+    to { transform: scale(1.12); }
 }
 
-/* 승리 파티클 효과 */
+/* ═══ 페이라인 SVG ═══ */
+.payline-glow {
+    filter: drop-shadow(0 0 4px currentColor);
+    animation: paylineFlash 0.8s ease infinite alternate;
+}
+
+@keyframes paylineFlash {
+    from { opacity: 0.5; }
+    to { opacity: 0.9; }
+}
+
+/* ═══ 승리 파티클 ═══ */
 .win-particle {
     position: absolute;
     width: 6px;
     height: 6px;
-    background: var(--neon-gold);
     border-radius: 50%;
     top: 0;
     animation: particleFall linear forwards;
     pointer-events: none;
     z-index: 10;
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
 }
 
-.win-particle:nth-child(odd) {
-    background: var(--neon-purple);
-    box-shadow: 0 0 6px rgba(170, 68, 255, 0.8);
-}
-
-.win-particle:nth-child(3n) {
-    background: var(--neon-green);
-    box-shadow: 0 0 6px rgba(0, 255, 136, 0.8);
-    width: 4px;
-    height: 4px;
-}
+.particle-small { background: var(--egypt-gold); box-shadow: 0 0 4px var(--egypt-gold); }
+.particle-nice { background: var(--egypt-gold-light); box-shadow: 0 0 6px var(--egypt-gold-light); width: 7px; height: 7px; }
+.particle-big { background: #fff; box-shadow: 0 0 8px var(--egypt-gold); width: 8px; height: 8px; }
+.particle-mega { background: var(--egypt-teal); box-shadow: 0 0 10px var(--egypt-teal); width: 9px; height: 9px; }
+.particle-epic { box-shadow: 0 0 12px #fff; width: 10px; height: 10px; }
+.particle-epic:nth-child(odd) { background: var(--egypt-gold-light); }
+.particle-epic:nth-child(even) { background: #fff; }
+.particle-epic:nth-child(3n) { background: var(--egypt-teal); }
 
 @keyframes particleFall {
-    0% {
-        transform: translateY(-10px) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(300px) rotate(360deg);
-        opacity: 0;
-    }
+    0% { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(350px) rotate(720deg) scale(0.3); opacity: 0; }
 }
 
-/* 컨트롤 패널 */
-.slot-controls {
+/* ═══ 결과 표시 ═══ */
+.result-display {
+    text-align: center;
+    padding: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    min-height: 36px;
+    transition: all 0.3s;
+}
+
+.result-win {
+    color: var(--egypt-gold-light);
+    text-shadow: var(--glow-gold-strong);
+    animation: resultPop 0.3s ease;
+}
+
+.result-lose { color: rgba(255, 255, 255, 0.3); }
+.result-none { color: transparent; }
+
+@keyframes resultPop {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* ═══ 게임 통계 ═══ */
+.game-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 1px;
+    padding: 4px 0;
+}
+
+/* ═══ 하단 컨트롤 바 ═══ */
+.control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+    background: linear-gradient(180deg, #0d1b30, #080e18);
+    border: 1px solid rgba(212, 160, 23, 0.2);
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+
+.bet-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
 }
 
-.spin-button {
-    width: 120px;
-    height: 120px;
+.bet-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bet-btn {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    border: 3px solid var(--neon-gold);
-    background: linear-gradient(135deg, #ffd700, #ff8800);
-    color: #000;
+    border: 1px solid rgba(212, 160, 23, 0.4);
+    background: rgba(212, 160, 23, 0.1);
+    color: var(--egypt-gold);
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bet-btn:hover {
+    background: rgba(212, 160, 23, 0.25);
+    transform: scale(1.1);
+}
+
+.bet-display {
+    text-align: center;
+    min-width: 70px;
+}
+
+.bet-label {
+    display: block;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 2px;
+}
+
+.bet-amount {
+    display: block;
     font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--egypt-gold-light);
+}
+
+.quick-bet-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.quick-bet {
+    padding: 4px 10px;
+    background: rgba(212, 160, 23, 0.08);
+    border: 1px solid rgba(212, 160, 23, 0.2);
+    border-radius: 16px;
+    color: var(--egypt-gold);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-bet:hover {
+    background: rgba(212, 160, 23, 0.2);
+    transform: translateY(-1px);
+}
+
+.quick-bet.active {
+    background: rgba(212, 160, 23, 0.3);
+    border-color: var(--egypt-gold);
+    box-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
+}
+
+/* ═══ 스핀 버튼 ═══ */
+.spin-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--egypt-gold);
+    background: linear-gradient(135deg, #d4a017, #8b6914);
+    color: #000;
+    font-size: 1.2rem;
     font-weight: 900;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), inset 0 -4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 20px rgba(212, 160, 23, 0.4), inset 0 -4px 10px rgba(0, 0, 0, 0.3);
     text-transform: uppercase;
     letter-spacing: 2px;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .spin-button::after {
@@ -171,7 +435,7 @@
 
 .spin-button:hover:not(:disabled) {
     transform: scale(1.08);
-    box-shadow: var(--glow-gold), 0 0 40px rgba(255, 215, 0, 0.5);
+    box-shadow: var(--glow-gold-strong), 0 0 40px rgba(212, 160, 23, 0.5);
 }
 
 .spin-button:active:not(:disabled) {
@@ -179,111 +443,199 @@
 }
 
 .spin-button:disabled {
-    background: linear-gradient(135deg, #666, #444);
+    background: linear-gradient(135deg, #444, #333);
     border-color: #555;
-    color: #999;
+    color: #888;
     cursor: not-allowed;
     box-shadow: none;
 }
 
 .spin-button.spinning {
-    animation: spin 1s linear infinite;
-    background: linear-gradient(135deg, #aa44ff, #6600cc);
-    border-color: var(--neon-purple);
+    animation: spinRotate 1s linear infinite;
+    background: linear-gradient(135deg, var(--egypt-teal), #1a6b6b);
+    border-color: var(--egypt-teal);
 }
 
-/* 베팅 영역 */
-.slot-bet-area {
+@keyframes spinRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ═══ 오토 스핀 ═══ */
+.auto-section {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 16px;
-    flex-wrap: wrap;
 }
 
-.quick-bet-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.quick-bet {
-    padding: 6px 14px;
-    background: var(--bg-card);
-    border: 1px solid rgba(170, 68, 255, 0.3);
+.auto-spin-toggle {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    color: var(--neon-purple);
-    font-size: 0.85rem;
-    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.quick-bet:hover {
-    background: rgba(170, 68, 255, 0.15);
-    border-color: var(--neon-purple);
-    transform: translateY(-1px);
+.auto-spin-toggle:hover {
+    border-color: var(--egypt-teal);
+    color: var(--egypt-teal);
 }
 
-.quick-bet:active {
-    transform: scale(0.95);
+.auto-spin-toggle.active {
+    border-color: var(--egypt-teal);
+    color: var(--egypt-teal);
+    background: rgba(45, 139, 139, 0.15);
+    box-shadow: 0 0 10px rgba(45, 139, 139, 0.3);
 }
 
-.quick-bet.active {
-    background: rgba(170, 68, 255, 0.25);
-    border-color: var(--neon-purple);
-    box-shadow: 0 0 10px rgba(170, 68, 255, 0.3);
-}
-
-/* 페이테이블 */
-.paytable {
-    background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius);
+/* ═══ 갬블(더블업) 패널 ═══ */
+.gamble-panel {
+    background: linear-gradient(180deg, #1a0a2e, #0d0518);
+    border: 2px solid var(--egypt-purple);
+    border-radius: 12px;
     padding: 20px;
-    margin-top: 24px;
-}
-
-.paytable h3 {
-    color: var(--neon-gold);
-    margin-bottom: 12px;
+    margin-top: 12px;
     text-align: center;
+    animation: gambleSlideIn 0.3s ease;
 }
 
-.paytable-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 8px;
+@keyframes gambleSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.paytable-item {
+.gamble-header {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--egypt-gold-light);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+.gamble-amount {
+    color: #fff;
+    font-weight: 900;
+}
+
+.gamble-card-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.gamble-card {
+    width: 80px;
+    height: 110px;
+    background: linear-gradient(135deg, #1a1a3a, #2a2a4a);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 6px;
-    transition: background 0.2s;
+    justify-content: center;
+    font-size: 3rem;
+    color: #666;
+    transition: all 0.3s;
 }
 
-.paytable-item:hover {
-    background: rgba(170, 68, 255, 0.1);
+.gamble-card.red {
+    color: #ff4444;
+    border-color: #ff4444;
+    background: linear-gradient(135deg, #2a0a0a, #3a1a1a);
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
 }
 
-.paytable-symbol {
-    font-size: 1.5rem;
+.gamble-card.black {
+    color: #aaa;
+    border-color: #888;
+    background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
-.paytable-info {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+.gamble-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-.paytable-info .multiplier {
-    color: var(--neon-gold);
+.gamble-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
     font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid;
 }
 
-/* 승리 오버레이 */
+.gamble-red {
+    background: rgba(255, 68, 68, 0.15);
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.gamble-red:hover { background: rgba(255, 68, 68, 0.3); transform: scale(1.05); }
+
+.gamble-black {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #888;
+    color: #ccc;
+}
+
+.gamble-black:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.05); }
+
+.gamble-collect {
+    background: rgba(212, 160, 23, 0.15);
+    border-color: var(--egypt-gold);
+    color: var(--egypt-gold);
+}
+
+.gamble-collect:hover { background: rgba(212, 160, 23, 0.3); transform: scale(1.05); }
+
+/* ═══ 프리스핀 배너 오버레이 ═══ */
+.free-spin-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 600;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.free-spin-banner.active {
+    display: flex;
+    animation: fsBannerIn 0.5s ease;
+}
+
+.free-spin-banner .fs-text {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--egypt-teal);
+    text-shadow: 0 0 20px var(--egypt-teal), 0 0 40px var(--egypt-teal), 0 0 80px rgba(45, 139, 139, 0.5);
+    animation: fsBannerPulse 0.8s ease infinite alternate;
+    text-align: center;
+    padding: 0 20px;
+}
+
+@keyframes fsBannerIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fsBannerPulse {
+    from { transform: scale(1); text-shadow: 0 0 20px var(--egypt-teal); }
+    to { transform: scale(1.05); text-shadow: 0 0 30px var(--egypt-teal), 0 0 60px var(--egypt-teal); }
+}
+
+/* ═══ 5단계 승리 오버레이 ═══ */
 .win-overlay {
     position: fixed;
     top: 0;
@@ -295,49 +647,63 @@
     justify-content: center;
     z-index: 500;
     pointer-events: none;
-    background: rgba(0, 0, 0, 0);
-    transition: background 0.3s;
 }
 
 .win-overlay.active {
     display: flex;
-    background: rgba(0, 0, 0, 0.3);
 }
 
-.win-overlay.big-win {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.win-text {
-    font-size: 4rem;
-    font-weight: 900;
-    color: var(--neon-gold);
-    text-shadow: var(--glow-gold), 0 0 40px rgba(255, 215, 0, 0.8);
-    animation: winBounce 0.6s ease;
+.win-content {
     text-align: center;
 }
 
-.big-win .win-text {
+.win-tier-text {
+    font-weight: 900;
+    letter-spacing: 4px;
+}
+
+.win-amount {
+    font-weight: 900;
+    margin-top: 8px;
+}
+
+/* Small Win */
+.tier-small { background: rgba(0, 0, 0, 0.2); }
+.tier-small .win-tier-text { font-size: 2.5rem; color: var(--egypt-gold); animation: winBounce 0.5s ease; }
+.tier-small .win-amount { font-size: 1.5rem; color: var(--egypt-gold-light); }
+
+/* Nice Win */
+.tier-nice { background: rgba(0, 0, 0, 0.35); }
+.tier-nice .win-tier-text { font-size: 3rem; color: var(--egypt-gold-light); text-shadow: var(--glow-gold-strong); animation: winBounce 0.6s ease; }
+.tier-nice .win-amount { font-size: 2rem; color: #fff; }
+
+/* Big Win */
+.tier-big { background: rgba(0, 0, 0, 0.5); }
+.tier-big .win-tier-text { font-size: 4rem; color: #fff; text-shadow: 0 0 20px var(--egypt-gold), 0 0 40px var(--egypt-gold), 0 0 80px rgba(212, 160, 23, 0.5); animation: bigWinBounce 0.8s ease; }
+.tier-big .win-amount { font-size: 2.5rem; color: var(--egypt-gold-light); text-shadow: var(--glow-gold-strong); }
+
+/* Mega Win */
+.tier-mega { background: rgba(0, 0, 0, 0.6); }
+.tier-mega .win-tier-text { font-size: 4.5rem; color: #fff; text-shadow: 0 0 30px var(--egypt-teal), 0 0 60px var(--egypt-teal), 0 0 100px rgba(45, 139, 139, 0.5); animation: megaWinBounce 1s ease; }
+.tier-mega .win-amount { font-size: 3rem; color: var(--egypt-teal); text-shadow: 0 0 20px var(--egypt-teal); }
+
+/* Epic Win */
+.tier-epic { background: rgba(0, 0, 0, 0.7); }
+.tier-epic .win-tier-text {
     font-size: 5rem;
-    animation: bigWinBounce 0.8s ease;
-    color: #fff;
-    text-shadow: 0 0 20px var(--neon-gold), 0 0 40px var(--neon-gold), 0 0 80px rgba(255, 215, 0, 0.5);
+    background: linear-gradient(90deg, var(--egypt-gold-light), #fff, var(--egypt-teal), #fff, var(--egypt-gold-light));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: epicWinRainbow 1s linear infinite, epicWinBounce 1.2s ease;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
 }
-
-.win-text .amount {
-    display: block;
-    font-size: 2.5rem;
-    color: var(--neon-green);
-    text-shadow: var(--glow-green);
-}
-
-.big-win .win-text .amount {
-    font-size: 3rem;
-}
+.tier-epic .win-amount { font-size: 3.5rem; color: #fff; text-shadow: 0 0 30px #fff, 0 0 60px var(--egypt-gold); }
 
 @keyframes winBounce {
     0% { transform: scale(0.3); opacity: 0; }
-    50% { transform: scale(1.1); }
+    60% { transform: scale(1.1); }
     100% { transform: scale(1); opacity: 1; }
 }
 
@@ -348,79 +714,161 @@
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-/* 자동 스핀 */
-.auto-spin-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+@keyframes megaWinBounce {
+    0% { transform: scale(0.1) rotate(-10deg); opacity: 0; }
+    30% { transform: scale(1.3) rotate(5deg); }
+    50% { transform: scale(0.9) rotate(-3deg); }
+    70% { transform: scale(1.1) rotate(1deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-.auto-spin-toggle {
+@keyframes epicWinBounce {
+    0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+    20% { transform: scale(1.4) rotate(8deg); }
+    40% { transform: scale(0.85) rotate(-5deg); }
+    60% { transform: scale(1.15) rotate(3deg); }
+    80% { transform: scale(0.95) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes epicWinRainbow {
+    to { background-position: 200% center; }
+}
+
+/* ═══ 페이테이블 ═══ */
+.paytable {
+    background: rgba(10, 14, 26, 0.8);
+    border: 1px solid rgba(212, 160, 23, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+}
+
+.paytable-title {
+    color: var(--egypt-gold);
+    text-align: center;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+}
+
+.paytable-special {
     display: flex;
-    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.paytable-special-item {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.wild-badge {
+    color: var(--egypt-gold-light);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.scatter-badge {
+    color: var(--egypt-teal);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.paytable-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 4px;
+}
+
+.paytable-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 6px;
-    padding: 6px 12px;
-    background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
-.auto-spin-toggle:hover {
-    border-color: rgba(0, 255, 136, 0.3);
+.paytable-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+    transition: background 0.2s;
 }
 
-.auto-spin-toggle.active {
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-    background: rgba(0, 255, 136, 0.1);
+.paytable-item:hover {
+    background: rgba(212, 160, 23, 0.08);
 }
 
-/* 반응형 */
+.pt-emoji { font-size: 1.6rem; }
+
+.pt-card-letter {
+    font-size: 1.4rem;
+    font-weight: 900;
+    font-style: italic;
+    color: #888;
+    min-width: 24px;
+    text-align: center;
+}
+
+.paytable-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pt-name {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.pt-pays {
+    display: flex;
+    gap: 6px;
+}
+
+.pt-pays .multiplier {
+    color: var(--egypt-gold);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.paytable-footer {
+    text-align: center;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.2);
+    letter-spacing: 1px;
+    margin-top: 12px;
+}
+
+/* ═══ 반응형 ═══ */
 @media (max-width: 768px) {
-    .slot-machine {
-        padding: 16px;
-    }
-
-    .slot-title {
-        font-size: 1.4rem;
-    }
-
-    .reel {
-        height: 180px;
-    }
-
-    .reel-symbol {
-        height: 60px;
-        font-size: 1.8rem;
-    }
-
-    .spin-button {
-        width: 100px;
-        height: 100px;
-        font-size: 1.1rem;
-    }
-
-    .paytable-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    .game-title { font-size: 1.5rem; }
+    .slot-machine { padding: 10px; }
+    .reel { height: 198px; }
+    .reel-symbol { height: 66px; font-size: 2.2rem; }
+    .sym-card .card-letter { font-size: 1.6rem; }
+    .spin-button { width: 80px; height: 80px; font-size: 1rem; }
+    .control-bar { padding: 12px; gap: 10px; }
+    .free-spin-banner .fs-text { font-size: 2rem; }
 }
 
 @media (max-width: 480px) {
-    .reel-symbol {
-        font-size: 1.5rem;
-        height: 50px;
-    }
-
-    .reel {
-        height: 150px;
-    }
-
-    .quick-bet {
-        padding: 4px 10px;
-        font-size: 0.75rem;
-    }
+    .game-title { font-size: 1.2rem; letter-spacing: 2px; }
+    .reel-symbol { font-size: 1.8rem; height: 56px; }
+    .reel { height: 168px; }
+    .sym-card .card-letter { font-size: 1.3rem; }
+    .quick-bet { padding: 3px 8px; font-size: 0.7rem; }
+    .spin-button { width: 70px; height: 70px; font-size: 0.9rem; }
+    .paytable-grid { grid-template-columns: repeat(2, 1fr); }
+    .paytable-special { flex-direction: column; }
+    .gamble-buttons { flex-direction: column; gap: 6px; }
+    .gamble-btn { padding: 8px 16px; font-size: 0.8rem; }
 }

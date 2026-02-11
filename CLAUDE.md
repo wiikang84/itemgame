@@ -49,7 +49,15 @@ itemgame/
 ```
 
 ## 게임 사양
-- **슬롯머신**: 5x3 릴, RTP 96%, 다양한 심볼/페이라인
+- **슬롯머신**: "PHARAOH'S FORTUNE" 이집트 테마, 5x3 릴, 9 페이라인, RTP ~96%
+  - 11종 심볼 (파라오/라의눈/스카라브/코브라/호루스/A/K/Q/J + Wild + Scatter)
+  - Wild: 스캐터 제외 모든 심볼 대체
+  - Scatter: 3개+ 출현 시 프리스핀 (10/15/25회), 프로그레시브 멀티플라이어 (최대 x10)
+  - 5단계 승리 연출: Small Win → Nice Win → Big Win → Mega Win → Epic Win
+  - 갬블/더블업: Red/Black 카드 색상 맞추기 (50/50)
+  - 앤티시페이션: 스캐터 2개 출현 시 마지막 릴 지연 연출
+  - 오토스핀: 10/25/50/100/무한 옵션
+  - BGM: 이집트풍 메인 테마 + 프리스핀 테마 (Web Audio API 프로그래매틱 생성)
 - **블랙잭**: 6덱 슈, 딜러 소프트17 스탠드, Hit/Stand/Double/Split
 - **룰렛**: 유럽식 37칸(0~36), Canvas 휠 애니메이션
 
@@ -68,3 +76,11 @@ python -m http.server 8080
   - Phase 3: 블랙잭 카드 비주얼 완전 재설계 (코너/센터/뒷면 패턴), 3D 딜/플립 애니메이션
   - Phase 4: 룰렛 Canvas 400px HiDPI, 골드 외곽링, 볼 애니메이션, 우클릭 베팅 제거
   - Phase 5: SoundManager (Web Audio API) 신규, 공통 CSS 강화 (페이지 전환/스크롤바/토스트), 사운드 토글 버튼, 게임카드 hover 효과
+- **2026-02-11**: 슬롯머신 v2.0 "PHARAOH'S FORTUNE" 대규모 업그레이드
+  - 해외 인기 슬롯(Slotomania, Book of Dead, Mega Moolah 등) 벤치마킹 기반 전면 재설계
+  - 사운드 시스템 v2.0: BGM(메인+프리스핀), 5단계 승리음, 앤티시페이션, Wild/Scatter/프리스핀/갬블 전용 효과음
+  - 핵심 피처: Wild 심볼 대체, Scatter 프리스핀(10/15/25회), 프로그레시브 멀티플라이어(x1~x10)
+  - 5단계 빅윈 연출: Small→Nice→Big→Mega→Epic Win (카운트업 + 파티클 + 오버레이)
+  - 갬블/더블업: Red/Black 50/50 카드 게임, 연속 갬블 가능
+  - UI/UX: 이집트 골드/틸 테마, SVG 페이라인, 반응형 디자인, 프리스핀 카운터/멀티플라이어 표시
+  - 변경 파일: slot.html, css/slot.css, js/games/slot-machine.js, js/core/sound-manager.js (4파일 전면 재작성)
