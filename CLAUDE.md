@@ -92,3 +92,7 @@ python -m http.server 8080
   - 릴 비네트(상하 그라데이션), 릴 구분선, 물리적 버튼 눌림 효과
   - JS 셀렉터 수정: 새 HTML 캐비닛 구조(info-bar, cabinet-belly, cab-btn 등)에 맞게 업데이트
   - 변경 파일: slot.html, css/slot.css, js/games/slot-machine.js, CLAUDE.md
+- **2026-02-12**: 심볼 전면 교체 - 알파벳(A/K/Q/J) 완전 제거
+  - 클래식 카지노 과일/전통 심볼만 사용: 7, BAR, Cherry, Bell, Diamond, Lemon, Orange, Grapes, Watermelon, WILD, BONUS
+  - Lucky 7: 빨간 그라데이션 세리프체 / BAR: 골드 뱃지 / WILD: 골드 뱃지 / BONUS: 초록 뱃지
+  - 과일 심볼: 이모지 + CSS 그림자/글로우 효과

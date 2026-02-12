@@ -17,19 +17,18 @@ const SlotMachine = (() => {
     const SYM_WILD = 'wild';
     const SYM_SCATTER = 'scatter';
 
-    // ═══ 심볼 정의 (클래식 카지노) ═══
-    // render: 'icon' = CSS 아이콘 렌더링, 'card' = 카드 수트 렌더링, 'badge' = 특수 뱃지
+    // ═══ 심볼 정의 (클래식 카지노 - 과일/전통 심볼만 사용) ═══
     const SYMBOLS = [
-        { icon: '7', name: 'Lucky 7', label: '7', pay: [25, 75, 250], type: SYM_NORMAL, cls: 'sym-seven', render: 'seven' },
-        { icon: 'BAR', name: 'BAR', label: 'BAR', pay: [20, 50, 200], type: SYM_NORMAL, cls: 'sym-bar', render: 'bar' },
-        { icon: '🍒', name: 'Cherry', label: '🍒', pay: [15, 40, 150], type: SYM_NORMAL, cls: 'sym-high', render: 'icon' },
-        { icon: '🔔', name: 'Bell', label: '🔔', pay: [10, 30, 100], type: SYM_NORMAL, cls: 'sym-high', render: 'icon' },
-        { icon: '💎', name: 'Diamond', label: '💎', pay: [8, 20, 75], type: SYM_NORMAL, cls: 'sym-mid', render: 'icon' },
-        { icon: 'A', name: 'Ace', label: 'A', pay: [3, 10, 30], type: SYM_NORMAL, cls: 'sym-card', render: 'card', suit: '♠', suitColor: '#4488ff' },
-        { icon: 'K', name: 'King', label: 'K', pay: [3, 8, 25], type: SYM_NORMAL, cls: 'sym-card', render: 'card', suit: '♥', suitColor: '#ff4466' },
-        { icon: 'Q', name: 'Queen', label: 'Q', pay: [2, 5, 20], type: SYM_NORMAL, cls: 'sym-card', render: 'card', suit: '♦', suitColor: '#ff6644' },
-        { icon: 'J', name: 'Jack', label: 'J', pay: [2, 5, 20], type: SYM_NORMAL, cls: 'sym-card', render: 'card', suit: '♣', suitColor: '#44cc88' },
-        { icon: 'W', name: 'WILD', label: 'WILD', pay: [30, 100, 500], type: SYM_WILD, cls: 'sym-wild', render: 'badge' },
+        { icon: '7', name: 'Triple 7', label: '777', pay: [30, 100, 500], type: SYM_NORMAL, cls: 'sym-seven', render: 'seven' },
+        { icon: 'BAR', name: 'BAR', label: 'BAR', pay: [25, 75, 250], type: SYM_NORMAL, cls: 'sym-bar', render: 'bar' },
+        { icon: '🍒', name: 'Cherry', label: '🍒', pay: [20, 50, 200], type: SYM_NORMAL, cls: 'sym-high', render: 'icon' },
+        { icon: '🔔', name: 'Bell', label: '🔔', pay: [15, 40, 150], type: SYM_NORMAL, cls: 'sym-high', render: 'icon' },
+        { icon: '💎', name: 'Diamond', label: '💎', pay: [10, 30, 100], type: SYM_NORMAL, cls: 'sym-mid', render: 'icon' },
+        { icon: '🍋', name: 'Lemon', label: '🍋', pay: [8, 20, 75], type: SYM_NORMAL, cls: 'sym-mid', render: 'icon' },
+        { icon: '🍊', name: 'Orange', label: '🍊', pay: [5, 15, 50], type: SYM_NORMAL, cls: 'sym-mid', render: 'icon' },
+        { icon: '🍇', name: 'Grapes', label: '🍇', pay: [3, 10, 30], type: SYM_NORMAL, cls: 'sym-low', render: 'icon' },
+        { icon: '🍉', name: 'Watermelon', label: '🍉', pay: [3, 8, 25], type: SYM_NORMAL, cls: 'sym-low', render: 'icon' },
+        { icon: 'W', name: 'WILD', label: 'WILD', pay: [50, 150, 1000], type: SYM_WILD, cls: 'sym-wild', render: 'badge' },
         { icon: '$', name: 'BONUS', label: 'BONUS', pay: [2, 10, 50], type: SYM_SCATTER, cls: 'sym-scatter', render: 'badge' },
     ];
 
@@ -179,28 +178,16 @@ const SlotMachine = (() => {
 
         switch (sym.render) {
             case 'seven':
-                // Lucky 7 - 크고 화려한 CSS 숫자
                 el.innerHTML = `<span class="sym-seven-num">7</span>`;
                 break;
             case 'bar':
-                // BAR - 클래식 바 심볼
                 el.innerHTML = `<span class="sym-bar-text">BAR</span>`;
                 break;
-            case 'card':
-                // 카드 랭크 - 수트 장식 포함
-                el.innerHTML = `
-                    <span class="card-suit card-suit-tl" style="color:${sym.suitColor}">${sym.suit}</span>
-                    <span class="card-letter">${sym.icon}</span>
-                    <span class="card-suit card-suit-br" style="color:${sym.suitColor}">${sym.suit}</span>
-                `;
-                break;
             case 'badge':
-                // Wild / Bonus - 뱃지 스타일
                 el.innerHTML = `<span class="sym-badge ${sym.type === SYM_WILD ? 'badge-wild' : 'badge-bonus'}">${sym.label}</span>`;
                 break;
             case 'icon':
             default:
-                // 이모지 아이콘 (Cherry, Bell, Diamond)
                 el.innerHTML = `<span class="sym-icon">${sym.icon}</span>`;
                 break;
         }
