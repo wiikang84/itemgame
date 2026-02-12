@@ -604,6 +604,10 @@ const SlotMachine = (() => {
         // v5.0: 승리 시 배경 반응 (골든 글로우)
         document.body.classList.add('win-glow');
 
+        // v5.1: 릴 프레임 LED 버스트
+        const reelsFrame = document.querySelector('.reels-frame');
+        if (reelsFrame) reelsFrame.classList.add('win-led-burst');
+
         // 오버레이 표시
         _showWinOverlay(amount, tier);
 
@@ -625,6 +629,9 @@ const SlotMachine = (() => {
                 _hideWinOverlay();
                 // v5.0: 배경 반응 해제
                 document.body.classList.remove('win-glow');
+                // v5.1: 릴 프레임 LED 버스트 해제
+                const reelsFrame = document.querySelector('.reels-frame');
+                if (reelsFrame) reelsFrame.classList.remove('win-led-burst');
                 resolve();
             }, duration);
         });

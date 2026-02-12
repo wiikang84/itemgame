@@ -1,7 +1,7 @@
 /* ============================================
-   LUCKY JACKPOT SLOT MACHINE v5.0
-   Real Slot Machines: Lucky Jackpot 벤치마킹
-   황금 스포트라이트 + 3D 캐비닛 + 네온 배너
+   LUCKY JACKPOT SLOT MACHINE v5.1
+   "International Premium" 비주얼 대폭 강화
+   v5.0 기반 opacity/shadow 값 3~5배 증가
    ============================================ */
 
 /* ═══ 카지노 색상 변수 (v5.0 업그레이드) ═══ */
@@ -36,25 +36,27 @@
     --glow-green: 0 0 7px rgba(0,255,65,0.5), 0 0 15px rgba(0,255,65,0.2);
 }
 
-/* ═══ 페이지 배경 (v5.0: 황금 방사형 + 12개 스포트라이트) ═══ */
-/* v4.0 원본: background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 70%); */
+/* ═══ 페이지 배경 (v5.1: 스포트라이트 3~5배 강화 + 마카오풍 레드 언더글로우) ═══ */
+/* v5.0 원본: opacity 0.10~0.18 → v5.1: 0.25~0.45 */
 .slot-page {
     background:
-        /* 12개 스포트라이트 (시계 방향 배치) */
-        radial-gradient(circle at 50% 0%, rgba(255,215,0,0.18) 0%, transparent 25%),
-        radial-gradient(circle at 75% 6.7%, rgba(255,215,0,0.12) 0%, transparent 20%),
-        radial-gradient(circle at 93.3% 25%, rgba(255,215,0,0.10) 0%, transparent 20%),
-        radial-gradient(circle at 100% 50%, rgba(255,215,0,0.12) 0%, transparent 25%),
-        radial-gradient(circle at 93.3% 75%, rgba(255,215,0,0.10) 0%, transparent 20%),
-        radial-gradient(circle at 75% 93.3%, rgba(255,215,0,0.12) 0%, transparent 20%),
-        radial-gradient(circle at 50% 100%, rgba(255,215,0,0.18) 0%, transparent 25%),
-        radial-gradient(circle at 25% 93.3%, rgba(255,215,0,0.12) 0%, transparent 20%),
-        radial-gradient(circle at 6.7% 75%, rgba(255,215,0,0.10) 0%, transparent 20%),
-        radial-gradient(circle at 0% 50%, rgba(255,215,0,0.12) 0%, transparent 25%),
-        radial-gradient(circle at 6.7% 25%, rgba(255,215,0,0.10) 0%, transparent 20%),
-        radial-gradient(circle at 25% 6.7%, rgba(255,215,0,0.12) 0%, transparent 20%),
-        /* 중앙 방사형 골든 글로우 */
-        radial-gradient(ellipse at center, rgba(255,215,0,0.06) 0%, transparent 50%),
+        /* 12개 스포트라이트: 상/하 0.45, 좌/우 0.35, 대각선 0.25~0.30 */
+        radial-gradient(circle at 50% 0%, rgba(255,215,0,0.45) 0%, transparent 25%),
+        radial-gradient(circle at 75% 6.7%, rgba(255,215,0,0.30) 0%, transparent 20%),
+        radial-gradient(circle at 93.3% 25%, rgba(255,215,0,0.25) 0%, transparent 20%),
+        radial-gradient(circle at 100% 50%, rgba(255,215,0,0.35) 0%, transparent 25%),
+        radial-gradient(circle at 93.3% 75%, rgba(255,215,0,0.25) 0%, transparent 20%),
+        radial-gradient(circle at 75% 93.3%, rgba(255,215,0,0.30) 0%, transparent 20%),
+        radial-gradient(circle at 50% 100%, rgba(255,215,0,0.45) 0%, transparent 25%),
+        radial-gradient(circle at 25% 93.3%, rgba(255,215,0,0.30) 0%, transparent 20%),
+        radial-gradient(circle at 6.7% 75%, rgba(255,215,0,0.25) 0%, transparent 20%),
+        radial-gradient(circle at 0% 50%, rgba(255,215,0,0.35) 0%, transparent 25%),
+        radial-gradient(circle at 6.7% 25%, rgba(255,215,0,0.25) 0%, transparent 20%),
+        radial-gradient(circle at 25% 6.7%, rgba(255,215,0,0.30) 0%, transparent 20%),
+        /* 중앙 방사형 골든 글로우 (0.06 → 0.15) */
+        radial-gradient(ellipse at center, rgba(255,215,0,0.15) 0%, transparent 50%),
+        /* v5.1: 마카오풍 레드 언더글로우 (신규) */
+        radial-gradient(ellipse at 50% 80%, rgba(180,0,0,0.08) 0%, transparent 40%),
         /* 베이스 */
         #050510;
 }
@@ -71,6 +73,7 @@
     overflow: hidden;
 }
 
+/* v5.1: conic-gradient opacity 4~6배 증가 (0.02~0.03 → 0.08~0.10) */
 .spotlight-overlay::after {
     content: '';
     position: absolute;
@@ -81,15 +84,15 @@
     background: conic-gradient(
         from 0deg,
         transparent 0deg,
-        rgba(255,215,0,0.03) 30deg,
+        rgba(255,215,0,0.10) 30deg,
         transparent 60deg,
-        rgba(255,215,0,0.02) 120deg,
+        rgba(255,215,0,0.08) 120deg,
         transparent 150deg,
-        rgba(255,215,0,0.03) 210deg,
+        rgba(255,215,0,0.10) 210deg,
         transparent 240deg,
-        rgba(255,215,0,0.02) 300deg,
+        rgba(255,215,0,0.08) 300deg,
         transparent 330deg,
-        rgba(255,215,0,0.03) 360deg
+        rgba(255,215,0,0.10) 360deg
     );
     animation: spotlightRotate 30s linear infinite;
     will-change: transform;
@@ -134,34 +137,33 @@ body.win-glow .spotlight-overlay::before {
    border: 3px solid #333;
    box-shadow: 0 0 0 1px #555, 0 0 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
 */
+/* v5.1: 크롬 그라데이션 border + 골든 글로우 3배 강화 */
 .slot-cabinet {
     max-width: 680px;
     margin: 0 auto;
-    /* v5.0: 6단계 곡면 그라데이션 */
-    background: linear-gradient(180deg,
-        #2a2a2a 0%,
-        #1e1e1e 10%,
-        #181818 25%,
-        #0e0e0e 50%,
-        #141414 80%,
-        #1a1a1a 100%
-    );
     border-radius: 14px;
-    /* v5.0: 크롬 border */
-    border: 4px solid #555;
-    /* v5.0: 4계층 box-shadow */
+    /* v5.1: 크롬 그라데이션 border 기법 */
+    border: 5px solid transparent;
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-image:
+        /* 내부 배경 (기존 6단계 곡면) */
+        linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 10%, #181818 25%, #0e0e0e 50%, #141414 80%, #1a1a1a 100%),
+        /* 크롬 border 그라데이션 */
+        linear-gradient(180deg, #888 0%, #f0f0f0 15%, #aaa 30%, #ccc 50%, #aaa 70%, #f0f0f0 85%, #888 100%);
+    /* v5.1: overflow: visible (::before 크롬 효과 클리핑 방지, .reels-container가 자체 overflow:hidden 보유) */
+    overflow: visible;
+    /* v5.1: 6계층 box-shadow (골드 글로우 3배 강화) */
     box-shadow:
-        /* 1. 외곽 골든 글로우 */
-        0 0 40px rgba(255,215,0,0.12),
-        0 0 80px rgba(255,215,0,0.04),
+        /* 1. 외곽 골든 글로우 (0.12→0.35, 0.04→0.20) */
+        0 0 50px rgba(255,215,0,0.35),
+        0 0 100px rgba(255,215,0,0.20),
+        0 0 150px rgba(255,215,0,0.10),
         /* 2. 하단 떠있는 그림자 */
         0 20px 60px rgba(0,0,0,0.8),
         0 8px 30px rgba(0,0,0,0.6),
-        /* 3. 상단 하이라이트 */
-        inset 0 2px 0 rgba(255,255,255,0.1),
-        /* 4. 내부 깊이 */
-        inset 0 -2px 0 rgba(0,0,0,0.3);
-    overflow: hidden;
+        /* 3. 상단 하이라이트 (강화) */
+        inset 0 2px 0 rgba(255,255,255,0.15);
     position: relative;
     /* v5.0: 입장 애니메이션 */
     animation: cabinetEntrance 0.8s ease-out;
@@ -194,11 +196,11 @@ body.win-glow .spotlight-overlay::before {
     overflow: hidden;
 }
 
-/* v5.0: LED 스트립 (6개 체이스 애니메이션) */
+/* v5.1: LED 스트립 (10개 금+빨강 교차 체이스 애니메이션) */
 .led-strip {
     display: flex;
     justify-content: center;
-    gap: 24px;
+    gap: 18px;
     margin-bottom: 10px;
 }
 
@@ -206,17 +208,32 @@ body.win-glow .spotlight-overlay::before {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--casino-gold);
-    box-shadow: 0 0 6px var(--casino-gold), 0 0 14px rgba(255,215,0,0.5);
     animation: ledChase 1.5s ease infinite;
 }
 
+/* v5.1: 금색 LED */
+.led-gold {
+    background: var(--casino-gold);
+    box-shadow: 0 0 8px var(--casino-gold), 0 0 18px rgba(255,215,0,0.6);
+}
+
+/* v5.1: 빨강 LED */
+.led-red {
+    background: var(--casino-red-bright);
+    box-shadow: 0 0 8px var(--casino-red-bright), 0 0 18px rgba(239,68,68,0.5);
+}
+
+/* 10개 순차 딜레이 */
 .led-dot:nth-child(1) { animation-delay: 0s; }
-.led-dot:nth-child(2) { animation-delay: 0.15s; }
-.led-dot:nth-child(3) { animation-delay: 0.3s; }
-.led-dot:nth-child(4) { animation-delay: 0.45s; }
-.led-dot:nth-child(5) { animation-delay: 0.6s; }
-.led-dot:nth-child(6) { animation-delay: 0.75s; }
+.led-dot:nth-child(2) { animation-delay: 0.12s; }
+.led-dot:nth-child(3) { animation-delay: 0.24s; }
+.led-dot:nth-child(4) { animation-delay: 0.36s; }
+.led-dot:nth-child(5) { animation-delay: 0.48s; }
+.led-dot:nth-child(6) { animation-delay: 0.60s; }
+.led-dot:nth-child(7) { animation-delay: 0.72s; }
+.led-dot:nth-child(8) { animation-delay: 0.84s; }
+.led-dot:nth-child(9) { animation-delay: 0.96s; }
+.led-dot:nth-child(10) { animation-delay: 1.08s; }
 
 @keyframes ledChase {
     0%, 100% { opacity: 0.25; transform: scale(0.7); }
@@ -246,10 +263,9 @@ body.win-glow .spotlight-overlay::before {
     50% { opacity: 0.4; box-shadow: 0 0 4px var(--casino-gold-light), 0 0 8px var(--casino-gold); }
 }
 
-/* v5.0: JACKPOT 네온 타이틀 (5레이어 text-shadow + 글로우 펄스) */
-/* v4.0 원본: background-clip text gradient, no glow */
+/* v5.1: JACKPOT 네온 타이틀 (3.4rem + 7레이어 text-shadow + 밝은 코어) */
 .game-title {
-    font-size: 2.8rem;
+    font-size: 3.4rem;
     font-weight: 900;
     letter-spacing: 8px;
     text-transform: uppercase;
@@ -260,30 +276,36 @@ body.win-glow .spotlight-overlay::before {
     background-clip: unset;
     filter: none;
     text-shadow:
-        0 0 10px rgba(255,215,0,0.9),
-        0 0 20px rgba(255,215,0,0.7),
-        0 0 40px rgba(255,215,0,0.5),
-        0 0 60px rgba(255,215,0,0.3),
-        0 0 80px rgba(255,215,0,0.15);
+        0 0 5px rgba(255,255,255,0.9),
+        0 0 10px rgba(255,215,0,1),
+        0 0 20px rgba(255,215,0,0.9),
+        0 0 40px rgba(255,215,0,0.7),
+        0 0 60px rgba(255,215,0,0.5),
+        0 0 80px rgba(255,215,0,0.3),
+        0 0 120px rgba(255,215,0,0.15);
     animation: jackpotGlow 2s ease-in-out infinite;
 }
 
 @keyframes jackpotGlow {
     0%, 100% {
         text-shadow:
-            0 0 10px rgba(255,215,0,0.9),
-            0 0 20px rgba(255,215,0,0.7),
-            0 0 40px rgba(255,215,0,0.5),
-            0 0 60px rgba(255,215,0,0.3),
-            0 0 80px rgba(255,215,0,0.15);
+            0 0 5px rgba(255,255,255,0.9),
+            0 0 10px rgba(255,215,0,1),
+            0 0 20px rgba(255,215,0,0.9),
+            0 0 40px rgba(255,215,0,0.7),
+            0 0 60px rgba(255,215,0,0.5),
+            0 0 80px rgba(255,215,0,0.3),
+            0 0 120px rgba(255,215,0,0.15);
     }
     50% {
         text-shadow:
+            0 0 8px rgba(255,255,255,1),
             0 0 15px rgba(255,215,0,1),
-            0 0 30px rgba(255,215,0,0.8),
-            0 0 50px rgba(255,215,0,0.6),
-            0 0 70px rgba(255,215,0,0.4),
-            0 0 100px rgba(255,215,0,0.25);
+            0 0 30px rgba(255,215,0,1),
+            0 0 50px rgba(255,215,0,0.8),
+            0 0 70px rgba(255,215,0,0.6),
+            0 0 100px rgba(255,215,0,0.4),
+            0 0 150px rgba(255,215,0,0.2);
     }
 }
 
@@ -292,6 +314,48 @@ body.win-glow .spotlight-overlay::before {
     color: rgba(255,215,0,0.5);
     letter-spacing: 3px;
     margin-top: 6px;
+}
+
+/* v5.1: 장식 요소 (별/다이아/크라운) */
+.cabinet-decorations {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+    margin-bottom: 2px;
+}
+
+.deco-star,
+.deco-diamond,
+.deco-crown {
+    background: linear-gradient(180deg, #ffe44d 0%, #ffd700 40%, #b8860b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 6px rgba(255,215,0,0.6));
+    animation: decoGlow 2.5s ease infinite alternate;
+}
+
+.deco-star {
+    font-size: 1rem;
+}
+
+.deco-diamond {
+    font-size: 0.8rem;
+}
+
+.deco-crown {
+    font-size: 1.4rem;
+    filter: drop-shadow(0 0 10px rgba(255,215,0,0.8));
+}
+
+.deco-star.left, .deco-diamond.left-inner { animation-delay: 0s; }
+.deco-star.right, .deco-diamond.right-inner { animation-delay: 1.2s; }
+
+@keyframes decoGlow {
+    0% { filter: drop-shadow(0 0 4px rgba(255,215,0,0.4)); opacity: 0.7; }
+    100% { filter: drop-shadow(0 0 12px rgba(255,215,0,0.9)); opacity: 1; }
 }
 
 /* v5.0: 하단 골드 라인 */
@@ -374,14 +438,55 @@ body.win-glow .spotlight-overlay::before {
 /* ═══════════════════════════════════════════
    릴 프레임
    ═══════════════════════════════════════════ */
+/* v5.1: 릴 프레임 - 강한 크롬 gradient + LED 테두리 */
 .reels-frame {
+    position: relative;
     margin: 0 10px;
-    padding: 6px;
-    background: linear-gradient(180deg, #444 0%, #888 3%, #666 6%, #333 10%, #222 90%, #666 94%, #888 97%, #444 100%);
+    padding: 8px;
+    /* 강한 크롬 gradient */
+    background: linear-gradient(180deg,
+        #555 0%, #ccc 3%, #999 6%, #888 10%,
+        #444 20%, #333 80%,
+        #888 90%, #ccc 94%, #999 97%, #555 100%);
     border-radius: 10px;
     box-shadow:
-        inset 0 0 2px rgba(255,255,255,0.1),
-        0 2px 8px rgba(0,0,0,0.5);
+        inset 0 0 3px rgba(255,255,255,0.15),
+        0 0 15px rgba(255,215,0,0.2),
+        0 4px 12px rgba(0,0,0,0.6);
+}
+
+/* v5.1: 릴 프레임 LED 테두리 (신규) */
+.reels-frame::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    border-radius: 12px;
+    background: linear-gradient(90deg,
+        var(--casino-gold), transparent 20%,
+        transparent 80%, var(--casino-gold));
+    opacity: 0.5;
+    animation: reelFrameGlow 3s ease infinite alternate;
+    z-index: -1;
+}
+
+@keyframes reelFrameGlow {
+    0% { opacity: 0.3; }
+    100% { opacity: 0.7; }
+}
+
+/* v5.1: 승리 시 릴 프레임 LED 버스트 */
+.reels-frame.win-led-burst::before {
+    opacity: 1;
+    background: linear-gradient(90deg,
+        var(--casino-gold), var(--casino-red-bright),
+        var(--casino-gold), var(--casino-red-bright),
+        var(--casino-gold));
+    animation: ledBurstFlash 0.3s ease infinite alternate;
+}
+
+@keyframes ledBurstFlash {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
 
 .reels-container {
@@ -1479,7 +1584,7 @@ body.win-glow .spotlight-overlay::before {
    반응형 (v5.0: 스포트라이트 + 3D 캐비닛 대응)
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
-    .game-title { font-size: 2rem; letter-spacing: 5px; }
+    .game-title { font-size: 2.4rem; letter-spacing: 5px; }
     .reels-frame { margin: 0 6px; padding: 4px; }
     .reel { height: 198px; }
     .reel-symbol { height: 66px; font-size: 2.1rem; }
@@ -1489,17 +1594,24 @@ body.win-glow .spotlight-overlay::before {
     .free-spin-banner .fs-text { font-size: 2rem; }
     .cabinet-belly { padding: 10px 6px 14px; }
 
-    /* v5.0: 태블릿에서 스포트라이트 회전 비활성화 (GPU 절약) */
+    /* v5.1: 태블릿에서 conic 회전만 OFF (스포트라이트 opacity는 유지) */
     .spotlight-overlay::after {
         animation: none;
     }
 
-    /* v5.0: box-shadow 레이어 축소 */
+    /* v5.1: box-shadow 적절히 유지 (v5.0보다 강화) */
     .slot-cabinet {
         box-shadow:
-            0 0 20px rgba(255,215,0,0.08),
+            0 0 30px rgba(255,215,0,0.20),
+            0 0 60px rgba(255,215,0,0.10),
             0 10px 30px rgba(0,0,0,0.6),
-            inset 0 1px 0 rgba(255,255,255,0.08);
+            inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+
+    /* v5.1: LED 8개로 시각적 축소 (마지막 2개 숨김) */
+    .led-dot:nth-child(9),
+    .led-dot:nth-child(10) {
+        display: none;
     }
 
     /* v5.0: 버튼 그룹 모바일 조정 */
@@ -1509,8 +1621,8 @@ body.win-glow .spotlight-overlay::before {
 }
 
 @media (max-width: 480px) {
-    /* v5.0: JACKPOT 텍스트 축소 */
-    .game-title { font-size: 1.5rem; letter-spacing: 3px; }
+    /* v5.1: JACKPOT 텍스트 축소 */
+    .game-title { font-size: 2rem; letter-spacing: 3px; }
     .game-subtitle { font-size: 0.6rem; letter-spacing: 2px; }
     .reel-symbol { font-size: 1.7rem; height: 56px; }
     .reel { height: 168px; }
@@ -1529,18 +1641,29 @@ body.win-glow .spotlight-overlay::before {
     .cabinet-button-bar { gap: 5px; }
     .bet-info-bar { gap: 16px; }
 
-    /* v5.0: 캐비닛 border 축소 */
+    /* v5.1: 캐비닛 border 축소 */
     .slot-cabinet {
-        border-width: 3px;
+        border-width: 4px;
     }
 
-    /* v5.0: LED 스트립 축소 */
+    /* v5.1: LED 스트립 축소 - 6개만 표시 */
     .led-strip {
-        gap: 16px;
+        gap: 12px;
     }
     .led-dot {
         width: 6px;
         height: 6px;
+    }
+    .led-dot:nth-child(7),
+    .led-dot:nth-child(8),
+    .led-dot:nth-child(9),
+    .led-dot:nth-child(10) {
+        display: none;
+    }
+
+    /* v5.1: 장식 요소 숨김 */
+    .cabinet-decorations {
+        display: none;
     }
 
     /* v5.0: LINES 디스플레이 축소 */
@@ -1552,7 +1675,7 @@ body.win-glow .spotlight-overlay::before {
     .lines-label { font-size: 0.45rem; }
 }
 
-/* v5.0: 접근성 - 모션 감소 모드 */
+/* v5.1: 접근성 - 모션 감소 모드 */
 @media (prefers-reduced-motion: reduce) {
     .spotlight-overlay::after,
     .spotlight-overlay::before {
@@ -1587,5 +1710,18 @@ body.win-glow .spotlight-overlay::before {
 
     .reel::after {
         animation: none !important;
+    }
+
+    /* v5.1: 신규 애니메이션 요소 */
+    .reels-frame::before {
+        animation: none !important;
+        opacity: 0.4;
+    }
+
+    .deco-star,
+    .deco-diamond,
+    .deco-crown {
+        animation: none !important;
+        opacity: 0.8;
     }
 }
