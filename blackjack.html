@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/blackjack.css">
 </head>
-<body>
+<body class="blackjack-page">
     <!-- 헤더 -->
     <header class="header">
         <div class="header-logo" onclick="location.href='index.html'" style="cursor:pointer">ITEM<span>GAME</span></div>
@@ -32,8 +32,16 @@
     <main class="container">
         <div class="bj-container">
             <!-- 블랙잭 테이블 -->
-            <div class="bj-table">
-                <div class="bj-title">🃏 BLACKJACK</div>
+            <div class="bj-table" id="bjTableOuter">
+                <div class="bj-title">BLACKJACK</div>
+
+                <!-- 슈 인디케이터 -->
+                <div class="shoe-indicator" id="shoeIndicator">
+                    <span id="shoeText">312장</span>
+                    <div class="shoe-bar">
+                        <div class="shoe-bar-fill" id="shoeBarFill" style="width:100%"></div>
+                    </div>
+                </div>
 
                 <!-- 테이블 영역 (JS 렌더링) -->
                 <div id="bjTable">
@@ -45,6 +53,8 @@
                         <div class="cards-row"></div>
                     </div>
                     <div class="table-divider"></div>
+                    <!-- 인슈어런스 라인 -->
+                    <div class="insurance-line">INSURANCE PAYS 2:1</div>
                     <div class="hand-area">
                         <div class="hand-label">
                             <span class="name">플레이어</span>
@@ -53,6 +63,19 @@
                         <div class="cards-row"></div>
                     </div>
                 </div>
+
+                <!-- 인슈어런스 오퍼 (JS 제어) -->
+                <div class="insurance-offer" id="insuranceOffer">
+                    <div class="insurance-offer-text">딜러가 에이스를 보여줍니다. 인슈어런스 하시겠습니까?</div>
+                    <div class="insurance-offer-sub">베팅의 절반을 걸어 딜러 블랙잭에 2:1 보험</div>
+                    <div class="insurance-offer-btns">
+                        <button class="action-btn insurance" onclick="Blackjack.acceptInsurance()">인슈어런스</button>
+                        <button class="action-btn surrender" onclick="Blackjack.declineInsurance()">거절</button>
+                    </div>
+                </div>
+
+                <!-- 사이드벳 결과 (JS 렌더링) -->
+                <div id="sideBetResult"></div>
 
                 <!-- 결과 표시 -->
                 <div class="result-display" id="bjResult"></div>
@@ -63,6 +86,7 @@
                     <button class="action-btn stand" id="btnStand" onclick="Blackjack.stand()">STAND</button>
                     <button class="action-btn double" id="btnDouble" onclick="Blackjack.doubleDown()">DOUBLE</button>
                     <button class="action-btn split" id="btnSplit" onclick="Blackjack.split()">SPLIT</button>
+                    <button class="action-btn surrender" id="btnSurrender" onclick="Blackjack.surrender()">SURRENDER</button>
                 </div>
 
                 <!-- 상태 메시지 -->
@@ -71,6 +95,18 @@
 
             <!-- 베팅 영역 -->
             <div class="bj-bet-area" id="betArea">
+                <!-- 사이드벳 토글 -->
+                <div class="side-bet-area">
+                    <div class="side-bet-toggle" id="togglePerfectPairs" onclick="Blackjack.toggleSideBet('perfectPairs')">
+                        <span class="side-bet-indicator"></span>
+                        <span>Perfect Pairs</span>
+                    </div>
+                    <div class="side-bet-toggle" id="toggleTwentyOnePlus3" onclick="Blackjack.toggleSideBet('twentyOnePlus3')">
+                        <span class="side-bet-indicator"></span>
+                        <span>21+3</span>
+                    </div>
+                </div>
+
                 <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center">
                     <div class="bet-controls">
                         <span class="bet-label">BET</span>
@@ -85,20 +121,51 @@
                     </div>
                     <button class="btn btn-outline btn-sm" onclick="Blackjack.clearBet()">초기화</button>
                 </div>
-                <button class="deal-btn" id="btnDeal" onclick="Blackjack.deal()">DEAL</button>
-                <button class="btn btn-green btn-sm" id="btnNewGame" onclick="Blackjack.newGame()" style="display:none">새 게임</button>
+                <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center">
+                    <button class="deal-btn" id="btnDeal" onclick="Blackjack.deal()">DEAL</button>
+                    <button class="rebet-btn" id="btnRebet" onclick="Blackjack.rebet()" style="display:none">REBET</button>
+                    <button class="btn btn-green btn-sm" id="btnNewGame" onclick="Blackjack.newGame()" style="display:none">새 게임</button>
+                </div>
+            </div>
+
+            <!-- 통계 패널 -->
+            <div class="stats-panel" id="statsPanel">
+                <div class="stat-item wins">
+                    <span class="stat-value" id="statWins">0</span>
+                    <span class="stat-label">승리</span>
+                </div>
+                <div class="stat-item losses">
+                    <span class="stat-value" id="statLosses">0</span>
+                    <span class="stat-label">패배</span>
+                </div>
+                <div class="stat-item pushes">
+                    <span class="stat-value" id="statPushes">0</span>
+                    <span class="stat-label">무승부</span>
+                </div>
+                <div class="stat-item blackjacks">
+                    <span class="stat-value" id="statBlackjacks">0</span>
+                    <span class="stat-label">블랙잭</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="statHands">0</span>
+                    <span class="stat-label">총 핸드</span>
+                </div>
             </div>
 
             <!-- 규칙 -->
-            <div class="card mt-3" style="padding:20px">
-                <h3 class="text-gold mb-1">📋 블랙잭 규칙</h3>
-                <ul style="color:var(--text-secondary);font-size:0.85rem;line-height:2;padding-left:20px">
+            <div class="rules-card">
+                <h3>BLACKJACK 규칙</h3>
+                <ul>
                     <li>21에 가장 가까운 쪽이 승리 (21 초과 시 버스트)</li>
-                    <li>블랙잭 (첫 2장 21) → <strong class="text-gold">1.5배 배당</strong></li>
+                    <li>블랙잭 (첫 2장 21) → <strong style="color:#FFD700">1.5배 배당</strong></li>
                     <li>딜러는 17 미만이면 반드시 히트</li>
                     <li><strong>Hit</strong>: 카드 추가 | <strong>Stand</strong>: 현재 패로 승부</li>
                     <li><strong>Double</strong>: 베팅 2배 + 카드 1장만 추가</li>
                     <li><strong>Split</strong>: 같은 랭크 카드 → 2핸드로 분리</li>
+                    <li><strong>Insurance</strong>: 딜러 에이스 시 보험 (2:1 배당)</li>
+                    <li><strong>Surrender</strong>: 첫 2장에서 포기 → 베팅 절반 환불</li>
+                    <li><strong>Perfect Pairs</strong>: 첫 2장이 같은 랭크 → 최대 25:1</li>
+                    <li><strong>21+3</strong>: 내 2장 + 딜러 1장 = 포커 핸드 → 최대 100:1</li>
                 </ul>
             </div>
         </div>
