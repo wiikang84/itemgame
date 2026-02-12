@@ -237,26 +237,139 @@
     position: relative;
 }
 
-/* 심볼 타입별 스타일 */
-.sym-high {
-    text-shadow: 0 2px 8px rgba(255,215,0,0.25);
+/* ═══ 심볼 공통 ═══ */
+.sym-icon {
+    font-size: 2.8rem;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    display: block;
+    line-height: 1;
 }
 
-.sym-mid {
-    text-shadow: 0 2px 6px rgba(200,200,200,0.15);
+/* ═══ Lucky 7 - 클래식 카지노의 꽃 ═══ */
+.sym-seven {
+    background: radial-gradient(ellipse, rgba(220,38,38,0.08) 0%, transparent 70%);
 }
 
-.sym-card .card-letter {
-    font-size: 2.2rem;
+.sym-seven-num {
+    font-size: 3.2rem;
     font-weight: 900;
-    font-style: italic;
-    background: linear-gradient(180deg, #ddd, #999);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: linear-gradient(180deg, #ff6666 0%, #ff0000 30%, #cc0000 60%, #990000 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    filter: drop-shadow(0 0 8px rgba(255,0,0,0.5)) drop-shadow(0 3px 4px rgba(0,0,0,0.5));
+    line-height: 1;
+    display: block;
 }
 
-/* 와일드 심볼 */
+/* ═══ BAR 심볼 ═══ */
+.sym-bar {
+    background: radial-gradient(ellipse, rgba(212,175,55,0.06) 0%, transparent 70%);
+}
+
+.sym-bar-text {
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    padding: 6px 14px;
+    background: linear-gradient(180deg, #f9d423 0%, #d4af37 40%, #a67c2e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    border: 2px solid var(--casino-gold-dim);
+    border-radius: 4px;
+    display: inline-block;
+    position: relative;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.4);
+    filter: drop-shadow(0 0 4px rgba(212,175,55,0.3));
+}
+
+/* ═══ 하이 심볼 (Cherry, Bell) ═══ */
+.sym-high .sym-icon {
+    filter: drop-shadow(0 0 6px rgba(255,215,0,0.3)) drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+}
+
+/* ═══ 미드 심볼 (Diamond) ═══ */
+.sym-mid .sym-icon {
+    filter: drop-shadow(0 0 4px rgba(200,200,255,0.3)) drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+}
+
+/* ═══ 카드 심볼 (A, K, Q, J) - 카지노 스타일 ═══ */
+.sym-card {
+    position: relative;
+}
+
+.sym-card .card-letter {
+    font-size: 2.4rem;
+    font-weight: 900;
+    font-style: italic;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: linear-gradient(180deg, #f9d423 0%, #d4af37 30%, #c49b2f 60%, #a67c2e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+    line-height: 1;
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+
+.card-suit {
+    font-size: 0.75rem;
+    position: absolute;
+    opacity: 0.7;
+    z-index: 0;
+    font-style: normal;
+}
+
+.card-suit-tl {
+    top: 10px;
+    left: 12px;
+}
+
+.card-suit-br {
+    bottom: 10px;
+    right: 12px;
+}
+
+/* ═══ Wild / Bonus 뱃지 ═══ */
+.sym-badge {
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    display: inline-block;
+    line-height: 1;
+}
+
+.badge-wild {
+    background: linear-gradient(180deg, #f9d423, #d4af37 40%, #a67c2e);
+    color: #1a0a00;
+    border: 2px solid #ffd700;
+    box-shadow:
+        0 0 12px rgba(255,215,0,0.5),
+        0 0 24px rgba(255,215,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.badge-bonus {
+    background: linear-gradient(180deg, #22cc66, #00aa44 40%, #008833);
+    color: #fff;
+    border: 2px solid #00ff55;
+    box-shadow:
+        0 0 12px rgba(0,255,85,0.4),
+        0 0 24px rgba(0,255,85,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.25),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* 와일드 심볼 셀 배경 */
 .wild-symbol {
     background: radial-gradient(ellipse, rgba(255,215,0,0.12) 0%, transparent 70%);
     animation: wildGlow 2s ease infinite;
@@ -267,15 +380,15 @@
     50% { background: radial-gradient(ellipse, rgba(255,215,0,0.2) 0%, transparent 70%); }
 }
 
-/* 스캐터 심볼 */
+/* 스캐터/보너스 심볼 셀 배경 */
 .scatter-symbol {
-    background: radial-gradient(ellipse, rgba(0,255,65,0.1) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(0,255,85,0.1) 0%, transparent 70%);
     animation: scatterGlow 2s ease infinite;
 }
 
 @keyframes scatterGlow {
-    0%, 100% { background: radial-gradient(ellipse, rgba(0,255,65,0.08) 0%, transparent 70%); }
-    50% { background: radial-gradient(ellipse, rgba(0,255,65,0.2) 0%, transparent 70%); }
+    0%, 100% { background: radial-gradient(ellipse, rgba(0,255,85,0.08) 0%, transparent 70%); }
+    50% { background: radial-gradient(ellipse, rgba(0,255,85,0.2) 0%, transparent 70%); }
 }
 
 /* 당첨 하이라이트 */
