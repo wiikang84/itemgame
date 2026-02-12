@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LUCKY SEVENS - ItemGame</title>
+    <title>LUCKY JACKPOT - ItemGame</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/slot.css">
 </head>
 <body class="slot-page">
+    <!-- v5.0: 스포트라이트 회전 오버레이 -->
+    <div class="spotlight-overlay"></div>
+
     <!-- 헤더 -->
     <header class="header">
         <div class="header-logo" onclick="location.href='index.html'" style="cursor:pointer">ITEM<span>GAME</span></div>
@@ -34,10 +37,23 @@
 
             <!-- ═══ 탑 박스 (타이틀 + 잭팟) ═══ -->
             <div class="cabinet-top">
+                <!-- v5.0: LED 스트립 (6개 체이스 애니메이션) -->
+                <div class="led-strip">
+                    <span class="led-dot"></span>
+                    <span class="led-dot"></span>
+                    <span class="led-dot"></span>
+                    <span class="led-dot"></span>
+                    <span class="led-dot"></span>
+                    <span class="led-dot"></span>
+                </div>
                 <div class="cabinet-corner-light left"></div>
                 <div class="cabinet-corner-light right"></div>
-                <div class="game-title">LUCKY SEVENS</div>
-                <div class="game-subtitle">9 Lines &bull; RTP ~96%</div>
+                <!-- v4.0: <div class="game-title">LUCKY SEVENS</div> -->
+                <div class="game-title">JACKPOT</div>
+                <!-- v4.0: <div class="game-subtitle">9 Lines &bull; RTP ~96%</div> -->
+                <div class="game-subtitle">LUCKY JACKPOT &bull; YOUR LUCK HERE</div>
+                <!-- v5.0: 하단 골드 라인 -->
+                <div class="gold-line-bottom"></div>
             </div>
 
             <!-- ═══ 프리스핀 / 멀티플라이어 ═══ -->
@@ -101,38 +117,51 @@
                     </div>
                 </div>
 
-                <!-- 캐비닛 버튼 바 -->
+                <!-- v5.0: 캐비닛 버튼 바 (삼분할 레이아웃) -->
                 <div class="cabinet-button-bar">
-                    <button class="cab-btn cab-btn-info" onclick="togglePaytable()" title="배당표">
-                        <span class="cab-btn-icon">i</span>
-                        <span class="cab-btn-label">배당</span>
-                    </button>
-                    <button class="cab-btn cab-btn-bet" onclick="SlotMachine.decreaseBet()">
-                        <span class="cab-btn-icon">&minus;</span>
-                        <span class="cab-btn-label">베팅</span>
-                    </button>
-                    <button class="cab-btn cab-btn-bet" onclick="SlotMachine.increaseBet()">
-                        <span class="cab-btn-icon">+</span>
-                        <span class="cab-btn-label">베팅</span>
-                    </button>
-                    <button class="cab-btn cab-btn-maxbet" onclick="SlotMachine.setBet(1000)">
-                        <span class="cab-btn-label">최대<br>베팅</span>
-                    </button>
-                    <button class="cab-btn cab-btn-spin" id="spinButton" onclick="SlotMachine.spin()">
-                        <span class="cab-btn-label">스핀</span>
-                    </button>
-                    <!-- 오토스핀: 버튼 + 옵션 메뉴 -->
-                    <div class="auto-spin-wrapper">
-                        <button class="cab-btn cab-btn-auto" id="autoSpinBtn" onclick="SlotMachine.toggleAutoSpin()">
-                            <span class="cab-btn-label">자동</span>
+                    <!-- 좌: 베팅 컨트롤 -->
+                    <div class="btn-group btn-group-left">
+                        <button class="cab-btn cab-btn-info" onclick="togglePaytable()" title="배당표">
+                            <span class="cab-btn-icon">i</span>
+                            <span class="cab-btn-label">배당</span>
                         </button>
-                        <div class="auto-spin-menu" id="autoSpinMenu" style="display:none">
-                            <div class="auto-menu-title">자동 스핀 횟수</div>
-                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(10)">10회</button>
-                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(25)">25회</button>
-                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(50)">50회</button>
-                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(100)">100회</button>
-                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(-1)">무제한</button>
+                        <button class="cab-btn cab-btn-bet" onclick="SlotMachine.decreaseBet()">
+                            <span class="cab-btn-icon">&minus;</span>
+                            <span class="cab-btn-label">베팅</span>
+                        </button>
+                        <button class="cab-btn cab-btn-bet" onclick="SlotMachine.increaseBet()">
+                            <span class="cab-btn-icon">+</span>
+                            <span class="cab-btn-label">베팅</span>
+                        </button>
+                    </div>
+                    <!-- 중: SPIN + MAX + AUTO -->
+                    <div class="btn-group btn-group-center">
+                        <button class="cab-btn cab-btn-maxbet" onclick="SlotMachine.setBet(1000)">
+                            <span class="cab-btn-label">최대<br>베팅</span>
+                        </button>
+                        <button class="cab-btn cab-btn-spin" id="spinButton" onclick="SlotMachine.spin()">
+                            <span class="cab-btn-label">스핀</span>
+                        </button>
+                        <!-- 오토스핀: 버튼 + 옵션 메뉴 -->
+                        <div class="auto-spin-wrapper">
+                            <button class="cab-btn cab-btn-auto" id="autoSpinBtn" onclick="SlotMachine.toggleAutoSpin()">
+                                <span class="cab-btn-label">자동</span>
+                            </button>
+                            <div class="auto-spin-menu" id="autoSpinMenu" style="display:none">
+                                <div class="auto-menu-title">자동 스핀 횟수</div>
+                                <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(10)">10회</button>
+                                <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(25)">25회</button>
+                                <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(50)">50회</button>
+                                <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(100)">100회</button>
+                                <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(-1)">무제한</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 우: LINES 디스플레이 -->
+                    <div class="btn-group btn-group-right">
+                        <div class="lines-display">
+                            <span class="lines-label">LINES</span>
+                            <span class="lines-value">9</span>
                         </div>
                     </div>
                 </div>

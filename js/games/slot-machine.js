@@ -601,6 +601,9 @@ const SlotMachine = (() => {
             setTimeout(() => document.body.classList.remove('shake'), 500);
         }
 
+        // v5.0: 승리 시 배경 반응 (골든 글로우)
+        document.body.classList.add('win-glow');
+
         // 오버레이 표시
         _showWinOverlay(amount, tier);
 
@@ -620,6 +623,8 @@ const SlotMachine = (() => {
         return new Promise(resolve => {
             setTimeout(() => {
                 _hideWinOverlay();
+                // v5.0: 배경 반응 해제
+                document.body.classList.remove('win-glow');
                 resolve();
             }, duration);
         });

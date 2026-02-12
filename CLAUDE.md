@@ -49,7 +49,7 @@ itemgame/
 ```
 
 ## 게임 사양
-- **슬롯머신**: "LUCKY SEVENS" 클래식 카지노, 5x3 릴, 9 페이라인, RTP ~96%
+- **슬롯머신**: "LUCKY JACKPOT" 클래식 카지노, 5x3 릴, 9 페이라인, RTP ~96%
   - 11종 심볼 (7/BAR/Cherry/Bell/Diamond/Lemon/Orange/Grapes/Watermelon + Wild + Bonus)
   - Wild: 보너스 제외 모든 심볼 대체
   - Bonus(Scatter): 3개+ 출현 시 무료스핀 (10/15/25회), 프로그레시브 배율 (최대 x10)
@@ -129,3 +129,20 @@ python -m http.server 8888
     - 기존 헤더 nav-btn 모바일 숨기기
   - **공통: 전 HTML Firebase SDK CDN 추가, 레벨 뱃지/코인 샤워 캔버스/하단 네비/레벨업 오버레이 HTML 추가**
   - 변경 파일 (16개): index.html, slot.html, blackjack.html, roulette.html, css/common.css, css/slot.css, css/blackjack.css, css/roulette.css, js/core/firebase-config.js, js/core/chip-manager.js, js/core/coin-shower.js(신규), js/core/level-manager.js(신규), js/games/slot-machine.js, js/games/blackjack.js, js/games/roulette.js, firestore.rules(신규)
+- **2026-02-12**: 슬롯머신 v5.0 "LUCKY JACKPOT" 비주얼 업그레이드
+  - 벤치마킹: Real Slot Machines: Lucky Jackpot (Microsoft Store)
+  - **배경**: 12개 황금 스포트라이트 + 중앙 방사형 글로우 + conic-gradient 30초 회전 오버레이
+  - **캐비닛 3D 깊이감**: 6단계 곡면 그라데이션 + 4계층 box-shadow (골든 글로우/하단 그림자/상단 하이라이트/내부 깊이) + 크롬 border 4px
+  - **JACKPOT 네온 배너**: "LUCKY SEVENS" → "JACKPOT" 변경, 5레이어 text-shadow 네온 글로우, 2초 주기 글로우 펄스
+  - **LED 스트립**: 상단 6개 골드 LED, 체이스 애니메이션 (animation-delay 패턴)
+  - **하단 골드 라인**: border-image 대체 linear-gradient 라인 + 글로우
+  - **버튼 삼분할 레이아웃**: 좌(배당/베팅-/+) / 중(최대베팅/스핀/자동) / 우(LINES 디스플레이)
+  - **렌즈 플레어 강화**: 코너 라이트 10px + 3계층 box-shadow (30px 범위)
+  - **인포 바 크롬 질감**: 4단계 그라데이션 + 크롬 border-color 패턴
+  - **캐비닛 입장 애니메이션**: fade+scale (0.8초)
+  - **승리 시 배경 반응**: body.win-glow 클래스 토글 → 골든 글로우 펄스 (JS 2줄 추가)
+  - **접근성**: prefers-reduced-motion 대응 (모든 장식 애니메이션 OFF)
+  - **모바일 반응형**: 768px 스포트라이트 회전 OFF + shadow 축소, 480px 텍스트/LED/border 축소
+  - **conic-gradient 미지원 폴백**: 없어도 12개 radial-gradient 스포트라이트가 대체
+  - JS 셀렉터 100% 호환 (29개 ID, 19개 Class 검증 완료)
+  - 변경 파일: slot.html, css/slot.css, js/games/slot-machine.js, CLAUDE.md

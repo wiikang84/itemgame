@@ -1,105 +1,308 @@
 /* ============================================
-   CLASSIC CASINO SLOT MACHINE
-   실제 카지노 슬롯머신 스타일
+   LUCKY JACKPOT SLOT MACHINE v5.0
+   Real Slot Machines: Lucky Jackpot 벤치마킹
+   황금 스포트라이트 + 3D 캐비닛 + 네온 배너
    ============================================ */
 
-/* ═══ 카지노 색상 변수 ═══ */
+/* ═══ 카지노 색상 변수 (v5.0 업그레이드) ═══ */
 :root {
-    --casino-black: #0a0a0a;
+    /* v4.0 원본: --casino-black: #0a0a0a; → v5.0: 더 깊은 블랙 */
+    --casino-black: #050510;
     --casino-dark: #111118;
     --casino-panel: #1a1a1a;
-    --casino-gold: #d4af37;
-    --casino-gold-light: #ffd700;
-    --casino-gold-dim: #a67c2e;
+    /* v4.0 원본: --casino-gold: #d4af37; → v5.0: 밝은 네온 골드 */
+    --casino-gold: #ffd700;
+    --casino-gold-light: #ffe44d;
+    --casino-gold-dim: #b8860b;
     --casino-red: #dc2626;
     --casino-red-dark: #991b1b;
     --casino-red-bright: #ef4444;
     --casino-green: #00ff41;
     --casino-green-dim: #00cc33;
-    --casino-chrome-light: #e0e0e0;
+    /* v4.0 원본: --casino-chrome-light: #e0e0e0; → v5.0: 더 밝은 크롬 */
+    --casino-chrome-light: #f0f0f0;
     --casino-chrome-mid: #999;
-    --casino-chrome-dark: #555;
+    /* v4.0 원본: --casino-chrome-dark: #555; → v5.0: 더 어두운 대비 */
+    --casino-chrome-dark: #222;
     --casino-led-amber: #ffaa00;
     --casino-text: #f0f0e6;
     --casino-text-muted: #888;
     --casino-separator: rgba(255,255,255,0.08);
-    --chrome-gradient: linear-gradient(180deg, #999 0%, #fff 10%, #ccc 30%, #ddd 50%, #ccc 70%, #fff 90%, #999 100%);
-    --gold-gradient: linear-gradient(180deg, #f9d423 0%, #d4af37 40%, #a67c2e 100%);
-    --glow-gold: 0 0 10px rgba(212,175,55,0.4), 0 0 20px rgba(212,175,55,0.2);
+    /* v5.0: 강한 크롬 대비 그라데이션 */
+    --chrome-gradient: linear-gradient(180deg, #444 0%, #f0f0f0 10%, #ccc 30%, #ddd 50%, #ccc 70%, #f0f0f0 90%, #444 100%);
+    --gold-gradient: linear-gradient(180deg, #ffe44d 0%, #ffd700 40%, #b8860b 100%);
+    --glow-gold: 0 0 10px rgba(255,215,0,0.5), 0 0 20px rgba(255,215,0,0.3);
     --glow-red: 0 0 15px rgba(220,38,38,0.5), 0 0 30px rgba(220,38,38,0.25);
     --glow-green: 0 0 7px rgba(0,255,65,0.5), 0 0 15px rgba(0,255,65,0.2);
 }
 
-/* ═══ 페이지 배경 ═══ */
+/* ═══ 페이지 배경 (v5.0: 황금 방사형 + 12개 스포트라이트) ═══ */
+/* v4.0 원본: background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 70%); */
 .slot-page {
-    background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 70%);
+    background:
+        /* 12개 스포트라이트 (시계 방향 배치) */
+        radial-gradient(circle at 50% 0%, rgba(255,215,0,0.18) 0%, transparent 25%),
+        radial-gradient(circle at 75% 6.7%, rgba(255,215,0,0.12) 0%, transparent 20%),
+        radial-gradient(circle at 93.3% 25%, rgba(255,215,0,0.10) 0%, transparent 20%),
+        radial-gradient(circle at 100% 50%, rgba(255,215,0,0.12) 0%, transparent 25%),
+        radial-gradient(circle at 93.3% 75%, rgba(255,215,0,0.10) 0%, transparent 20%),
+        radial-gradient(circle at 75% 93.3%, rgba(255,215,0,0.12) 0%, transparent 20%),
+        radial-gradient(circle at 50% 100%, rgba(255,215,0,0.18) 0%, transparent 25%),
+        radial-gradient(circle at 25% 93.3%, rgba(255,215,0,0.12) 0%, transparent 20%),
+        radial-gradient(circle at 6.7% 75%, rgba(255,215,0,0.10) 0%, transparent 20%),
+        radial-gradient(circle at 0% 50%, rgba(255,215,0,0.12) 0%, transparent 25%),
+        radial-gradient(circle at 6.7% 25%, rgba(255,215,0,0.10) 0%, transparent 20%),
+        radial-gradient(circle at 25% 6.7%, rgba(255,215,0,0.12) 0%, transparent 20%),
+        /* 중앙 방사형 골든 글로우 */
+        radial-gradient(ellipse at center, rgba(255,215,0,0.06) 0%, transparent 50%),
+        /* 베이스 */
+        #050510;
+}
+
+/* ═══ 스포트라이트 회전 오버레이 ═══ */
+.spotlight-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.spotlight-overlay::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(255,215,0,0.03) 30deg,
+        transparent 60deg,
+        rgba(255,215,0,0.02) 120deg,
+        transparent 150deg,
+        rgba(255,215,0,0.03) 210deg,
+        transparent 240deg,
+        rgba(255,215,0,0.02) 300deg,
+        transparent 330deg,
+        rgba(255,215,0,0.03) 360deg
+    );
+    animation: spotlightRotate 30s linear infinite;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+@keyframes spotlightRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* v5.0: 승리 시 배경 반응 (JS에서 body.win-glow 토글) */
+.spotlight-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(255,215,0,0.2) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+}
+
+body.win-glow .spotlight-overlay::before {
+    opacity: 1;
+    animation: winGlowPulse 1.5s ease;
+}
+
+@keyframes winGlowPulse {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0.3; }
 }
 
 /* ═══════════════════════════════════════════
-   캐비닛 (메인 컨테이너)
+   캐비닛 (v5.0: 3D 깊이감 강화)
    ═══════════════════════════════════════════ */
+/* v4.0 원본:
+   background: linear-gradient(180deg, #1c1c1c 0%, #141414 50%, #0e0e0e 100%);
+   border: 3px solid #333;
+   box-shadow: 0 0 0 1px #555, 0 0 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+*/
 .slot-cabinet {
     max-width: 680px;
     margin: 0 auto;
-    background: linear-gradient(180deg, #1c1c1c 0%, #141414 50%, #0e0e0e 100%);
+    /* v5.0: 6단계 곡면 그라데이션 */
+    background: linear-gradient(180deg,
+        #2a2a2a 0%,
+        #1e1e1e 10%,
+        #181818 25%,
+        #0e0e0e 50%,
+        #141414 80%,
+        #1a1a1a 100%
+    );
     border-radius: 14px;
-    border: 3px solid #333;
+    /* v5.0: 크롬 border */
+    border: 4px solid #555;
+    /* v5.0: 4계층 box-shadow */
     box-shadow:
-        0 0 0 1px #555,
-        0 0 30px rgba(0,0,0,0.8),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        /* 1. 외곽 골든 글로우 */
+        0 0 40px rgba(255,215,0,0.12),
+        0 0 80px rgba(255,215,0,0.04),
+        /* 2. 하단 떠있는 그림자 */
+        0 20px 60px rgba(0,0,0,0.8),
+        0 8px 30px rgba(0,0,0,0.6),
+        /* 3. 상단 하이라이트 */
+        inset 0 2px 0 rgba(255,255,255,0.1),
+        /* 4. 내부 깊이 */
+        inset 0 -2px 0 rgba(0,0,0,0.3);
     overflow: hidden;
     position: relative;
+    /* v5.0: 입장 애니메이션 */
+    animation: cabinetEntrance 0.8s ease-out;
+}
+
+@keyframes cabinetEntrance {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* ═══════════════════════════════════════════
-   탑 박스 (타이틀)
+   탑 박스 (v5.0: JACKPOT 네온 배너)
    ═══════════════════════════════════════════ */
+/* v4.0 원본:
+   background: linear-gradient(180deg, #222 0%, #181818 100%);
+   border-bottom: 2px solid var(--casino-gold-dim);
+*/
 .cabinet-top {
     position: relative;
-    padding: 18px 20px 14px;
+    padding: 14px 20px 18px;
     text-align: center;
-    background: linear-gradient(180deg, #222 0%, #181818 100%);
-    border-bottom: 2px solid var(--casino-gold-dim);
+    background: linear-gradient(180deg, #1a1a1a 0%, #111 40%, #0a0a0a 100%);
+    border-bottom: none;
     overflow: hidden;
 }
 
-/* 코너 장식 라이트 */
-.cabinet-corner-light {
-    position: absolute;
-    top: 10px;
+/* v5.0: LED 스트립 (6개 체이스 애니메이션) */
+.led-strip {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 10px;
+}
+
+.led-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
+    background: var(--casino-gold);
+    box-shadow: 0 0 6px var(--casino-gold), 0 0 14px rgba(255,215,0,0.5);
+    animation: ledChase 1.5s ease infinite;
+}
+
+.led-dot:nth-child(1) { animation-delay: 0s; }
+.led-dot:nth-child(2) { animation-delay: 0.15s; }
+.led-dot:nth-child(3) { animation-delay: 0.3s; }
+.led-dot:nth-child(4) { animation-delay: 0.45s; }
+.led-dot:nth-child(5) { animation-delay: 0.6s; }
+.led-dot:nth-child(6) { animation-delay: 0.75s; }
+
+@keyframes ledChase {
+    0%, 100% { opacity: 0.25; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* 코너 장식 라이트 (v5.0: 렌즈 플레어 강화) */
+/* v4.0 원본: width: 8px; height: 8px; box-shadow: 0 0 6px, 0 0 12px; */
+.cabinet-corner-light {
+    position: absolute;
+    top: 12px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
     background: var(--casino-gold-light);
-    box-shadow: 0 0 6px var(--casino-gold-light), 0 0 12px var(--casino-gold);
+    box-shadow:
+        0 0 8px var(--casino-gold-light),
+        0 0 16px var(--casino-gold),
+        0 0 30px rgba(255,215,0,0.3);
     animation: cornerBlink 2s ease infinite;
 }
 .cabinet-corner-light.left { left: 14px; }
 .cabinet-corner-light.right { right: 14px; animation-delay: 1s; }
 
 @keyframes cornerBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--casino-gold-light), 0 0 16px var(--casino-gold), 0 0 30px rgba(255,215,0,0.3); }
+    50% { opacity: 0.4; box-shadow: 0 0 4px var(--casino-gold-light), 0 0 8px var(--casino-gold); }
 }
 
+/* v5.0: JACKPOT 네온 타이틀 (5레이어 text-shadow + 글로우 펄스) */
+/* v4.0 원본: background-clip text gradient, no glow */
 .game-title {
-    font-size: 2rem;
+    font-size: 2.8rem;
     font-weight: 900;
-    letter-spacing: 5px;
+    letter-spacing: 8px;
     text-transform: uppercase;
-    background: var(--gold-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    color: var(--casino-gold);
+    -webkit-text-fill-color: var(--casino-gold);
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    filter: none;
+    text-shadow:
+        0 0 10px rgba(255,215,0,0.9),
+        0 0 20px rgba(255,215,0,0.7),
+        0 0 40px rgba(255,215,0,0.5),
+        0 0 60px rgba(255,215,0,0.3),
+        0 0 80px rgba(255,215,0,0.15);
+    animation: jackpotGlow 2s ease-in-out infinite;
+}
+
+@keyframes jackpotGlow {
+    0%, 100% {
+        text-shadow:
+            0 0 10px rgba(255,215,0,0.9),
+            0 0 20px rgba(255,215,0,0.7),
+            0 0 40px rgba(255,215,0,0.5),
+            0 0 60px rgba(255,215,0,0.3),
+            0 0 80px rgba(255,215,0,0.15);
+    }
+    50% {
+        text-shadow:
+            0 0 15px rgba(255,215,0,1),
+            0 0 30px rgba(255,215,0,0.8),
+            0 0 50px rgba(255,215,0,0.6),
+            0 0 70px rgba(255,215,0,0.4),
+            0 0 100px rgba(255,215,0,0.25);
+    }
 }
 
 .game-subtitle {
     font-size: 0.7rem;
-    color: var(--casino-text-muted);
+    color: rgba(255,215,0,0.5);
     letter-spacing: 3px;
-    margin-top: 4px;
+    margin-top: 6px;
+}
+
+/* v5.0: 하단 골드 라인 */
+.gold-line-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--casino-gold) 30%, var(--casino-gold-light) 50%, var(--casino-gold) 70%, transparent 100%);
+    box-shadow: 0 0 8px rgba(255,215,0,0.4);
 }
 
 /* ═══════════════════════════════════════════
@@ -437,16 +640,22 @@
 }
 
 /* ═══════════════════════════════════════════
-   인포 바 (LED 디스플레이)
+   인포 바 (v5.0: 크롬 메탈릭 질감 강화)
    ═══════════════════════════════════════════ */
+/* v4.0 원본: background: #0d0d0d; border: 1px solid #333; */
 .info-bar {
     display: flex;
     align-items: stretch;
     margin: 0 10px;
-    background: #0d0d0d;
-    border: 1px solid #333;
+    /* v5.0: 크롬 질감 */
+    background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 40%, #0a0a0a 60%, #141414 100%);
+    border: 1px solid;
+    border-color: #555 #333 #222 #333;
     border-top: none;
     border-radius: 0 0 8px 8px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 2px 8px rgba(0,0,0,0.5);
 }
 
 .info-cell {
@@ -457,7 +666,7 @@
     flex-direction: column;
     justify-content: center;
     gap: 2px;
-    border-right: 1px solid #222;
+    border-right: 1px solid #2a2a2a;
 }
 .info-cell:last-child { border-right: none; }
 
@@ -483,8 +692,8 @@
 
 .result-cell {
     flex: 1.5;
-    border-left: 1px solid #222;
-    border-right: 1px solid #222;
+    border-left: 1px solid #2a2a2a;
+    border-right: 1px solid #2a2a2a;
 }
 
 .result-text {
@@ -576,14 +785,64 @@
 }
 
 /* ═══════════════════════════════════════════
-   캐비닛 버튼 바
+   캐비닛 버튼 바 (v5.0: 삼분할 레이아웃)
    ═══════════════════════════════════════════ */
+/* v4.0 원본: flex 일렬 배치 */
 .cabinet-button-bar {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 12px;
     flex-wrap: wrap;
+}
+
+/* v5.0: 버튼 그룹 */
+.btn-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-group-left {
+    /* 좌: 베팅 컨트롤 */
+}
+
+.btn-group-center {
+    /* 중: SPIN + MAX + AUTO */
+    gap: 8px;
+}
+
+.btn-group-right {
+    /* 우: LINES 디스플레이 */
+}
+
+/* v5.0: LINES 디스플레이 */
+.lines-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+    border: 2px solid #444;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.lines-label {
+    font-size: 0.5rem;
+    color: var(--casino-text-muted);
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.lines-value {
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--casino-led-amber);
+    text-shadow: 0 0 5px rgba(255,170,0,0.4);
 }
 
 /* 공통 캐비닛 버튼 */
@@ -1217,10 +1476,10 @@
 }
 
 /* ═══════════════════════════════════════════
-   반응형
+   반응형 (v5.0: 스포트라이트 + 3D 캐비닛 대응)
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
-    .game-title { font-size: 1.5rem; letter-spacing: 3px; }
+    .game-title { font-size: 2rem; letter-spacing: 5px; }
     .reels-frame { margin: 0 6px; padding: 4px; }
     .reel { height: 198px; }
     .reel-symbol { height: 66px; font-size: 2.1rem; }
@@ -1229,10 +1488,30 @@
     .info-bar { margin: 0 6px; }
     .free-spin-banner .fs-text { font-size: 2rem; }
     .cabinet-belly { padding: 10px 6px 14px; }
+
+    /* v5.0: 태블릿에서 스포트라이트 회전 비활성화 (GPU 절약) */
+    .spotlight-overlay::after {
+        animation: none;
+    }
+
+    /* v5.0: box-shadow 레이어 축소 */
+    .slot-cabinet {
+        box-shadow:
+            0 0 20px rgba(255,215,0,0.08),
+            0 10px 30px rgba(0,0,0,0.6),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    /* v5.0: 버튼 그룹 모바일 조정 */
+    .cabinet-button-bar {
+        gap: 8px;
+    }
 }
 
 @media (max-width: 480px) {
-    .game-title { font-size: 1.15rem; letter-spacing: 2px; }
+    /* v5.0: JACKPOT 텍스트 축소 */
+    .game-title { font-size: 1.5rem; letter-spacing: 3px; }
+    .game-subtitle { font-size: 0.6rem; letter-spacing: 2px; }
     .reel-symbol { font-size: 1.7rem; height: 56px; }
     .reel { height: 168px; }
     .cab-btn-spin { width: 64px; height: 64px; }
@@ -1249,4 +1528,64 @@
     .gamble-btn { padding: 8px 16px; font-size: 0.8rem; }
     .cabinet-button-bar { gap: 5px; }
     .bet-info-bar { gap: 16px; }
+
+    /* v5.0: 캐비닛 border 축소 */
+    .slot-cabinet {
+        border-width: 3px;
+    }
+
+    /* v5.0: LED 스트립 축소 */
+    .led-strip {
+        gap: 16px;
+    }
+    .led-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    /* v5.0: LINES 디스플레이 축소 */
+    .lines-display {
+        width: 44px;
+        height: 44px;
+    }
+    .lines-value { font-size: 0.9rem; }
+    .lines-label { font-size: 0.45rem; }
+}
+
+/* v5.0: 접근성 - 모션 감소 모드 */
+@media (prefers-reduced-motion: reduce) {
+    .spotlight-overlay::after,
+    .spotlight-overlay::before {
+        animation: none !important;
+    }
+
+    .game-title {
+        animation: none !important;
+    }
+
+    .led-dot {
+        animation: none !important;
+        opacity: 0.6;
+    }
+
+    .cabinet-corner-light {
+        animation: none !important;
+    }
+
+    .slot-cabinet {
+        animation: none !important;
+    }
+
+    .cab-btn-spin:not(:disabled):not(.spinning) {
+        animation: none !important;
+    }
+
+    .wild-symbol,
+    .scatter-symbol {
+        animation: none !important;
+    }
+
+    .reel::after {
+        animation: none !important;
+    }
 }
