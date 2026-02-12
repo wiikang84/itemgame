@@ -215,6 +215,10 @@ const SlotMachine = (() => {
                 stopAutoSpin();
                 return;
             }
+            // XP 획득 (베팅 금액의 10%)
+            if (typeof LevelManager !== 'undefined') {
+                LevelManager.addXP(currentBet);
+            }
         }
 
         isSpinning = true;
@@ -584,9 +588,17 @@ const SlotMachine = (() => {
             SoundManager[soundFn]();
         }
 
-        // 코인 샤워 (Big 이상)
-        if (ratio >= 15 && typeof SoundManager !== 'undefined') {
-            SoundManager.startCoinShower(duration);
+        // 코인 샤워 (Big 이상) - CoinShower 모듈 연동
+        if (ratio >= 15) {
+            const coinTier = ratio >= 100 ? 'epic' : ratio >= 50 ? 'mega' : 'big';
+            if (typeof CoinShower !== 'undefined') CoinShower.start(duration, coinTier);
+            if (typeof SoundManager !== 'undefined') SoundManager.startCoinShower(duration);
+        }
+
+        // 화면 쉐이크 (Big 이상)
+        if (ratio >= 15) {
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
         }
 
         // 오버레이 표시

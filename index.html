@@ -241,9 +241,16 @@
     <!-- 헤더 -->
     <header class="header">
         <div class="header-logo">ITEM<span>GAME</span></div>
-        <div class="header-chips">
-            <div class="chip-icon">$</div>
-            <div class="chip-balance" id="headerChips">0</div>
+        <div class="header-center">
+            <div class="header-chips">
+                <div class="chip-icon">$</div>
+                <div class="chip-balance" id="headerChips">0</div>
+            </div>
+            <div class="level-badge">
+                <span class="level-text" id="levelDisplay">Lv.1</span>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+                <span class="xp-text" id="xpText">0/500</span>
+            </div>
         </div>
         <nav class="header-nav">
             <button class="nav-btn" onclick="showDailyBonus()">보너스</button>
@@ -259,13 +266,18 @@
             <p class="hero-subtitle">소셜 카지노 - 가상 칩으로 즐기는 카지노 게임</p>
         </section>
 
-        <!-- 데일리 보너스 -->
+        <!-- 데일리 보너스 (7일 프로그레시브) -->
         <div class="daily-bonus-banner" id="dailyBonusBanner" onclick="claimBonus()">
             <div class="bonus-info">
                 <h3 id="bonusTitle">🎁 데일리 보너스</h3>
                 <p id="bonusDesc">매일 무료 칩을 받으세요!</p>
             </div>
             <div class="bonus-amount" id="bonusAmount">+1,000</div>
+        </div>
+
+        <!-- 7일 출석 캘린더 -->
+        <div class="streak-calendar" id="streakCalendar">
+            <!-- JS로 동적 생성 -->
         </div>
 
         <!-- 게임 선택 -->
@@ -324,45 +336,138 @@
         </footer>
     </main>
 
+    <!-- 코인 샤워 캔버스 -->
+    <canvas id="coinShowerCanvas"></canvas>
+
     <!-- 토스트 컨테이너 -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 레벨업 오버레이 -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title" id="levelupTitle">LEVEL UP!</div>
+            <div class="levelup-bonus" id="levelupBonus">+0 칩</div>
+        </div>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="index.html" class="bottom-nav-item active">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">홈</span>
+            </a>
+            <button class="bottom-nav-item" onclick="showDailyBonus()">
+                <span class="nav-icon">🎁</span>
+                <span class="nav-label">보너스</span>
+            </button>
+            <button class="bottom-nav-item" onclick="SoundManager.toggleMute()">
+                <span class="nav-icon">🔊</span>
+                <span class="nav-label">사운드</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <!-- 스크립트 -->
     <script src="js/core/firebase-config.js"></script>
     <script src="js/core/chip-manager.js"></script>
     <script src="js/core/sound-manager.js"></script>
+    <script src="js/core/coin-shower.js"></script>
+    <script src="js/core/level-manager.js"></script>
     <script>
         // 초기화
-        document.addEventListener('DOMContentLoaded', () => {
-            ChipManager.init();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ChipManager.init();
             SoundManager.init();
+            CoinShower.init();
+            LevelManager.init();
             updateChipDisplay();
             checkDailyBonus();
+            buildStreakCalendar();
 
             // 칩 변경 리스너
             ChipManager.onBalanceChange(updateChipDisplay);
+
+            // 레벨업 리스너
+            LevelManager.onEvent((event) => {
+                if (event.type === 'levelup') {
+                    showLevelUpOverlay(event.level, event.bonus);
+                    showToast(`레벨 ${event.level} 달성! +${event.bonus.toLocaleString()} 보너스 칩`, 'levelup');
+                }
+            });
         });
 
         function updateChipDisplay() {
             document.getElementById('headerChips').textContent = ChipManager.formatBalance();
         }
 
+        // 7일 출석 캘린더 빌드
+        function buildStreakCalendar() {
+            const calendar = document.getElementById('streakCalendar');
+            if (!calendar) return;
+
+            const bonuses = ChipManager.getStreakBonuses();
+            const currentStreak = ChipManager.getDailyStreak();
+            const canClaim = ChipManager.canClaimDailyBonus();
+            calendar.innerHTML = '';
+
+            bonuses.forEach((amount, idx) => {
+                // 연결 점선 (첫 번째 제외)
+                if (idx > 0) {
+                    const conn = document.createElement('div');
+                    conn.className = `streak-connector${idx <= currentStreak ? ' active' : ''}`;
+                    calendar.appendChild(conn);
+                }
+
+                const day = document.createElement('div');
+                day.className = 'streak-day';
+
+                let circleClass = 'streak-circle';
+                if (idx < currentStreak || (idx === currentStreak && !canClaim)) {
+                    circleClass += ' claimed';
+                } else if (idx === currentStreak && canClaim) {
+                    circleClass += ' current';
+                } else {
+                    circleClass += ' future';
+                }
+
+                day.innerHTML = `
+                    <div class="${circleClass}">${idx < currentStreak || (idx === currentStreak && !canClaim) ? '✓' : 'D' + (idx + 1)}</div>
+                    <span class="streak-amount">+${(amount / 1000).toFixed(amount >= 1000 ? 0 : 1)}K</span>
+                `;
+                calendar.appendChild(day);
+            });
+        }
+
         function checkDailyBonus() {
             const banner = document.getElementById('dailyBonusBanner');
+            const todayAmount = ChipManager.getTodayBonusAmount();
+
             if (!ChipManager.canClaimDailyBonus()) {
                 banner.classList.add('claimed');
                 document.getElementById('bonusTitle').textContent = '✅ 오늘의 보너스 수령 완료';
                 document.getElementById('bonusDesc').textContent = '내일 다시 받을 수 있습니다!';
                 document.getElementById('bonusAmount').textContent = '수령완료';
+            } else {
+                document.getElementById('bonusAmount').textContent = `+${todayAmount.toLocaleString()}`;
+                const streak = ChipManager.getDailyStreak();
+                document.getElementById('bonusDesc').textContent = `연속 ${streak + 1}일차 보너스를 받으세요!`;
             }
         }
 
         function claimBonus() {
-            const amount = ChipManager.claimDailyBonus();
-            if (amount > 0) {
+            const result = ChipManager.claimDailyBonus();
+            if (result.amount > 0) {
                 SoundManager.playBonus();
-                showToast(`🎁 데일리 보너스 +${amount.toLocaleString()} 칩!`, 'success');
+                CoinShower.start(2000, result.isDay7 ? 'epic' : 'big');
+                showToast(`🎁 데일리 보너스 +${result.amount.toLocaleString()} 칩! (${result.streak + 1}일차)`, 'success');
                 checkDailyBonus();
+                buildStreakCalendar();
             } else {
                 showToast('이미 오늘의 보너스를 받았습니다.', 'error');
             }
@@ -377,6 +482,17 @@
                 ChipManager.reset();
                 showToast('칩이 10,000으로 리셋되었습니다.', 'success');
             }
+        }
+
+        // 레벨업 오버레이
+        function showLevelUpOverlay(level, bonus) {
+            const overlay = document.getElementById('levelupOverlay');
+            if (!overlay) return;
+            document.getElementById('levelupTitle').textContent = `LEVEL ${level}!`;
+            document.getElementById('levelupBonus').textContent = `+${bonus.toLocaleString()} 보너스 칩`;
+            overlay.classList.add('active');
+            CoinShower.start(2000, 'mega');
+            setTimeout(() => overlay.classList.remove('active'), 3000);
         }
 
         function showToast(message, type = '') {

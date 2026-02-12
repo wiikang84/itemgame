@@ -107,3 +107,25 @@ python -m http.server 8888
   - 죽은 CSS 제거: .sym-card .card-letter 참조 삭제
   - REEL_WEIGHTS 주석 수정: 이집트 심볼명 → 현재 심볼명
   - 변경 파일: slot.html, css/slot.css, js/games/slot-machine.js, CLAUDE.md
+- **2026-02-12**: ItemGame v2.0 대규모 업그레이드 (해외 카지노 벤치마킹 + Firebase 실연동)
+  - **Phase 1: Firebase 실연동**
+    - firebase-config.js v2.0: 익명 Auth, Firestore CRUD 헬퍼, 오프라인 persistence
+    - chip-manager.js v2.0: Firestore 동기화, BFCache 대응
+    - firestore.rules: 유저별 읽기/쓰기 보안 규칙
+  - **Phase 2: 프리미엄 비주얼 + 신규 모듈**
+    - Google Fonts (Poppins + Inter), tabular-nums, CSS 변수 체계
+    - coin-shower.js 신규: Canvas 기반 코인 파티클 (3D 회전, 중력, 페이드)
+    - level-manager.js 신규: XP/레벨 시스템 (bet 10% XP, 레벨업 보너스 칩)
+    - common.css v2.0: 레벨 뱃지, XP 바, 레벨업 오버레이, 화면 쉐이크, 카운트업 애니메이션
+  - **Phase 3: 게임별 프리미엄화**
+    - 슬롯: 릴 배경 빛 흐름, 페이라인 글로우 강화, 스핀 버튼 idle 맥동, CoinShower 빅윈 연동, 화면 쉐이크
+    - 블랙잭: 펠트 텍스처 패턴, 딜러 1초 서스펜스 딜레이, 블랙잭 골드 이펙트, CoinShower 연동
+    - 룰렛: 결과 줌인 강화, 색상별 배경 플래시, 히스토리 빨강/검정 비율 바 차트, CoinShower 연동
+    - 전 게임: LevelManager.addXP() 연동 (베팅 시 XP 획득)
+  - **Phase 4: 7일 출석 보너스 + 모바일 하단 네비**
+    - 7일 프로그레시브 보너스: 1K→1.5K→2K→3K→5K→7K→10K (streak Firestore 동기화)
+    - 출석 캘린더 UI: 7개 원형 프로그레스 (수령/현재/미래 상태)
+    - 모바일 하단 네비 (768px 이하): 홈/보너스/사운드 탭
+    - 기존 헤더 nav-btn 모바일 숨기기
+  - **공통: 전 HTML Firebase SDK CDN 추가, 레벨 뱃지/코인 샤워 캔버스/하단 네비/레벨업 오버레이 HTML 추가**
+  - 변경 파일 (16개): index.html, slot.html, blackjack.html, roulette.html, css/common.css, css/slot.css, css/blackjack.css, css/roulette.css, js/core/firebase-config.js, js/core/chip-manager.js, js/core/coin-shower.js(신규), js/core/level-manager.js(신규), js/games/slot-machine.js, js/games/blackjack.js, js/games/roulette.js, firestore.rules(신규)

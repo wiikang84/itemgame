@@ -443,6 +443,11 @@ const Roulette = (() => {
             return;
         }
 
+        // XP 획득 (총 베팅 금액의 10%)
+        if (typeof LevelManager !== 'undefined') {
+            LevelManager.addXP(totalBet);
+        }
+
         isSpinning = true;
         _render();
 
@@ -472,6 +477,14 @@ const Roulette = (() => {
             const net = winAmount - totalBet;
             if (net >= totalBet * 10) {
                 if (typeof SoundManager !== 'undefined') SoundManager.playBigWin();
+                // 대박: 코인 샤워 + 화면 쉐이크
+                if (typeof CoinShower !== 'undefined') CoinShower.start(4000, 'epic');
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 500);
+            } else if (net >= totalBet * 3) {
+                if (typeof SoundManager !== 'undefined') SoundManager.playWin();
+                // 좋은 당첨: 코인 샤워
+                if (typeof CoinShower !== 'undefined') CoinShower.start(2000, 'big');
             } else {
                 if (typeof SoundManager !== 'undefined') SoundManager.playWin();
             }
@@ -672,19 +685,56 @@ const Roulette = (() => {
         }
 
         _updateHistory();
+
+        // 결과 색상 배경 플래시
+        const frame = document.querySelector('.roulette-frame');
+        if (frame) {
+            frame.classList.remove('result-flash-red', 'result-flash-black', 'result-flash-green');
+            frame.offsetHeight; // force reflow
+            frame.classList.add(`result-flash-${color}`);
+            setTimeout(() => frame.classList.remove(`result-flash-${color}`), 500);
+        }
     }
 
     /**
-     * 히스토리 바 업데이트
+     * 히스토리 바 업데이트 (비율 차트 포함)
      */
     function _updateHistory() {
         const bar = document.getElementById('historyBar');
         if (!bar) return;
 
-        bar.innerHTML = history.map(num => {
+        // 히스토리 숫자 볼
+        let html = history.map(num => {
             const color = getColor(num);
             return `<div class="history-num h-${color}">${num}</div>`;
         }).join('');
+
+        // 빨강/검정 비율 미니 바 차트
+        if (history.length > 0) {
+            const redCount = history.filter(n => getColor(n) === 'red').length;
+            const blackCount = history.filter(n => getColor(n) === 'black').length;
+            const greenCount = history.filter(n => getColor(n) === 'green').length;
+            const total = history.length;
+
+            const redPct = (redCount / total * 100).toFixed(0);
+            const blackPct = (blackCount / total * 100).toFixed(0);
+            const greenPct = (greenCount / total * 100).toFixed(0);
+
+            html += `
+                <div class="history-ratio-bar">
+                    <div class="history-ratio-red" style="width:${redPct}%"></div>
+                    <div class="history-ratio-green" style="width:${greenPct}%"></div>
+                    <div class="history-ratio-black" style="width:${blackPct}%"></div>
+                </div>
+                <div class="history-ratio-labels">
+                    <span class="ratio-red">빨강 ${redPct}%</span>
+                    <span class="ratio-green">${greenPct}%</span>
+                    <span class="ratio-black">검정 ${blackPct}%</span>
+                </div>
+            `;
+        }
+
+        bar.innerHTML = html;
     }
 
     /**

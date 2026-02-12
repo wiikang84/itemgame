@@ -11,9 +11,16 @@
     <!-- 헤더 -->
     <header class="header">
         <div class="header-logo" onclick="location.href='index.html'" style="cursor:pointer">ITEM<span>GAME</span></div>
-        <div class="header-chips">
-            <div class="chip-icon">$</div>
-            <div class="chip-balance" id="headerChips">0</div>
+        <div class="header-center">
+            <div class="header-chips">
+                <div class="chip-icon">$</div>
+                <div class="chip-balance" id="headerChips">0</div>
+            </div>
+            <div class="level-badge">
+                <span class="level-text" id="levelDisplay">Lv.1</span>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+                <span class="xp-text" id="xpText">0/500</span>
+            </div>
         </div>
         <nav class="header-nav">
             <button class="nav-btn" onclick="location.href='index.html'">로비</button>
@@ -183,12 +190,48 @@
         </div>
     </div>
 
+    <!-- 코인 샤워 캔버스 -->
+    <canvas id="coinShowerCanvas"></canvas>
+
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 레벨업 오버레이 -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title" id="levelupTitle">LEVEL UP!</div>
+            <div class="levelup-bonus" id="levelupBonus">+0 칩</div>
+        </div>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="index.html" class="bottom-nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">홈</span>
+            </a>
+            <a href="index.html#dailyBonusBanner" class="bottom-nav-item">
+                <span class="nav-icon">🎁</span>
+                <span class="nav-label">보너스</span>
+            </a>
+            <button class="bottom-nav-item" onclick="SoundManager.toggleMute()">
+                <span class="nav-icon">🔊</span>
+                <span class="nav-label">사운드</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <!-- 스크립트 -->
     <script src="js/core/firebase-config.js"></script>
     <script src="js/core/chip-manager.js"></script>
     <script src="js/core/sound-manager.js"></script>
+    <script src="js/core/coin-shower.js"></script>
+    <script src="js/core/level-manager.js"></script>
     <script src="js/games/slot-machine.js"></script>
     <script>
         // 페이테이블 토글
@@ -200,15 +243,31 @@
             section.style.display = _paytableVisible ? 'block' : 'none';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            ChipManager.init();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ChipManager.init();
             SoundManager.init();
+            CoinShower.init();
+            LevelManager.init();
+
             ChipManager.onBalanceChange(() => {
                 document.getElementById('headerChips').textContent = ChipManager.formatBalance();
                 document.getElementById('creditDisplay').textContent = ChipManager.getBalance().toLocaleString();
             });
             document.getElementById('headerChips').textContent = ChipManager.formatBalance();
             document.getElementById('creditDisplay').textContent = ChipManager.getBalance().toLocaleString();
+
+            // 레벨업 리스너
+            LevelManager.onEvent((event) => {
+                if (event.type === 'levelup') {
+                    const overlay = document.getElementById('levelupOverlay');
+                    if (overlay) {
+                        document.getElementById('levelupTitle').textContent = `LEVEL ${event.level}!`;
+                        document.getElementById('levelupBonus').textContent = `+${event.bonus.toLocaleString()} 보너스 칩`;
+                        overlay.classList.add('active');
+                        setTimeout(() => overlay.classList.remove('active'), 3000);
+                    }
+                }
+            });
 
             SlotMachine.init();
             _buildPaytable();

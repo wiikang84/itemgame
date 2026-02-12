@@ -220,6 +220,27 @@
 }
 .reel:last-child { border-right: none; }
 
+/* 릴 배경 미묘한 빛 흐름 효과 */
+.reel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,215,0,0.03) 50%, transparent 60%);
+    background-size: 200% 200%;
+    animation: reelLightFlow 4s ease infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes reelLightFlow {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
 .reel-strip {
     position: absolute;
     width: 100%;
@@ -378,15 +399,15 @@
     to { transform: scale(1.1); }
 }
 
-/* ═══ 페이라인 SVG ═══ */
+/* ═══ 페이라인 SVG (글로우 강화) ═══ */
 .payline-glow {
-    filter: drop-shadow(0 0 4px currentColor);
+    filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 12px currentColor);
     animation: paylineFlash 0.8s ease infinite alternate;
 }
 
 @keyframes paylineFlash {
-    from { opacity: 0.4; }
-    to { opacity: 0.85; }
+    from { opacity: 0.5; filter: drop-shadow(0 0 4px currentColor); }
+    to { opacity: 0.9; filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 16px currentColor); }
 }
 
 /* ═══ 승리 파티클 ═══ */
@@ -698,6 +719,31 @@
     box-shadow:
         0 0 10px rgba(220,38,38,0.3),
         inset 0 3px 6px rgba(0,0,0,0.4);
+}
+
+/* 스핀 버튼 idle 맥동 글로우 */
+.cab-btn-spin:not(:disabled):not(.spinning) {
+    animation: spinIdlePulse 2s ease infinite;
+}
+
+@keyframes spinIdlePulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 2px rgba(255,255,255,0.1),
+            var(--glow-red),
+            0 4px 8px rgba(0,0,0,0.5),
+            inset 0 2px 4px rgba(255,255,255,0.15),
+            inset 0 -4px 8px rgba(0,0,0,0.3);
+    }
+    50% {
+        box-shadow:
+            0 0 0 2px rgba(255,255,255,0.15),
+            0 0 25px rgba(220,38,38,0.6),
+            0 0 50px rgba(220,38,38,0.25),
+            0 4px 8px rgba(0,0,0,0.5),
+            inset 0 2px 4px rgba(255,255,255,0.2),
+            inset 0 -4px 8px rgba(0,0,0,0.3);
+    }
 }
 
 .cab-btn-spin:disabled {

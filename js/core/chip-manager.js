@@ -1,32 +1,51 @@
 /**
- * ChipManager - 칩 잔액 관리 시스템
+ * ChipManager v2.0 - 칩 잔액 관리 시스템
  * ItemGame - 소셜 카지노
  *
- * Firebase 연동 + 로컬 스토리지 폴백
+ * Firebase Firestore 동기화 + 로컬 스토리지 폴백
+ * 7일 프로그레시브 출석 보너스
  * 신규 유저 기본 지급: 10,000 칩
  */
 
 const ChipManager = (() => {
     const STORAGE_KEY = 'itemgame_chips';
     const DEFAULT_CHIPS = 10000;
-    const DAILY_BONUS = 1000;
+    // const DAILY_BONUS = 1000; // v1 단일 보너스 → v2 프로그레시브로 대체
     const DAILY_BONUS_KEY = 'itemgame_daily_bonus_date';
+    const DAILY_STREAK_KEY = 'itemgame_daily_streak';
+
+    // 7일 프로그레시브 보너스 금액
+    const STREAK_BONUSES = [1000, 1500, 2000, 3000, 5000, 7000, 10000];
 
     let _chips = 0;
     let _listeners = [];
+    let _dailyStreak = 0;
+    let _lastBonusDate = null;
 
     /**
-     * 초기화 - 칩 잔액 로드
+     * 초기화 - Firestore 우선, localStorage 폴백
      */
-    function init() {
-        _chips = _loadChips();
+    async function init() {
+        // 먼저 로컬에서 로드 (빠른 UI 표시)
+        _chips = _loadChipsLocal();
+        _loadStreakLocal();
         _notifyListeners();
-        console.log(`[ChipManager] 초기화 완료: ${_chips.toLocaleString()} 칩`);
+
+        // Firebase 초기화 & Firestore 동기화 시도
+        if (typeof initFirebase === 'function') {
+            const uid = await initFirebase();
+            if (uid) {
+                await _syncFromFirestore();
+            }
+        }
+
+        _notifyListeners();
+        console.log(`[ChipManager] 초기화 완료: ${_chips.toLocaleString()} 칩 (streak: ${_dailyStreak})`);
 
         // BFCache 복원 시 (뒤로가기) 최신 잔액으로 동기화
         window.addEventListener('pageshow', (e) => {
             if (e.persisted) {
-                _chips = _loadChips();
+                _chips = _loadChipsLocal();
                 _notifyListeners();
                 console.log(`[ChipManager] BFCache 복원 → 잔액 동기화: ${_chips.toLocaleString()} 칩`);
             }
@@ -36,32 +55,95 @@ const ChipManager = (() => {
     }
 
     /**
-     * 칩 잔액 로드 (Firebase 또는 로컬)
+     * Firestore에서 데이터 동기화
      */
-    function _loadChips() {
-        // 로컬 스토리지에서 로드
+    async function _syncFromFirestore() {
+        if (typeof loadUserData !== 'function') return;
+
+        try {
+            const data = await loadUserData();
+            if (data) {
+                // Firestore 데이터가 있으면 우선 사용
+                if (typeof data.chips === 'number') {
+                    _chips = data.chips;
+                    localStorage.setItem(STORAGE_KEY, _chips.toString());
+                }
+                if (typeof data.dailyBonusStreak === 'number') {
+                    _dailyStreak = data.dailyBonusStreak;
+                    localStorage.setItem(DAILY_STREAK_KEY, _dailyStreak.toString());
+                }
+                if (data.dailyBonusDate) {
+                    _lastBonusDate = data.dailyBonusDate;
+                    localStorage.setItem(DAILY_BONUS_KEY, _lastBonusDate);
+                }
+                console.log('[ChipManager] Firestore 동기화 완료');
+            } else {
+                // Firestore에 데이터 없음 → 신규 유저 생성
+                if (typeof createUserIfNotExists === 'function') {
+                    await createUserIfNotExists({
+                        chips: _chips,
+                        level: 1,
+                        xp: 0,
+                        dailyBonusDate: null,
+                        dailyBonusStreak: 0
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('[ChipManager] Firestore 동기화 실패, 로컬 유지:', e);
+        }
+    }
+
+    /**
+     * 칩 잔액 로드 (로컬)
+     */
+    function _loadChipsLocal() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved !== null) {
             const parsed = parseInt(saved, 10);
             return isNaN(parsed) ? DEFAULT_CHIPS : parsed;
         }
-        // 최초 접속: 기본 칩 지급
         localStorage.setItem(STORAGE_KEY, DEFAULT_CHIPS.toString());
         return DEFAULT_CHIPS;
     }
 
     /**
-     * 칩 잔액 저장
+     * streak 로드 (로컬)
+     */
+    function _loadStreakLocal() {
+        const streak = localStorage.getItem(DAILY_STREAK_KEY);
+        _dailyStreak = streak ? parseInt(streak, 10) : 0;
+        _lastBonusDate = localStorage.getItem(DAILY_BONUS_KEY) || null;
+    }
+
+    /**
+     * 칩 잔액 저장 (로컬 + Firestore)
      */
     function _saveChips() {
         localStorage.setItem(STORAGE_KEY, _chips.toString());
 
-        // Firebase 연동 (활성화 시)
-        if (typeof isFirebaseConnected === 'function' && isFirebaseConnected() && auth && auth.currentUser) {
-            db.collection('users').doc(auth.currentUser.uid).set({
-                chips: _chips,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true }).catch(e => console.warn('[ChipManager] Firebase 저장 실패:', e));
+        // Firestore 비동기 저장
+        if (typeof saveUserData === 'function' && typeof isFirebaseConnected === 'function' && isFirebaseConnected()) {
+            saveUserData({ chips: _chips }).catch(e =>
+                console.warn('[ChipManager] Firestore 저장 실패:', e)
+            );
+        }
+    }
+
+    /**
+     * 보너스 데이터 저장 (로컬 + Firestore)
+     */
+    function _saveBonusData() {
+        localStorage.setItem(DAILY_BONUS_KEY, _lastBonusDate || '');
+        localStorage.setItem(DAILY_STREAK_KEY, _dailyStreak.toString());
+
+        if (typeof saveUserData === 'function' && typeof isFirebaseConnected === 'function' && isFirebaseConnected()) {
+            saveUserData({
+                dailyBonusDate: _lastBonusDate,
+                dailyBonusStreak: _dailyStreak
+            }).catch(e =>
+                console.warn('[ChipManager] Firestore 보너스 저장 실패:', e)
+            );
         }
     }
 
@@ -120,25 +202,78 @@ const ChipManager = (() => {
         });
     }
 
+    // ═══════════════════════════════════
+    //  7일 프로그레시브 출석 보너스
+    // ═══════════════════════════════════
+
     /**
      * 데일리 보너스 수령 가능 여부
      */
     function canClaimDailyBonus() {
-        const lastClaim = localStorage.getItem(DAILY_BONUS_KEY);
-        if (!lastClaim) return true;
+        if (!_lastBonusDate) return true;
         const today = new Date().toDateString();
-        return lastClaim !== today;
+        return _lastBonusDate !== today;
+    }
+
+    /**
+     * 현재 streak 일수 (0~6)
+     */
+    function getDailyStreak() {
+        return _dailyStreak;
+    }
+
+    /**
+     * 오늘의 보너스 금액 (streak 기반)
+     */
+    function getTodayBonusAmount() {
+        const idx = Math.min(_dailyStreak, STREAK_BONUSES.length - 1);
+        return STREAK_BONUSES[idx];
+    }
+
+    /**
+     * streak이 유효한지 확인 (어제 수령했는지)
+     */
+    function _isStreakValid() {
+        if (!_lastBonusDate) return false;
+        const lastDate = new Date(_lastBonusDate);
+        const today = new Date();
+        const diffMs = today.getTime() - lastDate.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        // 어제 수령했으면 streak 유지 (1일 차이)
+        return diffDays <= 1;
     }
 
     /**
      * 데일리 보너스 수령
+     * @returns {Object} { amount, streak, isDay7 }
      */
     function claimDailyBonus() {
-        if (!canClaimDailyBonus()) return 0;
+        if (!canClaimDailyBonus()) return { amount: 0, streak: _dailyStreak, isDay7: false };
+
         const today = new Date().toDateString();
-        localStorage.setItem(DAILY_BONUS_KEY, today);
-        addChips(DAILY_BONUS);
-        return DAILY_BONUS;
+
+        // streak 유효성 검사 → 유효하면 +1, 아니면 리셋
+        if (_isStreakValid()) {
+            _dailyStreak = Math.min(_dailyStreak + 1, STREAK_BONUSES.length - 1);
+        } else {
+            _dailyStreak = 0;
+        }
+
+        const amount = STREAK_BONUSES[_dailyStreak];
+        const isDay7 = _dailyStreak === STREAK_BONUSES.length - 1;
+
+        _lastBonusDate = today;
+        addChips(amount);
+        _saveBonusData();
+
+        return { amount, streak: _dailyStreak, isDay7 };
+    }
+
+    /**
+     * 7일 보너스 배열 반환 (캘린더 UI용)
+     */
+    function getStreakBonuses() {
+        return STREAK_BONUSES;
     }
 
     /**
@@ -166,9 +301,12 @@ const ChipManager = (() => {
         onBalanceChange,
         canClaimDailyBonus,
         claimDailyBonus,
+        getDailyStreak,
+        getTodayBonusAmount,
+        getStreakBonuses,
         formatBalance,
         reset,
         DEFAULT_CHIPS,
-        DAILY_BONUS
+        STREAK_BONUSES
     };
 })();

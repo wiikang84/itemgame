@@ -148,6 +148,11 @@ const Blackjack = (() => {
             return;
         }
 
+        // XP 획득 (베팅 금액의 10%)
+        if (typeof LevelManager !== 'undefined') {
+            LevelManager.addXP(currentBet);
+        }
+
         playerHands = [{
             cards: [],
             bet: currentBet,
@@ -310,7 +315,8 @@ const Blackjack = (() => {
         const allBust = playerHands.every(h => _isBust(h.cards));
         if (!allBust) {
             while (_calcRealScore(dealerCards) < 17) {
-                await _delay(600);
+                // 딜러 서스펜스: 카드마다 1초 딜레이
+                await _delay(1000);
                 dealerCards.push(_drawCard());
                 if (typeof SoundManager !== 'undefined') SoundManager.playCardDeal();
                 _render();
@@ -371,15 +377,21 @@ const Blackjack = (() => {
             ChipManager.addChips(totalPayout);
         }
 
-        // 사운드
+        // 사운드 + 이펙트
         const totalBet = playerHands.reduce((sum, h) => sum + h.bet, 0);
         const netWin = totalPayout - totalBet;
         if (netWin > 0) {
             if (typeof SoundManager !== 'undefined') {
                 if (results.some(r => r.result === 'BLACKJACK!')) {
                     SoundManager.playBigWin();
+                    // 블랙잭 골드 이펙트: 코인 샤워 + 화면 쉐이크
+                    if (typeof CoinShower !== 'undefined') CoinShower.start(3000, 'mega');
+                    document.body.classList.add('shake');
+                    setTimeout(() => document.body.classList.remove('shake'), 500);
                 } else {
                     SoundManager.playWin();
+                    // 일반 승리: 작은 코인 샤워
+                    if (typeof CoinShower !== 'undefined') CoinShower.start(1500, 'big');
                 }
             }
         } else if (netWin < 0) {
