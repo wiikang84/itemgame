@@ -16,7 +16,7 @@
             <div class="chip-balance" id="headerChips">0</div>
         </div>
         <nav class="header-nav">
-            <button class="nav-btn" onclick="location.href='index.html'">LOBBY</button>
+            <button class="nav-btn" onclick="location.href='index.html'">로비</button>
             <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
         </nav>
     </header>
@@ -35,11 +35,11 @@
 
             <!-- ═══ 프리스핀 / 멀티플라이어 ═══ -->
             <div class="free-spin-counter" id="freeSpinCounter" style="display:none">
-                <span class="fs-label">FREE SPINS</span>
+                <span class="fs-label">무료 스핀</span>
                 <span class="fs-count">0</span>
             </div>
             <div class="multiplier-display" id="multiplierDisplay" style="display:none">
-                <span class="mult-label">MULTIPLIER</span>
+                <span class="mult-label">배율</span>
                 <span class="mult-value">x1</span>
             </div>
 
@@ -57,23 +57,23 @@
             <!-- ═══ 인포 바 (LED 디스플레이) ═══ -->
             <div class="info-bar">
                 <div class="info-cell">
-                    <span class="info-label">CREDIT</span>
+                    <span class="info-label">크레딧</span>
                     <span class="info-value led-display" id="creditDisplay">0</span>
                 </div>
                 <div class="info-cell result-cell">
-                    <span class="info-value result-text" id="slotResult">PRESS SPIN</span>
+                    <span class="info-value result-text" id="slotResult">스핀하세요</span>
                 </div>
                 <div class="info-cell">
-                    <span class="info-label">WIN</span>
+                    <span class="info-label">당첨</span>
                     <span class="info-value led-display" id="winDisplay">0</span>
                 </div>
             </div>
 
             <!-- 게임 통계 -->
             <div class="game-stats" id="gameStats">
-                <span>SPINS: 0</span>
-                <span>WINS: 0</span>
-                <span>BEST: 0</span>
+                <span>스핀: 0</span>
+                <span>당첨: 0</span>
+                <span>최고: 0</span>
             </div>
 
             <!-- ═══ 캐비닛 벨리 (컨트롤 영역) ═══ -->
@@ -81,78 +81,90 @@
                 <!-- 베팅 정보 바 -->
                 <div class="bet-info-bar">
                     <div class="bet-info-item">
-                        <span class="bet-info-label">BET</span>
+                        <span class="bet-info-label">베팅</span>
                         <span class="bet-info-value led-small" id="betAmount">100</span>
                     </div>
                     <div class="bet-info-item">
-                        <span class="bet-info-label">LINES</span>
+                        <span class="bet-info-label">라인</span>
                         <span class="bet-info-value led-small">9</span>
                     </div>
                     <div class="bet-info-item">
-                        <span class="bet-info-label">TOTAL BET</span>
+                        <span class="bet-info-label">총 베팅</span>
                         <span class="bet-info-value led-small" id="totalBet">100</span>
                     </div>
                 </div>
 
                 <!-- 캐비닛 버튼 바 -->
                 <div class="cabinet-button-bar">
-                    <button class="cab-btn cab-btn-info" onclick="togglePaytable()" title="페이테이블">
+                    <button class="cab-btn cab-btn-info" onclick="togglePaytable()" title="배당표">
                         <span class="cab-btn-icon">i</span>
-                        <span class="cab-btn-label">PAYS</span>
+                        <span class="cab-btn-label">배당</span>
                     </button>
                     <button class="cab-btn cab-btn-bet" onclick="SlotMachine.decreaseBet()">
                         <span class="cab-btn-icon">&minus;</span>
-                        <span class="cab-btn-label">BET</span>
+                        <span class="cab-btn-label">베팅</span>
                     </button>
                     <button class="cab-btn cab-btn-bet" onclick="SlotMachine.increaseBet()">
                         <span class="cab-btn-icon">+</span>
-                        <span class="cab-btn-label">BET</span>
+                        <span class="cab-btn-label">베팅</span>
                     </button>
                     <button class="cab-btn cab-btn-maxbet" onclick="SlotMachine.setBet(1000)">
-                        <span class="cab-btn-label">MAX<br>BET</span>
+                        <span class="cab-btn-label">최대<br>베팅</span>
                     </button>
                     <button class="cab-btn cab-btn-spin" id="spinButton" onclick="SlotMachine.spin()">
-                        <span class="cab-btn-label">SPIN</span>
+                        <span class="cab-btn-label">스핀</span>
                     </button>
-                    <button class="cab-btn cab-btn-auto" id="autoSpinBtn" onclick="SlotMachine.toggleAutoSpin()">
-                        <span class="cab-btn-label">AUTO</span>
-                    </button>
+                    <!-- 오토스핀: 버튼 + 옵션 메뉴 -->
+                    <div class="auto-spin-wrapper">
+                        <button class="cab-btn cab-btn-auto" id="autoSpinBtn" onclick="SlotMachine.toggleAutoSpin()">
+                            <span class="cab-btn-label">자동</span>
+                        </button>
+                        <div class="auto-spin-menu" id="autoSpinMenu" style="display:none">
+                            <div class="auto-menu-title">자동 스핀 횟수</div>
+                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(10)">10회</button>
+                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(25)">25회</button>
+                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(50)">50회</button>
+                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(100)">100회</button>
+                            <button class="auto-menu-item" onclick="SlotMachine.startAutoSpin(-1)">무제한</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- ═══ 갬블 패널 ═══ -->
+            <!-- ═══ 갬블(더블업) 패널 ═══ -->
             <div class="gamble-panel" id="gamblePanel" style="display:none">
                 <div class="gamble-header">
-                    DOUBLE UP? <span class="gamble-amount">0</span> CHIPS
+                    더블업! <span class="gamble-amount">0</span> 칩
                 </div>
+                <div class="gamble-hint">카드 색상을 맞추면 당첨금 2배!</div>
                 <div class="gamble-card-area">
                     <div class="gamble-card" id="gambleCard">?</div>
                 </div>
                 <div class="gamble-buttons">
-                    <button class="gamble-btn gamble-red" onclick="SlotMachine.gambleDouble('red')">&#9829; RED</button>
-                    <button class="gamble-btn gamble-black" onclick="SlotMachine.gambleDouble('black')">&#9824; BLACK</button>
-                    <button class="gamble-btn gamble-collect" onclick="SlotMachine.gambleCollect()">COLLECT</button>
+                    <button class="gamble-btn gamble-red" onclick="SlotMachine.gambleDouble('red')">&#9829; 빨강</button>
+                    <button class="gamble-btn gamble-black" onclick="SlotMachine.gambleDouble('black')">&#9824; 검정</button>
+                    <button class="gamble-btn gamble-collect" onclick="SlotMachine.gambleCollect()">받기</button>
                 </div>
             </div>
 
-            <!-- ═══ 페이테이블 (기본 숨김, PAYS 버튼으로 토글) ═══ -->
+            <!-- ═══ 배당표 (기본 숨김, 배당 버튼으로 토글) ═══ -->
             <div class="paytable" id="paytableSection" style="display:none">
-                <h3 class="paytable-title">PAYTABLE</h3>
+                <h3 class="paytable-title">배당표</h3>
                 <div class="paytable-special">
                     <div class="paytable-special-item">
                         <span class="paytable-symbol wild-badge">WILD</span>
-                        <span class="paytable-desc">Substitutes all symbols except Scatter</span>
+                        <span class="paytable-desc">보너스 제외 모든 심볼을 대체합니다</span>
                     </div>
                     <div class="paytable-special-item">
                         <span class="paytable-symbol scatter-badge">BONUS</span>
-                        <span class="paytable-desc">3+ anywhere triggers FREE SPINS (10/15/25)</span>
+                        <span class="paytable-desc">3개 이상 출현 시 무료스핀 (10/15/25회)</span>
                     </div>
                 </div>
                 <div class="paytable-grid" id="paytableGrid">
                     <!-- JS 생성 -->
                 </div>
                 <p class="paytable-footer">
-                    9 PAYLINES &bull; 3+ CONSECUTIVE MATCH &bull; WILD SUBSTITUTES &bull; SCATTER FREE SPINS
+                    9 페이라인 &bull; 3개+ 연속 매치 &bull; WILD 대체 &bull; BONUS 무료스핀
                 </p>
             </div>
 
@@ -161,12 +173,12 @@
 
     <!-- ═══ 오버레이 ═══ -->
     <div class="free-spin-banner" id="freeSpinBanner">
-        <div class="fs-text">FREE SPINS!</div>
+        <div class="fs-text">무료 스핀!</div>
     </div>
 
     <div class="win-overlay" id="winOverlay">
         <div class="win-content">
-            <div class="win-tier-text">WIN!</div>
+            <div class="win-tier-text">당첨!</div>
             <div class="win-amount">+0</div>
         </div>
     </div>

@@ -5,7 +5,7 @@
  * [v1.0: commit fd342be / v2.0: commit bbeba0e]
  *
  * v3.0: 실제 카지노 스타일 리뉴얼
- * - 클래식 카지노 심볼 (7/BAR/Cherry/Bell/Diamond + A/K/Q/J + Wild/Scatter)
+ * - 클래식 카지노 심볼 (7/BAR/Cherry/Bell/Diamond/Lemon/Orange/Grapes/Watermelon + Wild/Bonus)
  * - 카지노 캐비닛 UI (메탈릭 프레임, LED 디스플레이, 빨간 스핀 버튼)
  * - 와일드 심볼 대체, 스캐터 프리스핀, 갬블/더블업
  * - 5단계 승리 연출, 페이라인 SVG, 앤티시페이션
@@ -33,7 +33,7 @@ const SlotMachine = (() => {
     ];
 
     // 릴 가중치 (인덱스 = SYMBOLS 순서)
-    // [Pharaoh, Eye, Scarab, Cobra, Horus, A, K, Q, J, Wild, Scatter]
+    // [7, BAR, Cherry, Bell, Diamond, Lemon, Orange, Grapes, Watermelon, Wild, Bonus]
     const REEL_WEIGHTS = [2, 3, 3, 5, 5, 8, 8, 9, 9, 1, 2];
 
     // 와일드/스캐터 인덱스
@@ -319,6 +319,15 @@ const SlotMachine = (() => {
             _endFreeSpins();
         } else if (autoSpin && !gambleAmount) {
             autoSpinCount++;
+            // 오토스핀 버튼에 남은 횟수 표시
+            if (autoSpinLimit !== -1) {
+                const remaining = autoSpinLimit - autoSpinCount;
+                const btn = document.getElementById('autoSpinBtn');
+                if (btn) {
+                    const labelEl = btn.querySelector('.cab-btn-label');
+                    if (labelEl) labelEl.textContent = remaining > 0 ? `${remaining}` : '정지';
+                }
+            }
             if (autoSpinLimit !== -1 && autoSpinCount >= autoSpinLimit) {
                 stopAutoSpin();
             } else {
@@ -414,7 +423,11 @@ const SlotMachine = (() => {
                     stripEl.style.transition = `transform ${duration}s cubic-bezier(0.15, 0.85, 0.25, 1.02)`;
                     stripEl.style.transform = `translateY(-${targetY}px)`;
 
+                    let reelDone = false;
                     const onEnd = () => {
+                        if (reelDone) return; // 중복 호출 방지
+                        reelDone = true;
+                        clearTimeout(safetyTimer);
                         stripEl.removeEventListener('transitionend', onEnd);
 
                         if (typeof SoundManager !== 'undefined') SoundManager.playReelStop(col);
@@ -434,6 +447,8 @@ const SlotMachine = (() => {
                     };
 
                     stripEl.addEventListener('transitionend', onEnd);
+                    // 안전 타이머: transitionend가 발생하지 않을 경우 (탭 전환 등) 4초 후 강제 완료
+                    const safetyTimer = setTimeout(onEnd, 4000);
                 }, col * 120 + extraDelay);
             });
         });
@@ -578,7 +593,7 @@ const SlotMachine = (() => {
         _showWinOverlay(amount, tier);
 
         // 결과 텍스트
-        const tierLabels = { small: 'WIN', nice: 'NICE WIN', big: 'BIG WIN', mega: 'MEGA WIN', epic: 'EPIC WIN' };
+        const tierLabels = { small: '당첨', nice: '좋은 당첨', big: '대박', mega: '초대박', epic: '잭팟' };
         _showResult(`${tierLabels[tier]}! +${amount.toLocaleString()}`, 'win');
 
         // 카운트업 애니메이션
@@ -602,11 +617,11 @@ const SlotMachine = (() => {
         const overlay = document.getElementById('winOverlay');
         if (!overlay) return;
 
-        const tierLabels = { small: 'WIN!', nice: 'NICE WIN!', big: 'BIG WIN!', mega: 'MEGA WIN!', epic: 'EPIC WIN!' };
+        const tierLabels = { small: '당첨!', nice: '좋은 당첨!', big: '대박!', mega: '초대박!', epic: '잭팟!' };
         const winTextEl = overlay.querySelector('.win-tier-text');
         const amountEl = overlay.querySelector('.win-amount');
 
-        if (winTextEl) winTextEl.textContent = tierLabels[tier] || 'WIN!';
+        if (winTextEl) winTextEl.textContent = tierLabels[tier] || '당첨!';
         if (amountEl) amountEl.textContent = `+${amount.toLocaleString()}`;
 
         // 모든 티어 클래스 제거 후 현재 티어 추가
@@ -673,7 +688,7 @@ const SlotMachine = (() => {
     function _showFreeSpinBanner(count, isRetrigger) {
         const banner = document.getElementById('freeSpinBanner');
         if (!banner) return;
-        const text = isRetrigger ? `+${count} FREE SPINS!` : `${count} FREE SPINS!`;
+        const text = isRetrigger ? `+${count} 무료 스핀!` : `${count} 무료 스핀!`;
         banner.querySelector('.fs-text').textContent = text;
         banner.classList.add('active');
         setTimeout(() => banner.classList.remove('active'), 2500);
@@ -683,7 +698,7 @@ const SlotMachine = (() => {
         const banner = document.getElementById('freeSpinBanner');
         if (!banner) return;
         banner.querySelector('.fs-text').textContent =
-            `FREE SPINS COMPLETE! Total: +${totalWin.toLocaleString()}`;
+            `무료 스핀 완료! 총 당첨: +${totalWin.toLocaleString()}`;
         banner.classList.add('active');
         setTimeout(() => banner.classList.remove('active'), 3000);
     }
@@ -755,7 +770,7 @@ const SlotMachine = (() => {
                 gambleAmount *= 2;
                 ChipManager.addChips(gambleAmount / 2); // 차액 지급
                 if (typeof SoundManager !== 'undefined') SoundManager.playGambleWin();
-                _showResult(`DOUBLE! ${gambleAmount.toLocaleString()}`, 'win');
+                _showResult(`더블! ${gambleAmount.toLocaleString()}`, 'win');
                 // 계속 갬블 가능
                 const amtEl = document.querySelector('.gamble-amount');
                 if (amtEl) amtEl.textContent = gambleAmount.toLocaleString();
@@ -764,7 +779,7 @@ const SlotMachine = (() => {
                 ChipManager.deductChips(gambleAmount);
                 gambleAmount = 0;
                 if (typeof SoundManager !== 'undefined') SoundManager.playGambleLose();
-                _showResult('GAMBLE LOST!', 'lose');
+                _showResult('더블업 실패!', 'lose');
                 _hideGambleUI();
             }
         }, 600);
@@ -772,7 +787,7 @@ const SlotMachine = (() => {
 
     function gambleCollect() {
         if (typeof SoundManager !== 'undefined') SoundManager.playClick();
-        _showResult(`COLLECTED: ${gambleAmount.toLocaleString()}`, 'win');
+        _showResult(`수금: ${gambleAmount.toLocaleString()}`, 'win');
         gambleAmount = 0;
         _hideGambleUI();
     }
@@ -877,8 +892,8 @@ const SlotMachine = (() => {
         const resultEl = document.getElementById('slotResult');
         if (!resultEl) return;
 
-        const tierLabels = { small: 'WIN', nice: 'NICE WIN', big: 'BIG WIN', mega: 'MEGA WIN', epic: 'EPIC WIN' };
-        const label = tierLabels[tier] || 'WIN';
+        const tierLabels = { small: '당첨', nice: '좋은 당첨', big: '대박', mega: '초대박', epic: '잭팟' };
+        const label = tierLabels[tier] || '당첨';
         const steps = tier === 'small' ? 15 : tier === 'nice' ? 25 : 40;
         let current = 0;
         const step = Math.max(1, Math.floor(targetAmount / steps));
@@ -953,7 +968,7 @@ const SlotMachine = (() => {
         if (spinBtn && !isSpinning) {
             const labelEl = spinBtn.querySelector('.cab-btn-label');
             if (labelEl) {
-                labelEl.textContent = isFreeSpinMode ? 'FREE' : 'SPIN';
+                labelEl.textContent = isFreeSpinMode ? '무료' : '스핀';
             }
         }
 
@@ -961,9 +976,9 @@ const SlotMachine = (() => {
         const statsEl = document.getElementById('gameStats');
         if (statsEl) {
             statsEl.innerHTML = `
-                <span>SPINS: ${stats.spins}</span>
-                <span>WINS: ${stats.wins}</span>
-                <span>BEST: ${stats.biggestWin.toLocaleString()}</span>
+                <span>스핀: ${stats.spins}</span>
+                <span>당첨: ${stats.wins}</span>
+                <span>최고: ${stats.biggestWin.toLocaleString()}</span>
             `;
         }
     }
@@ -1005,13 +1020,32 @@ const SlotMachine = (() => {
     //  자동 스핀
     // ═══════════════════════════════════
 
-    function toggleAutoSpin(limit) {
+    function toggleAutoSpin() {
         if (isFreeSpinMode) return;
 
         if (autoSpin) {
             stopAutoSpin();
+            _hideAutoMenu();
             return;
         }
+
+        // 갬블 중이면 수금하고 시작
+        if (gambleAmount > 0) {
+            gambleCollect();
+        }
+
+        // 오토스핀 메뉴 토글
+        const menu = document.getElementById('autoSpinMenu');
+        if (menu) {
+            const isVisible = menu.style.display !== 'none';
+            menu.style.display = isVisible ? 'none' : 'block';
+        }
+    }
+
+    function startAutoSpin(limit) {
+        if (isFreeSpinMode) return;
+
+        _hideAutoMenu();
 
         autoSpin = true;
         autoSpinCount = 0;
@@ -1022,7 +1056,7 @@ const SlotMachine = (() => {
             btn.classList.add('active');
             const labelEl = btn.querySelector('.cab-btn-label');
             if (labelEl) {
-                labelEl.textContent = autoSpinLimit === -1 ? 'STOP' : `${autoSpinLimit - autoSpinCount}`;
+                labelEl.textContent = autoSpinLimit === -1 ? '정지' : `${autoSpinLimit - autoSpinCount}`;
             }
         }
 
@@ -1038,8 +1072,13 @@ const SlotMachine = (() => {
         if (btn) {
             btn.classList.remove('active');
             const labelEl = btn.querySelector('.cab-btn-label');
-            if (labelEl) labelEl.textContent = 'AUTO';
+            if (labelEl) labelEl.textContent = '자동';
         }
+    }
+
+    function _hideAutoMenu() {
+        const menu = document.getElementById('autoSpinMenu');
+        if (menu) menu.style.display = 'none';
     }
 
     // ═══════════════════════════════════
@@ -1071,6 +1110,7 @@ const SlotMachine = (() => {
         increaseBet,
         decreaseBet,
         toggleAutoSpin,
+        startAutoSpin,
         stopAutoSpin,
         gambleDouble,
         gambleCollect,

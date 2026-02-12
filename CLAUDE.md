@@ -49,23 +49,23 @@ itemgame/
 ```
 
 ## 게임 사양
-- **슬롯머신**: "PHARAOH'S FORTUNE" 이집트 테마, 5x3 릴, 9 페이라인, RTP ~96%
-  - 11종 심볼 (파라오/라의눈/스카라브/코브라/호루스/A/K/Q/J + Wild + Scatter)
-  - Wild: 스캐터 제외 모든 심볼 대체
-  - Scatter: 3개+ 출현 시 프리스핀 (10/15/25회), 프로그레시브 멀티플라이어 (최대 x10)
-  - 5단계 승리 연출: Small Win → Nice Win → Big Win → Mega Win → Epic Win
-  - 갬블/더블업: Red/Black 카드 색상 맞추기 (50/50)
+- **슬롯머신**: "LUCKY SEVENS" 클래식 카지노, 5x3 릴, 9 페이라인, RTP ~96%
+  - 11종 심볼 (7/BAR/Cherry/Bell/Diamond/Lemon/Orange/Grapes/Watermelon + Wild + Bonus)
+  - Wild: 보너스 제외 모든 심볼 대체
+  - Bonus(Scatter): 3개+ 출현 시 무료스핀 (10/15/25회), 프로그레시브 배율 (최대 x10)
+  - 5단계 승리 연출: 당첨 → 좋은 당첨 → 대박 → 초대박 → 잭팟
+  - 갬블/더블업: 빨강/검정 카드 색상 맞추기 (50/50), 한국어 안내
   - 앤티시페이션: 스캐터 2개 출현 시 마지막 릴 지연 연출
-  - 오토스핀: 10/25/50/100/무한 옵션
-  - BGM: 이집트풍 메인 테마 + 프리스핀 테마 (Web Audio API 프로그래매틱 생성)
+  - 오토스핀: 10/25/50/100/무제한 횟수 선택 메뉴
+  - 전체 UI 한국어화 (버튼/디스플레이/통계/갬블/배당표)
 - **블랙잭**: 6덱 슈, 딜러 소프트17 스탠드, Hit/Stand/Double/Split
 - **룰렛**: 유럽식 37칸(0~36), Canvas 휠 애니메이션
 
 ## 로컬 테스트
 ```bash
 cd itemgame
-python -m http.server 8080
-# → http://localhost:8080
+python -m http.server 8888
+# → http://localhost:8888
 ```
 
 ## 변경 로그
@@ -96,3 +96,14 @@ python -m http.server 8080
   - 클래식 카지노 과일/전통 심볼만 사용: 7, BAR, Cherry, Bell, Diamond, Lemon, Orange, Grapes, Watermelon, WILD, BONUS
   - Lucky 7: 빨간 그라데이션 세리프체 / BAR: 골드 뱃지 / WILD: 골드 뱃지 / BONUS: 초록 뱃지
   - 과일 심볼: 이모지 + CSS 그림자/글로우 효과
+- **2026-02-12**: 슬롯머신 v4.0 한국어 번역 + QA 버그 수정
+  - 전체 UI 한국어화: 버튼(스핀/자동/베팅/최대베팅/배당), 디스플레이(크레딧/당첨/총베팅), 통계(스핀/당첨/최고)
+  - 5단계 승리 텍스트 한국어: 당첨→좋은 당첨→대박→초대박→잭팟
+  - 갬블(더블업) UX 개선: 한국어 텍스트 + 초보자 안내 문구("카드 색상을 맞추면 당첨금 2배!")
+  - 무료 스핀/배율 표시 한국어화
+  - 배당표 한국어화 (설명/푸터 포함)
+  - 오토스핀 UX 개선: 횟수 선택 팝업 메뉴 (10/25/50/100/무제한), 남은 횟수 실시간 표시
+  - transitionend 안전 타이머 추가: 탭 전환 시 게임 멈춤 방지 (4초 타임아웃)
+  - 죽은 CSS 제거: .sym-card .card-letter 참조 삭제
+  - REEL_WEIGHTS 주석 수정: 이집트 심볼명 → 현재 심볼명
+  - 변경 파일: slot.html, css/slot.css, js/games/slot-machine.js, CLAUDE.md
