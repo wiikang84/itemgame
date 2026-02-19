@@ -438,7 +438,7 @@ const LadderGame = (() => {
             // 1. 카운트다운 (v1.2: 900ms - 무게감)
             for (let i = 3; i >= 1; i--) {
                 _drawCountdown(i);
-                if (typeof SoundManager !== 'undefined') SoundManager.playCountTick();
+                if (typeof SoundManager !== 'undefined') SoundManager.playLadderTick();
                 await _delay(900);
             }
 
@@ -446,7 +446,7 @@ const LadderGame = (() => {
             for (let i = 1; i <= result.rungs; i++) {
                 _clearCanvas();
                 _drawLadder(true, result.rungPositions, i);
-                if (typeof SoundManager !== 'undefined') SoundManager.playReelStop(i - 1);
+                if (typeof SoundManager !== 'undefined') SoundManager.playLadderRungReveal();
                 await _delay(800);
             }
 
@@ -476,6 +476,7 @@ const LadderGame = (() => {
                 ctx.arc(sx, _ty(), 15, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
+                if (typeof SoundManager !== 'undefined') SoundManager.playLadderBlink();
                 await _delay(300);
 
                 _clearCanvas();
@@ -483,7 +484,7 @@ const LadderGame = (() => {
                 await _delay(200);
             }
 
-            if (typeof SoundManager !== 'undefined') SoundManager.playAnticipation();
+            if (typeof SoundManager !== 'undefined') SoundManager.playLadderSuspense();
             await _delay(800);
 
             // 4. 애벌레 하강 (v1.2: 극적 슬로모션 ~15초)
@@ -504,7 +505,7 @@ const LadderGame = (() => {
 
                 // 마지막 구간 직전 극적 서스펜스
                 if (isLast) {
-                    if (typeof SoundManager !== 'undefined') SoundManager.playAnticipation();
+                    if (typeof SoundManager !== 'undefined') SoundManager.playLadderSuspense();
                     await _delay(1200);
                 }
 
@@ -512,7 +513,7 @@ const LadderGame = (() => {
 
                 // 가로선 교차 후 일시정지 (긴장감)
                 if (isH) {
-                    if (typeof SoundManager !== 'undefined') SoundManager.playCountTick();
+                    if (typeof SoundManager !== 'undefined') SoundManager.playLadderCross();
                     await _delay(500);
                 }
             }
@@ -520,6 +521,7 @@ const LadderGame = (() => {
             // 5. 도착 플래시
             const endX = result.end === 'left' ? _lx() : _rx();
             const endColor = result.end === 'left' ? C.odd : C.even;
+            if (typeof SoundManager !== 'undefined') SoundManager.playLadderLand();
 
             for (let f = 0; f < 3; f++) {
                 _clearCanvas();

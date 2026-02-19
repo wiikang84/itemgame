@@ -710,6 +710,62 @@ const SoundManager = (() => {
         });
     }
 
+    // ─── 사다리 전용 사운드 ───
+
+    /** 사다리: 카운트다운 틱 (크고 또렷하게) */
+    function playLadderTick() {
+        if (_muted) return;
+        _playTone(800, 0.15, 'sine', 0.25);
+        _playTone(1200, 0.1, 'triangle', 0.12);
+        _playNoise(0.05, 0.1);
+    }
+
+    /** 사다리: 가로선 공개 (쿵 하는 등장음) */
+    function playLadderRungReveal() {
+        if (_muted) return;
+        _playTone(120, 0.25, 'sine', 0.2);
+        _playTone(350, 0.12, 'triangle', 0.12);
+        _playNoise(0.06, 0.12);
+    }
+
+    /** 사다리: 출발점 깜빡 (높은 알림음) */
+    function playLadderBlink() {
+        if (_muted) return;
+        _playTone(1000, 0.1, 'sine', 0.18);
+        _playTone(1500, 0.08, 'sine', 0.1);
+    }
+
+    /** 사다리: 가로선 교차 (방향 전환 효과음) */
+    function playLadderCross() {
+        if (_muted) return;
+        _playTone(500, 0.18, 'sine', 0.2);
+        _playTone(750, 0.12, 'triangle', 0.12);
+        _playNoise(0.06, 0.1);
+    }
+
+    /** 사다리: 서스펜스 (마지막 하강 전 극적 텐션) */
+    function playLadderSuspense() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 점점 높아지고 커지는 텐션
+        for (let i = 0; i < 15; i++) {
+            _playToneAt(150 + i * 50, 0.2, 'sine', 0.06 + i * 0.01, now + i * 0.07);
+        }
+        // 드럼롤
+        for (let i = 0; i < 12; i++) {
+            setTimeout(() => _playNoise(0.04, 0.06 + i * 0.005), i * 70);
+        }
+    }
+
+    /** 사다리: 도착 (착지음) */
+    function playLadderLand() {
+        if (_muted) return;
+        _playTone(200, 0.3, 'sine', 0.2);
+        _playTone(100, 0.4, 'sine', 0.15);
+        _playNoise(0.1, 0.15);
+    }
+
     // ─── 블랙잭/룰렛용 (기존 유지) ───
 
     function playCardDeal() {
@@ -784,6 +840,13 @@ const SoundManager = (() => {
         playCountTick,
         playLose,
         playBonus,
+        // 사다리
+        playLadderTick,
+        playLadderRungReveal,
+        playLadderBlink,
+        playLadderCross,
+        playLadderSuspense,
+        playLadderLand,
         // 레거시
         playWin,
         playCardDeal,
