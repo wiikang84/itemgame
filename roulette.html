@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/roulette.css">
 </head>
-<body>
+<body class="roulette-page">
+    <!-- 스포트라이트 오버레이 -->
+    <div class="roulette-spotlight-overlay"></div>
+
     <!-- 헤더 -->
     <header class="header">
         <div class="header-logo" onclick="location.href='index.html'" style="cursor:pointer">ITEM<span>GAME</span></div>
@@ -31,55 +34,64 @@
     <!-- 메인 -->
     <main class="container">
         <div class="roulette-container">
-            <!-- 룰렛 프레임 -->
-            <div class="roulette-frame">
-                <div class="roulette-title">🎡 EUROPEAN ROULETTE</div>
-
-                <!-- 휠 -->
-                <div class="wheel-area">
-                    <div class="wheel-wrapper">
-                        <div class="wheel-marker"></div>
-                        <canvas class="wheel-canvas" id="wheelCanvas"></canvas>
+            <!-- 카지노 테이블 프레임 -->
+            <div class="roulette-table-outer" id="rouletteTableOuter">
+                <div class="roulette-frame">
+                    <!-- 타이틀 배너 -->
+                    <div class="roulette-title-banner">
+                        <div class="title-deco left">♦</div>
+                        <div class="roulette-title">EUROPEAN ROULETTE</div>
+                        <div class="title-deco right">♦</div>
                     </div>
-                </div>
 
-                <!-- 결과 숫자 -->
-                <div class="result-number" style="display:none">
-                    <div class="number-display" id="resultNumberDisplay">-</div>
-                </div>
+                    <!-- 휠 -->
+                    <div class="wheel-area">
+                        <div class="wheel-wrapper">
+                            <div class="wheel-marker"></div>
+                            <canvas class="wheel-canvas" id="wheelCanvas"></canvas>
+                        </div>
+                    </div>
 
-                <!-- 결과 -->
-                <div class="result-display" id="rouletteResult"></div>
+                    <!-- 결과 숫자 -->
+                    <div class="result-number" style="display:none">
+                        <div class="number-display" id="resultNumberDisplay">-</div>
+                    </div>
 
-                <!-- 히스토리 -->
-                <div class="history-bar" id="historyBar">
-                    <span style="color:var(--text-dim);font-size:0.8rem">결과 히스토리</span>
+                    <!-- 결과 -->
+                    <div class="result-display" id="rouletteResult"></div>
+
+                    <!-- 히스토리 -->
+                    <div class="history-bar" id="historyBar">
+                        <span style="color:var(--text-dim);font-size:0.8rem">결과 히스토리</span>
+                    </div>
                 </div>
             </div>
 
             <!-- 베팅 테이블 -->
-            <div class="betting-table">
-                <!-- 숫자 그리드 -->
-                <div class="number-grid" id="numberGrid">
-                    <!-- JS로 생성 -->
-                </div>
+            <div class="betting-table-outer">
+                <div class="betting-table">
+                    <div class="betting-table-title">PLACE YOUR BETS</div>
+                    <!-- 숫자 그리드 -->
+                    <div class="number-grid" id="numberGrid">
+                        <!-- JS로 생성 -->
+                    </div>
 
-                <!-- 아웃사이드 베팅 -->
-                <div class="outside-bets" id="outsideBets">
-                    <!-- JS로 생성 -->
-                </div>
+                    <!-- 아웃사이드 베팅 -->
+                    <div class="outside-bets" id="outsideBets">
+                        <!-- JS로 생성 -->
+                    </div>
 
-                <!-- 컬럼 베팅 -->
-                <div class="column-bets" id="columnBets">
-                    <!-- JS로 생성 -->
+                    <!-- 컬럼 베팅 -->
+                    <div class="column-bets" id="columnBets">
+                        <!-- JS로 생성 -->
+                    </div>
                 </div>
             </div>
 
-            <!-- 컨트롤 -->
+            <!-- 컨트롤 패널 -->
             <div class="roulette-controls">
                 <!-- 칩 선택 -->
                 <div class="bet-chip-selector">
-                    <span style="color:var(--text-secondary);font-size:0.85rem">칩:</span>
                     <button class="bet-chip-option c100 active" data-value="100" onclick="Roulette.selectChip(100)">100</button>
                     <button class="bet-chip-option c500" data-value="500" onclick="Roulette.selectChip(500)">500</button>
                     <button class="bet-chip-option c1000" data-value="1000" onclick="Roulette.selectChip(1000)">1K</button>
@@ -88,16 +100,16 @@
                     <button class="bet-chip-option c50000" data-value="50000" onclick="Roulette.selectChip(50000)">50K</button>
                 </div>
 
-                <!-- 총 베팅 -->
-                <div class="total-bet-display">
-                    총 베팅: <strong id="totalBet">0</strong> 칩
-                </div>
-
-                <!-- 퀵 베팅 버튼 -->
-                <div class="quick-bet-buttons">
-                    <button class="quick-btn rebet-btn" onclick="Roulette.rebet()">REBET</button>
-                    <button class="quick-btn double-btn" onclick="Roulette.doubleBet()">x2</button>
-                    <button class="quick-btn allin-btn" onclick="Roulette.allIn()">ALL-IN</button>
+                <!-- 총 베팅 + 퀵 버튼 한 줄 -->
+                <div class="controls-row">
+                    <div class="total-bet-display">
+                        TOTAL BET: <strong id="totalBet">0</strong>
+                    </div>
+                    <div class="quick-bet-buttons">
+                        <button class="quick-btn rebet-btn" onclick="Roulette.rebet()">REBET</button>
+                        <button class="quick-btn double-btn" onclick="Roulette.doubleBet()">x2</button>
+                        <button class="quick-btn allin-btn" onclick="Roulette.allIn()">ALL-IN</button>
+                    </div>
                 </div>
 
                 <!-- 액션 버튼 -->
@@ -111,11 +123,11 @@
             </div>
 
             <!-- 규칙 -->
-            <div class="card mt-3" style="padding:20px">
-                <h3 class="text-gold mb-1">📋 룰렛 규칙</h3>
-                <ul style="color:var(--text-secondary);font-size:0.85rem;line-height:2;padding-left:20px">
+            <div class="roulette-rules">
+                <h3>RULES</h3>
+                <ul>
                     <li>유럽식 룰렛: 0~36 (총 37칸)</li>
-                    <li><strong class="text-gold">숫자 직접 베팅</strong>: 35:1 배당</li>
+                    <li><strong>숫자 직접 베팅</strong>: 35:1 배당</li>
                     <li><strong>12단위</strong> (1st/2nd/3rd 12): 2:1 배당</li>
                     <li><strong>컬럼</strong> (Col 1/2/3): 2:1 배당</li>
                     <li><strong>빨강/검정, 홀/짝, 1-18/19-36</strong>: 1:1 배당</li>

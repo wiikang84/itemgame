@@ -539,6 +539,12 @@ const Roulette = (() => {
             ChipManager.addChips(winAmount);
             _showResult(resultNumber, winAmount, true);
             _highlightWinningBets(resultNumber);
+            // 테이블 글로우
+            const tableOuter = document.getElementById('rouletteTableOuter');
+            if (tableOuter) {
+                tableOuter.classList.add('win-glow');
+                setTimeout(() => tableOuter.classList.remove('win-glow'), 3000);
+            }
 
             // 당첨금 절대액 기준 연출 (개선: 배수 → 절대액)
             if (winAmount >= 1000000) {

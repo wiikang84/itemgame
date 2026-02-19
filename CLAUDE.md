@@ -193,3 +193,19 @@ python -m http.server 8888
   - 다음 스핀 스케줄링 `_scheduleNextSpin()` 함수 분리
   - 자동스핀 간격 800ms → 600ms로 단축
 - 변경 파일: js/games/blackjack.js, blackjack.html, js/games/slot-machine.js, CLAUDE.md
+
+### 2026-02-19 | 룰렛 v3.0 프리미엄 카지노 테이블 리디자인
+
+- **전면 UI 리디자인** (슬롯/블랙잭 수준 프리미엄화)
+  - 골드 림 보더 테이블 프레임 (5단계 그라디언트 + 다층 box-shadow)
+  - 카지노 펠트 텍스처 배경 (SVG 패턴 + radial-gradient 조명)
+  - 비네팅 효과 (중앙 밝고 가장자리 어둡게)
+  - 스포트라이트 오버레이 (상단 골드 + 좌우 백색)
+  - 다크 그린 카지노 컬러 (#0c2810 → #061408)
+- **타이틀 리뉴얼**: 이모지 제거, Poppins 폰트 + 네온 골드 text-shadow + 다이아몬드 장식
+- **베팅 테이블 업그레이드**: 골드 림 분리 프레임, 펠트 텍스처, 그라디언트 셀 배경
+- **컨트롤 패널**: 별도 다크 패널로 분리, TOTAL BET + 퀵 버튼 한 줄 배치
+- **규칙 카드**: 전용 .roulette-rules 스타일 (인라인 스타일 제거)
+- **승리 시 테이블 글로우**: 골드 림이 그린으로 발광
+- **SPIN 버튼**: 레드 그라디언트 + 골드 보더 + 인셋 하이라이트
+- 변경 파일: roulette.html, css/roulette.css, js/games/roulette.js, CLAUDE.md
