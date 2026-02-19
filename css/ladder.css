@@ -1,14 +1,14 @@
 /* ═══════════════════════════════════
-   LadderGame v1.0 - 네온 사다리 CSS
-   테마: 사이버펑크 네온 (딥네이비 + 시안 + 퍼플)
+   LadderGame v1.2 - 네온 사다리 CSS
+   테마: 카와이 파스텔 네온 (다크퍼플 + 핑크 + 민트)
    ═══════════════════════════════════ */
 
 /* === 배경 === */
 body.ladder-page {
-    background: #0a0a1a;
+    background: #1a0a2e;
     background-image:
-        radial-gradient(ellipse at 30% 20%, rgba(0, 229, 255, 0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 80%, rgba(224, 64, 251, 0.05) 0%, transparent 60%);
+        radial-gradient(ellipse at 30% 20%, rgba(255, 120, 240, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(60, 255, 220, 0.05) 0%, transparent 60%);
 }
 
 /* === 게임 타이틀 === */
@@ -22,7 +22,7 @@ body.ladder-page {
     font-size: 2rem;
     font-weight: 800;
     letter-spacing: 6px;
-    background: linear-gradient(135deg, #00e5ff, #e040fb, #00e5ff);
+    background: linear-gradient(135deg, #FF78F0, #3CFFDC, #FF78F0);
     background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -71,13 +71,13 @@ body.ladder-page {
 }
 
 .hist-odd {
-    background: linear-gradient(135deg, #2255cc, #4488ff);
-    box-shadow: 0 0 6px rgba(68, 136, 255, 0.5);
+    background: linear-gradient(135deg, #6070cc, #8CA0FF);
+    box-shadow: 0 0 6px rgba(140, 160, 255, 0.5);
 }
 
 .hist-even {
-    background: linear-gradient(135deg, #cc2244, #ff4466);
-    box-shadow: 0 0 6px rgba(255, 68, 102, 0.5);
+    background: linear-gradient(135deg, #cc6080, #FF8CA0);
+    box-shadow: 0 0 6px rgba(255, 140, 160, 0.5);
 }
 
 /* === 캔버스 컨테이너 === */
@@ -90,8 +90,8 @@ body.ladder-page {
 
 .ladder-canvas-wrap canvas {
     border-radius: 12px;
-    border: 2px solid rgba(0, 229, 255, 0.2);
-    box-shadow: 0 0 30px rgba(0, 229, 255, 0.08), inset 0 0 30px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 120, 240, 0.25);
+    box-shadow: 0 0 30px rgba(255, 120, 240, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.3);
     max-width: 100%;
 }
 
@@ -107,8 +107,8 @@ body.ladder-page {
 }
 
 .result-win {
-    color: #00ff88;
-    text-shadow: 0 0 12px rgba(0, 255, 136, 0.7), 0 0 30px rgba(0, 255, 136, 0.3);
+    color: #3CFFDC;
+    text-shadow: 0 0 12px rgba(60, 255, 220, 0.7), 0 0 30px rgba(60, 255, 220, 0.3);
     animation: resultPulse 0.6s ease;
 }
 
@@ -176,8 +176,8 @@ body.ladder-page {
 }
 
 .payout-badge {
-    background: rgba(0, 229, 255, 0.15);
-    color: #00e5ff;
+    background: rgba(255, 120, 240, 0.15);
+    color: #FF78F0;
     padding: 1px 7px;
     border-radius: 10px;
     font-size: 0.65rem;
@@ -185,8 +185,8 @@ body.ladder-page {
 }
 
 .payout-badge.combo {
-    background: rgba(224, 64, 251, 0.15);
-    color: #e040fb;
+    background: rgba(60, 255, 220, 0.15);
+    color: #3CFFDC;
 }
 
 .bet-row {
@@ -224,50 +224,50 @@ body.ladder-page {
     transform: scale(0.96);
 }
 
-/* 좌측 베팅 (블루) */
+/* 홀 베팅 (파스텔 블루) */
 .bet-left, .bet-odd {
-    border-color: rgba(68, 136, 255, 0.3);
-    background: rgba(68, 136, 255, 0.08);
+    border-color: rgba(140, 160, 255, 0.3);
+    background: rgba(140, 160, 255, 0.08);
 }
 
 .bet-left:hover, .bet-odd:hover {
-    border-color: rgba(68, 136, 255, 0.6);
-    box-shadow: 0 0 12px rgba(68, 136, 255, 0.2);
+    border-color: rgba(140, 160, 255, 0.6);
+    box-shadow: 0 0 12px rgba(140, 160, 255, 0.2);
 }
 
-/* 우측 베팅 (레드) */
+/* 짝 베팅 (파스텔 핑크) */
 .bet-right, .bet-even {
-    border-color: rgba(255, 68, 102, 0.3);
-    background: rgba(255, 68, 102, 0.08);
+    border-color: rgba(255, 140, 160, 0.3);
+    background: rgba(255, 140, 160, 0.08);
 }
 
 .bet-right:hover, .bet-even:hover {
-    border-color: rgba(255, 68, 102, 0.6);
-    box-shadow: 0 0 12px rgba(255, 68, 102, 0.2);
+    border-color: rgba(255, 140, 160, 0.6);
+    box-shadow: 0 0 12px rgba(255, 140, 160, 0.2);
 }
 
-/* 줄수 (퍼플) */
+/* v1.0 줄수 (미사용, 레거시 유지) */
 .bet-three, .bet-four {
-    border-color: rgba(224, 64, 251, 0.3);
-    background: rgba(224, 64, 251, 0.08);
+    border-color: rgba(255, 120, 240, 0.3);
+    background: rgba(255, 120, 240, 0.08);
 }
 
 .bet-three:hover, .bet-four:hover {
-    border-color: rgba(224, 64, 251, 0.6);
-    box-shadow: 0 0 12px rgba(224, 64, 251, 0.2);
+    border-color: rgba(255, 120, 240, 0.6);
+    box-shadow: 0 0 12px rgba(255, 120, 240, 0.2);
 }
 
-/* 조합 (골드) */
+/* 조합 (민트) */
 .bet-combo {
-    border-color: rgba(255, 215, 0, 0.25);
-    background: rgba(255, 215, 0, 0.05);
-    font-size: 0.78rem;
-    padding: 10px 4px;
+    border-color: rgba(60, 255, 220, 0.25);
+    background: rgba(60, 255, 220, 0.05);
+    font-size: 0.85rem;
+    padding: 12px 6px;
 }
 
 .bet-combo:hover {
-    border-color: rgba(255, 215, 0, 0.5);
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+    border-color: rgba(60, 255, 220, 0.5);
+    box-shadow: 0 0 12px rgba(60, 255, 220, 0.2);
 }
 
 /* 베팅 금액 표시 */
@@ -333,33 +333,34 @@ body.ladder-page {
 }
 
 .btn-start {
-    background: linear-gradient(135deg, #00c853, #00e676);
-    border-color: #00e676;
-    color: #000;
+    background: linear-gradient(135deg, #FF78F0, #FF50E0);
+    border-color: #FF78F0;
+    color: #fff;
     font-size: 1.1rem;
     letter-spacing: 3px;
-    box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+    box-shadow: 0 0 20px rgba(255, 120, 240, 0.3);
     animation: startPulse 2s ease-in-out infinite;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .btn-start:hover {
-    box-shadow: 0 0 30px rgba(0, 230, 118, 0.5);
+    box-shadow: 0 0 30px rgba(255, 120, 240, 0.5);
 }
 
 @keyframes startPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(0, 230, 118, 0.3); }
-    50% { box-shadow: 0 0 35px rgba(0, 230, 118, 0.6); }
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 120, 240, 0.3); }
+    50% { box-shadow: 0 0 35px rgba(255, 120, 240, 0.6); }
 }
 
 .btn-rebet {
-    background: rgba(0, 229, 255, 0.08);
-    border-color: rgba(0, 229, 255, 0.3);
-    color: #00e5ff;
+    background: rgba(60, 255, 220, 0.08);
+    border-color: rgba(60, 255, 220, 0.3);
+    color: #3CFFDC;
 }
 
 .btn-rebet:hover {
-    border-color: rgba(0, 229, 255, 0.6);
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+    border-color: rgba(60, 255, 220, 0.6);
+    box-shadow: 0 0 12px rgba(60, 255, 220, 0.2);
 }
 
 /* === 통계 === */

@@ -15,8 +15,10 @@ const LadderGame = (() => {
     const PAYOUT_COMBO = 3.8;
     const BET_CHIPS = [100, 500, 1000, 5000, 10000];
     const MAX_HISTORY = 30;
-    const MAX_TRAIL = 20;
-    const BALL_RADIUS = 10;
+    // const MAX_TRAIL = 20;   // v1.1
+    // const BALL_RADIUS = 10; // v1.1
+    const MAX_TRAIL = 28;     // v1.2 (더 긴 몸통)
+    const BALL_RADIUS = 13;   // v1.2 (더 큰 캐릭터)
 
     // Canvas 레이아웃 비율
     const L_LEFT = 0.3;
@@ -24,21 +26,26 @@ const LadderGame = (() => {
     const L_TOP = 0.10;
     const L_BOTTOM = 0.90;
 
-    // 색상
+    // 색상 (v1.2 카와이 파스텔 + 네온)
     const C = {
-        bg: '#0a0a1a',
-        ladder: '#00e5ff',
-        ladderGlow: 'rgba(0, 229, 255, 0.5)',
-        rung: '#e040fb',
-        rungGlow: 'rgba(224, 64, 251, 0.5)',
-        ball: '#ffaa00',
-        ballGlow: 'rgba(255, 170, 0, 0.7)',
+        /* v1.1 사이버펑크 네온 팔레트
+        bg: '#0a0a1a', ladder: '#00e5ff', ladderGlow: 'rgba(0, 229, 255, 0.5)',
+        rung: '#e040fb', rungGlow: 'rgba(224, 64, 251, 0.5)',
+        odd: '#4488ff', even: '#ff4466', win: '#00ff88', */
+        bg: '#1a0a2e',
+        bgMid: '#251454',
+        ladder: '#FF78F0',
+        ladderGlow: 'rgba(255, 120, 240, 0.4)',
+        rung: '#3CFFDC',
+        rungGlow: 'rgba(60, 255, 220, 0.4)',
+        ball: '#FFE4A0',
+        ballGlow: 'rgba(255, 228, 160, 0.6)',
         ballCore: '#ffffff',
-        trail: '#ff6600',
-        textDim: 'rgba(255, 255, 255, 0.4)',
-        odd: '#4488ff',
-        even: '#ff4466',
-        win: '#00ff88',
+        trail: '#FF78F0',
+        textDim: 'rgba(255, 222, 242, 0.5)',
+        odd: '#8CA0FF',
+        even: '#FF8CA0',
+        win: '#3CFFDC',
     };
 
     // ═══ 상태 ═══
@@ -69,14 +76,18 @@ const LadderGame = (() => {
         if (!canvas) return;
         ctx = canvas.getContext('2d');
 
-        // 별 위치 미리 생성
+        // 반짝이 파티클 생성 (v1.2 트윙클 시스템)
         starPositions = [];
-        for (let i = 0; i < 60; i++) {
+        const sparkleColors = ['#ffffff', '#FFE4F0', '#E2EEFF', '#3CFFDC', '#FF78F0', '#FFE4A0'];
+        for (let i = 0; i < 100; i++) {
             starPositions.push({
                 x: Math.random(),
                 y: Math.random(),
-                size: Math.random() * 1.5 + 0.5,
-                alpha: Math.random() * 0.15 + 0.05
+                size: Math.random() * 2 + 0.5,
+                alpha: Math.random() * 0.35 + 0.1,
+                color: sparkleColors[Math.floor(Math.random() * sparkleColors.length)],
+                speed: Math.random() * 0.003 + 0.001,
+                phase: Math.random() * Math.PI * 2,
             });
         }
 
@@ -129,16 +140,35 @@ const LadderGame = (() => {
     // ═══════════════════════════════════
 
     function _clearCanvas() {
-        ctx.fillStyle = C.bg;
+        // 그라디언트 배경 (다크 퍼플)
+        const grad = ctx.createLinearGradient(0, 0, 0, cH);
+        grad.addColorStop(0, C.bg);
+        grad.addColorStop(0.5, C.bgMid);
+        grad.addColorStop(1, C.bg);
+        ctx.fillStyle = grad;
         ctx.fillRect(0, 0, cW, cH);
 
-        // 배경 별
+        // 트윙클 반짝이 파티클
+        const now = Date.now();
         starPositions.forEach(s => {
-            ctx.globalAlpha = s.alpha;
-            ctx.fillStyle = '#ffffff';
+            const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(now * s.speed + s.phase));
+            const a = s.alpha * twinkle;
+            const sx = s.x * cW;
+            const sy = s.y * cH;
+
+            ctx.globalAlpha = a;
+            ctx.fillStyle = s.color;
             ctx.beginPath();
-            ctx.arc(s.x * cW, s.y * cH, s.size, 0, Math.PI * 2);
+            ctx.arc(sx, sy, s.size, 0, Math.PI * 2);
             ctx.fill();
+
+            // 큰 파티클에 글로우
+            if (s.size > 1.5) {
+                ctx.globalAlpha = a * 0.2;
+                ctx.beginPath();
+                ctx.arc(sx, sy, s.size * 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
         });
         ctx.globalAlpha = 1;
     }
@@ -146,13 +176,13 @@ const LadderGame = (() => {
     function _drawLadder(showRungs, rungPos, rungCount) {
         const lx = _lx(), rx = _rx(), ty = _ty(), by = _by();
 
-        // 세로선
+        // 세로선 (핑크 네온 멀티레이어 글로우)
         ctx.save();
-        ctx.shadowBlur = 15;
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 25;
         ctx.shadowColor = C.ladderGlow;
         ctx.strokeStyle = C.ladder;
         ctx.lineWidth = 4;
-        ctx.lineCap = 'round';
 
         ctx.beginPath();
         ctx.moveTo(lx, ty); ctx.lineTo(lx, by);
@@ -161,8 +191,20 @@ const LadderGame = (() => {
         ctx.moveTo(rx, ty); ctx.lineTo(rx, by);
         ctx.stroke();
 
-        // 가로선
+        // 내부 밝은 코어 라인
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(lx, ty); ctx.lineTo(lx, by);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(rx, ty); ctx.lineTo(rx, by);
+        ctx.stroke();
+
+        // 가로선 (민트 네온)
         if (showRungs && rungPos && rungCount > 0) {
+            ctx.shadowBlur = 20;
             ctx.shadowColor = C.rungGlow;
             ctx.strokeStyle = C.rung;
             ctx.lineWidth = 3;
@@ -174,30 +216,63 @@ const LadderGame = (() => {
                 ctx.lineTo(rx, rungPos[i]);
                 ctx.stroke();
 
-                // 교차점 원
-                ctx.fillStyle = C.rung;
+                // 교차점 (글로잉 서클 + 화이트 코어)
+                ctx.shadowBlur = 8;
                 [lx, rx].forEach(x => {
+                    ctx.fillStyle = C.rung;
                     ctx.beginPath();
-                    ctx.arc(x, rungPos[i], 5, 0, Math.PI * 2);
+                    ctx.arc(x, rungPos[i], 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(x, rungPos[i], 2.5, 0, Math.PI * 2);
                     ctx.fill();
                 });
             }
         }
         ctx.restore();
 
+        // 상단 엔드포인트 (글로잉 도트)
+        [lx, rx].forEach(x => {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = C.ladderGlow;
+            ctx.fillStyle = C.ladder;
+            ctx.beginPath();
+            ctx.arc(x, ty, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(x, ty, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
         // 상단 라벨
         ctx.font = `bold ${Math.max(13, cW * 0.035)}px Arial, sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillStyle = C.textDim;
-        ctx.fillText('좌', lx, ty - 14);
-        ctx.fillStyle = C.textDim;
-        ctx.fillText('우', rx, ty - 14);
+        ctx.fillText('좌', lx, ty - 18);
+        ctx.fillText('우', rx, ty - 18);
 
-        // 하단 라벨
-        ctx.fillStyle = C.odd;
-        ctx.fillText('홀', lx, by + 24);
-        ctx.fillStyle = C.even;
-        ctx.fillText('짝', rx, by + 24);
+        // 하단 엔드포인트 + 라벨
+        [{x: lx, c: C.odd, l: '홀'}, {x: rx, c: C.even, l: '짝'}].forEach(item => {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = item.c;
+            ctx.fillStyle = item.c;
+            ctx.beginPath();
+            ctx.arc(item.x, by, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(item.x, by, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.fillStyle = item.c;
+            ctx.fillText(item.l, item.x, by + 28);
+        });
     }
 
     // /** v1.0 골든 파이어볼 (v1.1에서 애벌레로 교체) */
@@ -215,139 +290,169 @@ const LadderGame = (() => {
     //     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x,y,BALL_RADIUS,0,Math.PI*2); ctx.fill(); ctx.restore();
     // }
 
-    /** v1.1 귀여운 애벌레 캐릭터 */
+    /** v1.2 개선된 귀여운 애벌레 (카와이 파스텔 + 하트 더듬이 + 큰 눈) */
     function _drawBall(x, y) {
         const now = Date.now();
-        const HR = BALL_RADIUS * 1.15; // 머리 반지름
+        const HR = BALL_RADIUS * 1.2;
 
-        // ── 몸통 세그먼트 (트레일에서 간격 샘플링) ──
-        const BODY_COUNT = 6;
+        // ── 몸통 세그먼트 ──
+        const BODY_COUNT = 7;
         const step = Math.max(1, Math.floor(trail.length / BODY_COUNT));
         const parts = [];
         for (let i = 0; i < trail.length; i += step) parts.push(trail[i]);
+        const bodyColors = ['#4da832', '#5cb842', '#65d090', '#7ddf64', '#98e4b0', '#b0eecc', '#c5f5d5'];
 
         for (let i = 0; i < parts.length; i++) {
             const t = i / Math.max(parts.length, 1);
-            const segR = BALL_RADIUS * (0.4 + 0.4 * t);
-            const wobble = Math.sin(now * 0.008 + i * 1.0) * 2.5;
+            const segR = BALL_RADIUS * (0.3 + 0.45 * t);
+            const wobble = Math.sin(now * 0.008 + i * 1.2) * 3;
             const sx = parts[i].x + wobble;
             const sy = parts[i].y;
 
-            // 세그먼트 (연두-초록 교차)
-            ctx.fillStyle = i % 2 === 0 ? '#7ddf64' : '#5cb842';
+            // 세그먼트 (그라디언트)
+            const sg = ctx.createRadialGradient(sx - segR * 0.2, sy - segR * 0.2, 0, sx, sy, segR);
+            sg.addColorStop(0, bodyColors[Math.min(i, bodyColors.length - 1)]);
+            sg.addColorStop(1, bodyColors[Math.max(0, i - 1)]);
+            ctx.fillStyle = sg;
             ctx.beginPath();
             ctx.arc(sx, sy, segR, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = 'rgba(50, 120, 30, 0.4)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
 
-            // 작은 발 (양쪽)
+            // 세그먼트 상단 하이라이트
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.beginPath();
+            ctx.arc(sx - segR * 0.15, sy - segR * 0.3, segR * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 귀여운 발
             if (i % 2 === 0 && i > 0) {
                 ctx.fillStyle = '#4da832';
-                ctx.beginPath();
-                ctx.arc(sx - segR - 2, sy + 1, 2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(sx + segR + 2, sy + 1, 2, 0, Math.PI * 2);
-                ctx.fill();
+                [-1, 1].forEach(dir => {
+                    ctx.beginPath();
+                    ctx.arc(sx + (segR + 2.5) * dir, sy + 1.5, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
             }
         }
 
-        // ── 머리 ──
-        const hw = Math.sin(now * 0.006) * 1.2; // 미세 흔들림
+        // ── 머리 (그라디언트 + 글로우) ──
+        const hw = Math.sin(now * 0.005) * 1.5;
         const hx = x + hw;
 
         ctx.save();
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 18;
         ctx.shadowColor = 'rgba(125, 223, 100, 0.6)';
-        ctx.fillStyle = '#8de86e';
+        const hg = ctx.createRadialGradient(hx - HR * 0.2, y - HR * 0.2, 0, hx, y, HR);
+        hg.addColorStop(0, '#b8f5a2');
+        hg.addColorStop(0.6, '#8de86e');
+        hg.addColorStop(1, '#65d050');
+        ctx.fillStyle = hg;
         ctx.beginPath();
         ctx.arc(hx, y, HR, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#5cb842';
-        ctx.lineWidth = 2;
-        ctx.stroke();
         ctx.restore();
 
-        // ── 더듬이 ──
+        // ── 더듬이 (♡ 하트 팁) ──
         ctx.strokeStyle = '#5cb842';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
-        // 왼쪽
-        const antW = Math.sin(now * 0.005) * 2;
-        ctx.beginPath();
-        ctx.moveTo(hx - HR * 0.25, y - HR * 0.75);
-        ctx.quadraticCurveTo(hx - HR * 0.7 + antW, y - HR * 1.55, hx - HR * 0.35, y - HR * 1.35);
-        ctx.stroke();
-        ctx.fillStyle = '#ffcc00';
-        ctx.beginPath();
-        ctx.arc(hx - HR * 0.35, y - HR * 1.35, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-        // 오른쪽
-        ctx.beginPath();
-        ctx.moveTo(hx + HR * 0.25, y - HR * 0.75);
-        ctx.quadraticCurveTo(hx + HR * 0.7 - antW, y - HR * 1.55, hx + HR * 0.35, y - HR * 1.35);
-        ctx.stroke();
-        ctx.fillStyle = '#ffcc00';
-        ctx.beginPath();
-        ctx.arc(hx + HR * 0.35, y - HR * 1.35, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+        const antW = Math.sin(now * 0.004) * 3;
+        [-1, 1].forEach(dir => {
+            const tipX = hx + HR * 0.4 * dir;
+            const tipY = y - HR * 1.4;
+            ctx.beginPath();
+            ctx.moveTo(hx + HR * 0.2 * dir, y - HR * 0.8);
+            ctx.quadraticCurveTo(hx + HR * 0.8 * dir + antW * dir, y - HR * 1.7, tipX, tipY);
+            ctx.stroke();
+            // 미니 하트
+            _drawMiniHeart(tipX, tipY, 5, '#FF78F0');
+        });
 
-        // ── 눈 (큰 흰자 + 동공 + 하이라이트) ──
-        const eyeOff = HR * 0.3;
-        const eyeR = HR * 0.22;
+        // ── 눈 (더 크고 반짝이게!) ──
+        const eyeOff = HR * 0.32;
+        const eyeR = HR * 0.28;
         [-1, 1].forEach(dir => {
             const ex = hx + eyeOff * dir;
-            const ey = y - HR * 0.08;
+            const ey = y - HR * 0.05;
             // 흰자
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(ex, ey, eyeR, 0, Math.PI * 2);
             ctx.fill();
+            ctx.strokeStyle = 'rgba(100,180,80,0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
             // 동공
-            ctx.fillStyle = '#111';
+            ctx.fillStyle = '#222';
             ctx.beginPath();
-            ctx.arc(ex + dir * 0.8, ey + 1, eyeR * 0.55, 0, Math.PI * 2);
+            ctx.arc(ex + dir * 1, ey + 1, eyeR * 0.55, 0, Math.PI * 2);
             ctx.fill();
-            // 하이라이트
+            // 하이라이트 1 (큰)
             ctx.fillStyle = '#fff';
             ctx.beginPath();
-            ctx.arc(ex - dir * 0.8, ey - eyeR * 0.35, eyeR * 0.22, 0, Math.PI * 2);
+            ctx.arc(ex - dir * 1.2, ey - eyeR * 0.3, eyeR * 0.28, 0, Math.PI * 2);
+            ctx.fill();
+            // 하이라이트 2 (작은)
+            ctx.beginPath();
+            ctx.arc(ex + dir * 1, ey + eyeR * 0.2, eyeR * 0.12, 0, Math.PI * 2);
             ctx.fill();
         });
 
-        // ── 볼터치 (핑크) ──
-        ctx.fillStyle = 'rgba(255, 140, 160, 0.4)';
+        // ── 볼터치 (선명한 핑크) ──
+        ctx.fillStyle = 'rgba(255, 120, 160, 0.5)';
         [-1, 1].forEach(dir => {
             ctx.beginPath();
-            ctx.arc(hx + HR * 0.52 * dir, y + HR * 0.22, HR * 0.13, 0, Math.PI * 2);
+            ctx.arc(hx + HR * 0.55 * dir, y + HR * 0.2, HR * 0.16, 0, Math.PI * 2);
             ctx.fill();
         });
 
-        // ── 미소 ──
+        // ── 활짝 웃음 ──
         ctx.strokeStyle = '#3d8c2a';
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(hx, y + HR * 0.15, HR * 0.2, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.arc(hx, y + HR * 0.12, HR * 0.25, 0.1 * Math.PI, 0.9 * Math.PI);
         ctx.stroke();
+    }
+
+    /** 미니 하트 (더듬이 팁용) */
+    function _drawMiniHeart(cx, cy, size, color) {
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        const topY = cy - size * 0.35;
+        ctx.arc(cx - size * 0.25, topY, size * 0.3, Math.PI, 0);
+        ctx.arc(cx + size * 0.25, topY, size * 0.3, Math.PI, 0);
+        ctx.lineTo(cx, cy + size * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        // 하이라이트
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.arc(cx - size * 0.15, topY - size * 0.05, size * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
     }
 
     function _drawIdle() {
         _clearCanvas();
         _drawLadder(false);
 
+        ctx.save();
         ctx.font = `bold ${Math.max(15, cW * 0.04)}px Arial, sans-serif`;
         ctx.textAlign = 'center';
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = C.ladderGlow;
         ctx.fillStyle = C.textDim;
-        ctx.fillText('베팅 후 START', cW / 2, cH / 2);
+        ctx.fillText('🐛 베팅 후 START 🐛', cW / 2, cH / 2);
+        ctx.restore();
     }
 
     function _drawCountdown(num) {
         _clearCanvas();
         _drawLadder(false);
 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.fillStyle = 'rgba(26, 10, 46, 0.6)';
         ctx.fillRect(0, 0, cW, cH);
 
         ctx.save();
@@ -355,7 +460,7 @@ const LadderGame = (() => {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.shadowBlur = 50;
-        ctx.shadowColor = '#00e5ff';
+        ctx.shadowColor = '#FF78F0';
         ctx.fillStyle = '#ffffff';
         ctx.fillText(num, cW / 2, cH / 2);
         ctx.restore();
