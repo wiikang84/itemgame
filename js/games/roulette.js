@@ -36,6 +36,11 @@ const Roulette = (() => {
     let ballRadius = 0;
     let showBall = false;
 
+    // 당첨 결과 포징 연출용
+    let highlightSliceIdx = -1; // 당첨 슬라이스 하이라이트 (-1이면 비활성)
+    let ballGlowing = false;    // 볼 글로우 펄스 활성화
+    let glowPhase = 0;         // 글로우 펄스 위상
+
     /**
      * 숫자의 색상
      */
@@ -92,6 +97,8 @@ const Roulette = (() => {
         WHEEL_ORDER.forEach((num, i) => {
             const startAngle = angle + i * sliceAngle - Math.PI / 2;
             const endAngle = startAngle + sliceAngle;
+            const isHighlighted = (highlightSliceIdx >= 0 && i === highlightSliceIdx);
+            const isDimmed = (highlightSliceIdx >= 0 && i !== highlightSliceIdx);
 
             // 슬라이스 배경
             ctx.beginPath();
@@ -102,27 +109,51 @@ const Roulette = (() => {
             const color = getColor(num);
             if (color === 'green') {
                 const grad = ctx.createRadialGradient(cx, cy, innerRadius, cx, cy, outerRadius);
-                grad.addColorStop(0, '#008800');
-                grad.addColorStop(1, '#004400');
+                grad.addColorStop(0, isHighlighted ? '#00cc00' : '#008800');
+                grad.addColorStop(1, isHighlighted ? '#008800' : '#004400');
                 ctx.fillStyle = grad;
             } else if (color === 'red') {
                 const grad = ctx.createRadialGradient(cx, cy, innerRadius, cx, cy, outerRadius);
-                grad.addColorStop(0, '#dd1111');
-                grad.addColorStop(1, '#880000');
+                grad.addColorStop(0, isHighlighted ? '#ff4444' : '#dd1111');
+                grad.addColorStop(1, isHighlighted ? '#cc0000' : '#880000');
                 ctx.fillStyle = grad;
             } else {
                 const grad = ctx.createRadialGradient(cx, cy, innerRadius, cx, cy, outerRadius);
-                grad.addColorStop(0, '#222222');
-                grad.addColorStop(1, '#0a0a0a');
+                grad.addColorStop(0, isHighlighted ? '#555555' : '#222222');
+                grad.addColorStop(1, isHighlighted ? '#333333' : '#0a0a0a');
                 ctx.fillStyle = grad;
             }
 
             ctx.fill();
 
-            // 슬라이스 테두리
-            ctx.strokeStyle = '#444';
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
+            // 당첨 아닌 슬라이스 어둡게
+            if (isDimmed) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, outerRadius - 3, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fill();
+            }
+
+            // 당첨 슬라이스 골드 테두리 강조
+            if (isHighlighted) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, outerRadius - 3, startAngle, endAngle);
+                ctx.closePath();
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+                ctx.shadowBlur = 15;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            } else {
+                // 일반 슬라이스 테두리
+                ctx.strokeStyle = '#444';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
 
             // 숫자 텍스트
             const textAngle = startAngle + sliceAngle / 2;
@@ -133,12 +164,12 @@ const Roulette = (() => {
             ctx.save();
             ctx.translate(tx, ty);
             ctx.rotate(textAngle + Math.PI / 2);
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = isDimmed ? 'rgba(255,255,255,0.3)' : '#fff';
+            ctx.font = isHighlighted ? 'bold 14px Arial' : 'bold 12px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 2;
+            ctx.shadowColor = isHighlighted ? 'rgba(255,215,0,0.8)' : 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = isHighlighted ? 6 : 2;
             ctx.fillText(num.toString(), 0, 0);
             ctx.shadowBlur = 0;
             ctx.restore();
@@ -233,11 +264,35 @@ const Roulette = (() => {
     }
 
     /**
-     * 볼 그리기
+     * 볼 그리기 (글로우 펄스 지원)
      */
     function _drawBall(cx, cy) {
         const bx = cx + Math.cos(ballAngle) * ballRadius;
         const by = cy + Math.sin(ballAngle) * ballRadius;
+
+        // 글로우 링 펄스 (볼 착지 후 포징 중)
+        if (ballGlowing) {
+            const pulseSize = 12 + Math.sin(glowPhase) * 6; // 12~18px 펄스
+            const pulseAlpha = 0.4 + Math.sin(glowPhase) * 0.2; // 0.2~0.6 알파
+
+            // 외곽 글로우
+            const glowGrad = ctx.createRadialGradient(bx, by, 4, bx, by, pulseSize + 8);
+            glowGrad.addColorStop(0, `rgba(255, 215, 0, ${pulseAlpha})`);
+            glowGrad.addColorStop(0.5, `rgba(255, 215, 0, ${pulseAlpha * 0.4})`);
+            glowGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+
+            ctx.beginPath();
+            ctx.arc(bx, by, pulseSize + 8, 0, 2 * Math.PI);
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            // 내부 밝은 링
+            ctx.beginPath();
+            ctx.arc(bx, by, pulseSize, 0, 2 * Math.PI);
+            ctx.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha * 0.8})`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
 
         // 볼 그림자
         ctx.beginPath();
@@ -511,7 +566,7 @@ const Roulette = (() => {
     }
 
     /**
-     * 휠 + 볼 애니메이션 (통합)
+     * 휠 + 볼 애니메이션 (통합) + 당첨 포징 연출
      */
     function _animateWheelWithBall(targetIdx) {
         return new Promise(resolve => {
@@ -524,8 +579,10 @@ const Roulette = (() => {
             const startTime = performance.now();
 
             showBall = true;
+            highlightSliceIdx = -1; // 회전 중에는 하이라이트 없음
+            ballGlowing = false;
             const ballStartAngle = Math.random() * Math.PI * 2;
-            const ballTotalRotation = -Math.PI * 14; // 볼은 반대 방향으로 회전
+            const ballTotalRotation = -Math.PI * 14;
             const outerRadius = 190 - 10;
 
             let lastTickTime = 0;
@@ -543,7 +600,7 @@ const Roulette = (() => {
                 const ballEased = 1 - Math.pow(1 - progress, 3);
                 ballAngle = ballStartAngle + ballTotalRotation * ballEased;
 
-                // 볼이 점점 안쪽으로 이동 (마지막에 슬롯에 안착)
+                // 볼이 점점 안쪽으로 이동
                 if (progress < 0.6) {
                     ballRadius = outerRadius - 5;
                 } else {
@@ -552,9 +609,9 @@ const Roulette = (() => {
                     ballRadius = outerRadius - 5 - landEased * 30;
                 }
 
-                // 틱 사운드 (회전 중)
+                // 틱 사운드
                 if (progress < 0.8 && typeof SoundManager !== 'undefined') {
-                    const tickInterval = 80 + progress * 200; // 점점 느려짐
+                    const tickInterval = 80 + progress * 200;
                     if (time - lastTickTime > tickInterval) {
                         SoundManager.playRouletteTick();
                         lastTickTime = time;
@@ -564,17 +621,51 @@ const Roulette = (() => {
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
-                    // 볼 최종 위치 (당첨 슬라이스 위)
+                    // === 볼 착지: 포징 연출 시작 ===
                     const finalSliceAngle = currentAngle + targetIdx * sliceAngle + sliceAngle / 2 - Math.PI / 2;
                     ballAngle = finalSliceAngle;
                     ballRadius = outerRadius - 30;
-                    _drawWheel(currentAngle);
 
-                    setTimeout(() => {
-                        showBall = false;
+                    // 당첨 슬라이스 하이라이트 + 볼 글로우 ON
+                    highlightSliceIdx = targetIdx;
+                    ballGlowing = true;
+                    glowPhase = 0;
+
+                    // 휠 줌인 (CSS)
+                    const wrapper = document.querySelector('.wheel-wrapper');
+                    if (wrapper) wrapper.classList.add('zoom-in');
+
+                    // 3초간 글로우 펄스 애니메이션 루프
+                    const posingDuration = 3000;
+                    const posingStart = performance.now();
+
+                    function posingAnimate(time) {
+                        const posingElapsed = time - posingStart;
+                        glowPhase = (posingElapsed / 200) * Math.PI; // 펄스 속도
                         _drawWheel(currentAngle);
-                        resolve();
-                    }, 500);
+
+                        if (posingElapsed < posingDuration) {
+                            requestAnimationFrame(posingAnimate);
+                        } else {
+                            // 포징 종료: 줌아웃 + 클린업
+                            if (wrapper) wrapper.classList.remove('zoom-in');
+                            highlightSliceIdx = -1;
+                            ballGlowing = false;
+
+                            // 볼 페이드아웃 (0.5초 후 제거)
+                            setTimeout(() => {
+                                showBall = false;
+                                _drawWheel(currentAngle);
+                                resolve();
+                            }, 500);
+                        }
+                    }
+
+                    // 0.2초 후 포징 시작 (착지 직후 짧은 딜레이)
+                    _drawWheel(currentAngle);
+                    setTimeout(() => {
+                        requestAnimationFrame(posingAnimate);
+                    }, 200);
                 }
             }
 
