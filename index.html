@@ -477,11 +477,47 @@
             document.getElementById('dailyBonusBanner').scrollIntoView({ behavior: 'smooth' });
         }
 
+        /* 이스터에그: 50회 연속 빠른 클릭 시 100만 골드 */
+        let _resetClickCount = 0;
+        let _resetLastClick = 0;
+        let _resetConfirmTimer = null;
+
         function resetChips() {
-            if (confirm('칩을 10,000으로 리셋하시겠습니까?')) {
-                ChipManager.reset();
-                showToast('칩이 10,000으로 리셋되었습니다.', 'success');
+            const now = Date.now();
+            const gap = now - _resetLastClick;
+            _resetLastClick = now;
+
+            /* 500ms 이내 연속 클릭이면 카운트 증가, 아니면 리셋 */
+            if (gap < 500) {
+                _resetClickCount++;
+            } else {
+                _resetClickCount = 1;
             }
+
+            /* 50회 도달 → 이스터에그 발동! */
+            if (_resetClickCount >= 50) {
+                _resetClickCount = 0;
+                clearTimeout(_resetConfirmTimer);
+                ChipManager.addChips(1000000);
+                showToast('??? 숨겨진 보상 발견! +1,000,000 칩!', 'success');
+                if (typeof CoinShower !== 'undefined') CoinShower.start(5000, 'epic');
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 800);
+                return;
+            }
+
+            /* 빠르게 클릭 중이면 confirm 안 띄움 (연타 허용) */
+            clearTimeout(_resetConfirmTimer);
+            _resetConfirmTimer = setTimeout(() => {
+                /* 클릭 멈추고 1초 후에 일반 리셋 confirm */
+                if (_resetClickCount > 0 && _resetClickCount < 50) {
+                    _resetClickCount = 0;
+                    if (confirm('칩을 10,000으로 리셋하시겠습니까?')) {
+                        ChipManager.reset();
+                        showToast('칩이 10,000으로 리셋되었습니다.', 'success');
+                    }
+                }
+            }, 1000);
         }
 
         // 레벨업 오버레이
