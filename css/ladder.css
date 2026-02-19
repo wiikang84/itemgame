@@ -1,0 +1,399 @@
+/* ═══════════════════════════════════
+   LadderGame v1.0 - 네온 사다리 CSS
+   테마: 사이버펑크 네온 (딥네이비 + 시안 + 퍼플)
+   ═══════════════════════════════════ */
+
+/* === 배경 === */
+body.ladder-page {
+    background: #0a0a1a;
+    background-image:
+        radial-gradient(ellipse at 30% 20%, rgba(0, 229, 255, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(224, 64, 251, 0.05) 0%, transparent 60%);
+}
+
+/* === 게임 타이틀 === */
+.ladder-title {
+    text-align: center;
+    padding: 12px 0 8px;
+}
+
+.ladder-title h1 {
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 6px;
+    background: linear-gradient(135deg, #00e5ff, #e040fb, #00e5ff);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: ladderTitleShift 4s ease-in-out infinite;
+    margin: 0;
+}
+
+.ladder-title .subtitle {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 3px;
+    margin-top: 2px;
+}
+
+@keyframes ladderTitleShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* === 히스토리 바 === */
+.history-bar {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    margin-bottom: 8px;
+    min-height: 32px;
+}
+
+.history-bar::-webkit-scrollbar { display: none; }
+
+.hist-dot {
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.hist-odd {
+    background: linear-gradient(135deg, #2255cc, #4488ff);
+    box-shadow: 0 0 6px rgba(68, 136, 255, 0.5);
+}
+
+.hist-even {
+    background: linear-gradient(135deg, #cc2244, #ff4466);
+    box-shadow: 0 0 6px rgba(255, 68, 102, 0.5);
+}
+
+/* === 캔버스 컨테이너 === */
+.ladder-canvas-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 0 12px;
+    margin-bottom: 8px;
+}
+
+.ladder-canvas-wrap canvas {
+    border-radius: 12px;
+    border: 2px solid rgba(0, 229, 255, 0.2);
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.08), inset 0 0 30px rgba(0, 0, 0, 0.3);
+    max-width: 100%;
+}
+
+/* === 결과 === */
+.ladder-result {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    min-height: 44px;
+    line-height: 44px;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+}
+
+.result-win {
+    color: #00ff88;
+    text-shadow: 0 0 12px rgba(0, 255, 136, 0.7), 0 0 30px rgba(0, 255, 136, 0.3);
+    animation: resultPulse 0.6s ease;
+}
+
+.result-lose {
+    color: #ff4444;
+    text-shadow: 0 0 12px rgba(255, 68, 68, 0.5);
+}
+
+@keyframes resultPulse {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* === 칩 선택 === */
+.chip-selector {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px 10px;
+}
+
+.chip-select-btn {
+    width: 52px;
+    height: 34px;
+    border-radius: 17px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    background: rgba(255, 215, 0, 0.08);
+    color: #ffd700;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chip-select-btn:hover {
+    border-color: rgba(255, 215, 0, 0.6);
+    background: rgba(255, 215, 0, 0.15);
+}
+
+.chip-select-btn.active {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    transform: scale(1.08);
+}
+
+/* === 베팅 패널 === */
+.bet-panel {
+    padding: 0 12px 10px;
+}
+
+.bet-section {
+    margin-bottom: 8px;
+}
+
+.bet-section-title {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.payout-badge {
+    background: rgba(0, 229, 255, 0.15);
+    color: #00e5ff;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.payout-badge.combo {
+    background: rgba(224, 64, 251, 0.15);
+    color: #e040fb;
+}
+
+.bet-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.bet-row.combo-row {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.bet-btn {
+    position: relative;
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.bet-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.bet-btn:active {
+    transform: scale(0.96);
+}
+
+/* 좌측 베팅 (블루) */
+.bet-left, .bet-odd {
+    border-color: rgba(68, 136, 255, 0.3);
+    background: rgba(68, 136, 255, 0.08);
+}
+
+.bet-left:hover, .bet-odd:hover {
+    border-color: rgba(68, 136, 255, 0.6);
+    box-shadow: 0 0 12px rgba(68, 136, 255, 0.2);
+}
+
+/* 우측 베팅 (레드) */
+.bet-right, .bet-even {
+    border-color: rgba(255, 68, 102, 0.3);
+    background: rgba(255, 68, 102, 0.08);
+}
+
+.bet-right:hover, .bet-even:hover {
+    border-color: rgba(255, 68, 102, 0.6);
+    box-shadow: 0 0 12px rgba(255, 68, 102, 0.2);
+}
+
+/* 줄수 (퍼플) */
+.bet-three, .bet-four {
+    border-color: rgba(224, 64, 251, 0.3);
+    background: rgba(224, 64, 251, 0.08);
+}
+
+.bet-three:hover, .bet-four:hover {
+    border-color: rgba(224, 64, 251, 0.6);
+    box-shadow: 0 0 12px rgba(224, 64, 251, 0.2);
+}
+
+/* 조합 (골드) */
+.bet-combo {
+    border-color: rgba(255, 215, 0, 0.25);
+    background: rgba(255, 215, 0, 0.05);
+    font-size: 0.78rem;
+    padding: 10px 4px;
+}
+
+.bet-combo:hover {
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+}
+
+/* 베팅 금액 표시 */
+.bet-amount {
+    display: block;
+    font-size: 0.65rem;
+    color: #ffd700;
+    margin-top: 3px;
+    min-height: 14px;
+    font-weight: 700;
+}
+
+/* === 컨트롤 패널 === */
+.ctrl-panel {
+    padding: 0 12px 12px;
+}
+
+.total-bet-bar {
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+}
+
+.total-bet-bar span {
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.ctrl-buttons {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 8px;
+}
+
+.ctrl-btn {
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 2px solid;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ctrl-btn:hover {
+    transform: translateY(-1px);
+}
+
+.ctrl-btn:active {
+    transform: scale(0.96);
+}
+
+.btn-clear {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.btn-clear:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-start {
+    background: linear-gradient(135deg, #00c853, #00e676);
+    border-color: #00e676;
+    color: #000;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+    animation: startPulse 2s ease-in-out infinite;
+}
+
+.btn-start:hover {
+    box-shadow: 0 0 30px rgba(0, 230, 118, 0.5);
+}
+
+@keyframes startPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 230, 118, 0.3); }
+    50% { box-shadow: 0 0 35px rgba(0, 230, 118, 0.6); }
+}
+
+.btn-rebet {
+    background: rgba(0, 229, 255, 0.08);
+    border-color: rgba(0, 229, 255, 0.3);
+    color: #00e5ff;
+}
+
+.btn-rebet:hover {
+    border-color: rgba(0, 229, 255, 0.6);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+/* === 통계 === */
+.ladder-stats {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 8px 0 16px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* === 반응형 === */
+@media (max-width: 480px) {
+    .ladder-title h1 { font-size: 1.5rem; letter-spacing: 4px; }
+    .chip-select-btn { width: 46px; height: 30px; font-size: 0.68rem; }
+    .bet-btn { padding: 10px 6px; font-size: 0.82rem; }
+    .bet-combo { font-size: 0.7rem; padding: 8px 3px; }
+    .bet-row.combo-row { gap: 4px; }
+    .ctrl-btn { padding: 10px 6px; font-size: 0.8rem; }
+    .btn-start { font-size: 1rem; }
+    .ladder-result { font-size: 1.3rem; }
+}
+
+@media (min-width: 769px) {
+    .bet-panel {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    .ctrl-panel {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    .chip-selector {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}

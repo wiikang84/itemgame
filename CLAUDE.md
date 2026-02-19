@@ -34,12 +34,14 @@ itemgame/
 ├── blackjack.html          # 블랙잭
 ├── roulette.html           # 룰렛
 ├── sea-story.html          # 바다이야기 슬롯
+├── ladder.html             # 사다리 게임 "NEON LADDER"
 ├── css/
 │   ├── common.css          # 공통 다크 카지노 테마 + 레벨/XP UI
 │   ├── slot.css            # 슬롯 전용 (v5.1 프리미엄 비주얼)
 │   ├── blackjack.css       # 블랙잭 전용
 │   ├── roulette.css        # 룰렛 전용
-│   └── sea-story.css       # 바다이야기 전용
+│   ├── sea-story.css       # 바다이야기 전용
+│   └── ladder.css          # 사다리 전용
 ├── js/
 │   ├── core/
 │   │   ├── firebase-config.js  # Firebase 설정 + Firestore 헬퍼
@@ -51,7 +53,8 @@ itemgame/
 │       ├── slot-machine.js     # 슬롯머신 로직 v3.0
 │       ├── blackjack.js        # 블랙잭 로직
 │       ├── roulette.js         # 룰렛 로직
-│       └── sea-story.js       # 바다이야기 로직
+│       ├── sea-story.js       # 바다이야기 로직
+│       └── ladder.js         # 사다리 게임 로직
 ├── firestore.rules         # Firestore 보안 규칙
 ├── CLAUDE.md
 └── .gitignore
@@ -94,6 +97,19 @@ itemgame/
 - **갬블/더블업**: 물고기 방향 맞추기 (50/50), 연속 갬블 가능
 - **수중 비주얼**: 딥오션 블루 팔레트, 버블 파티클, 수중 광선, 오션 크롬 캐비닛
 - **오토스핀**: 10/25/50/100/무제한 횟수 선택 메뉴
+
+### 사다리 "NEON LADDER" (v1.0)
+- **구조**: 2선 사다리, 3줄 or 4줄 가로선 (50/50 랜덤)
+- **베팅 3종 (싱글 1.95배)**:
+  - 출발: 좌출발 / 우출발
+  - 줄수: 3줄 / 4줄
+  - 도착: 홀(좌도착) / 짝(우도착)
+- **조합 베팅 (3.8배)**: 좌3짝 / 좌4홀 / 우3홀 / 우4짝
+- **Canvas 기반 네온 비주얼**: 시안 사다리선 + 퍼플 가로선 + 골든 파이어볼
+- **3단계 긴장감**: 카운트다운 → 사다리 공개 → 출발점 공개 → 볼 하강 애니메이션
+- **볼 애니메이션**: 세그먼트별 이징, 가로선 교차 감속, 마지막 구간 1.2초 슬로모션, 트레일 이펙트
+- **테마**: 사이버펑크 네온 (딥네이비 #0a0a1a + 시안 #00e5ff + 퍼플 #e040fb)
+- **히스토리 바**: 최근 30회 결과 (홀=블루, 짝=레드 도트)
 
 ### 룰렛
 - 유럽식 37칸 (0~36)
@@ -256,3 +272,19 @@ python -m http.server 8888
 - **더블업**: "물고기가 어느 쪽으로 헤엄칠까?" (왼쪽/오른쪽)
 - **로비(index.html)**: 바다이야기 게임 카드 추가 (시안 테마 PLAY 버튼)
 - 변경 파일: sea-story.html(신규), css/sea-story.css(신규), js/games/sea-story.js(신규), index.html, CLAUDE.md
+
+### 2026-02-19 | 사다리 게임 "NEON LADDER" v1.0 신규 추가
+
+- **사다리 게임 신규 생성** (3개 파일 신규)
+  - `ladder.html` - 사다리 게임 페이지
+  - `css/ladder.css` - 사이버펑크 네온 테마 CSS
+  - `js/games/ladder.js` - LadderGame 게임 모듈
+- **게임 방식**: 네임드 스타일 2선 사다리, 3줄/4줄 가로선
+- **베팅 시스템**: 싱글 3종(출발/줄수/도착) 1.95배 + 조합 4종 3.8배
+- **Canvas 비주얼**: 네온 시안 사다리 + 퍼플 가로선 + 골든 파이어볼 + 트레일 이펙트
+- **3단계 연출**: 카운트다운 → 사다리 가로선 순차 공개 → 출발점 깜빡임 → 볼 하강 애니메이션
+- **볼 물리**: 세그먼트별 이징(수직=easeInOutCubic, 수평=easeInOutQuad), 마지막 구간 슬로모션 1.2초
+- **도착 플래시**: 3회 글로우 펄스 + 결과 텍스트 오버레이
+- **히스토리 바**: 최근 30회 결과 스크롤 (홀=블루, 짝=레드)
+- **로비(index.html)**: 사다리 게임 카드 추가 (시안-퍼플 그라디언트 테마)
+- 변경 파일: ladder.html(신규), css/ladder.css(신규), js/games/ladder.js(신규), index.html, CLAUDE.md

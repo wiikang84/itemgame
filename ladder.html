@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사다리 게임 - ItemGame</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/ladder.css">
+</head>
+<body class="ladder-page">
+    <!-- 헤더 -->
+    <header class="header">
+        <a href="index.html" class="header-logo">ITEM<span>GAME</span></a>
+        <div class="header-center">
+            <div class="header-chips">
+                <div class="chip-icon">$</div>
+                <div class="chip-balance" id="headerChips">0</div>
+            </div>
+            <div class="level-badge">
+                <span class="level-text" id="levelDisplay">Lv.1</span>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+                <span class="xp-text" id="xpText">0/500</span>
+            </div>
+        </div>
+        <nav class="header-nav">
+            <a class="nav-btn" href="index.html">로비</a>
+            <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container">
+        <!-- 타이틀 -->
+        <div class="ladder-title">
+            <h1>LADDER</h1>
+            <div class="subtitle">네온 사다리 · NEON LADDER GAME</div>
+        </div>
+
+        <!-- 히스토리 바 -->
+        <div class="history-bar" id="ladderHistory"></div>
+
+        <!-- 캔버스 -->
+        <div class="ladder-canvas-wrap">
+            <canvas id="ladderCanvas"></canvas>
+        </div>
+
+        <!-- 결과 -->
+        <div class="ladder-result" id="ladderResult"></div>
+
+        <!-- 칩 선택 -->
+        <div class="chip-selector">
+            <button class="chip-select-btn active" data-value="100" onclick="LadderGame.setChip(100)">100</button>
+            <button class="chip-select-btn" data-value="500" onclick="LadderGame.setChip(500)">500</button>
+            <button class="chip-select-btn" data-value="1000" onclick="LadderGame.setChip(1000)">1K</button>
+            <button class="chip-select-btn" data-value="5000" onclick="LadderGame.setChip(5000)">5K</button>
+            <button class="chip-select-btn" data-value="10000" onclick="LadderGame.setChip(10000)">10K</button>
+        </div>
+
+        <!-- 베팅 패널 -->
+        <div class="bet-panel">
+            <!-- 출발 -->
+            <div class="bet-section">
+                <div class="bet-section-title">출발 <span class="payout-badge">1.95x</span></div>
+                <div class="bet-row">
+                    <button class="bet-btn bet-left" onclick="LadderGame.placeBet('leftStart')">
+                        좌출발
+                        <span class="bet-amount" id="bet-leftStart"></span>
+                    </button>
+                    <button class="bet-btn bet-right" onclick="LadderGame.placeBet('rightStart')">
+                        우출발
+                        <span class="bet-amount" id="bet-rightStart"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 줄수 -->
+            <div class="bet-section">
+                <div class="bet-section-title">줄수 <span class="payout-badge">1.95x</span></div>
+                <div class="bet-row">
+                    <button class="bet-btn bet-three" onclick="LadderGame.placeBet('three')">
+                        3줄
+                        <span class="bet-amount" id="bet-three"></span>
+                    </button>
+                    <button class="bet-btn bet-four" onclick="LadderGame.placeBet('four')">
+                        4줄
+                        <span class="bet-amount" id="bet-four"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 도착 -->
+            <div class="bet-section">
+                <div class="bet-section-title">도착 <span class="payout-badge">1.95x</span></div>
+                <div class="bet-row">
+                    <button class="bet-btn bet-odd" onclick="LadderGame.placeBet('odd')">
+                        홀(좌)
+                        <span class="bet-amount" id="bet-odd"></span>
+                    </button>
+                    <button class="bet-btn bet-even" onclick="LadderGame.placeBet('even')">
+                        짝(우)
+                        <span class="bet-amount" id="bet-even"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 조합 -->
+            <div class="bet-section">
+                <div class="bet-section-title">조합 <span class="payout-badge combo">3.8x</span></div>
+                <div class="bet-row combo-row">
+                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('left3')">
+                        좌3짝
+                        <span class="bet-amount" id="bet-left3"></span>
+                    </button>
+                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('left4')">
+                        좌4홀
+                        <span class="bet-amount" id="bet-left4"></span>
+                    </button>
+                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('right3')">
+                        우3홀
+                        <span class="bet-amount" id="bet-right3"></span>
+                    </button>
+                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('right4')">
+                        우4짝
+                        <span class="bet-amount" id="bet-right4"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 컨트롤 -->
+        <div class="ctrl-panel">
+            <div class="total-bet-bar">
+                총 베팅: <span id="totalBetDisplay">0</span>
+            </div>
+            <div class="ctrl-buttons">
+                <button class="ctrl-btn btn-clear" onclick="LadderGame.clearBets()">전체취소</button>
+                <button class="ctrl-btn btn-start" id="startBtn" onclick="LadderGame.start()">START</button>
+                <button class="ctrl-btn btn-rebet" onclick="LadderGame.reBet()">리벳</button>
+            </div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="ladder-stats" id="ladderStats"></div>
+
+        <!-- 규칙 -->
+        <div style="padding: 0 12px 20px; max-width: 500px; margin: 0 auto;">
+            <details style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px;">
+                <summary style="color: rgba(255,255,255,0.4); font-size: 0.8rem; cursor: pointer;">게임 규칙</summary>
+                <div style="color: rgba(255,255,255,0.35); font-size: 0.75rem; margin-top: 8px; line-height: 1.7;">
+                    <p><strong style="color:#00e5ff;">싱글 베팅 (1.95배)</strong></p>
+                    <p>· 출발: 좌출발 / 우출발 중 선택</p>
+                    <p>· 줄수: 가로선 3줄 / 4줄 중 선택</p>
+                    <p>· 도착: 홀(좌도착) / 짝(우도착) 중 선택</p>
+                    <p style="margin-top:8px;"><strong style="color:#e040fb;">조합 베팅 (3.8배)</strong></p>
+                    <p>· 출발 + 줄수를 동시에 맞추면 고배당!</p>
+                    <p>· 좌3짝: 좌출발+3줄→짝 도착</p>
+                    <p>· 좌4홀: 좌출발+4줄→홀 도착</p>
+                    <p>· 우3홀: 우출발+3줄→홀 도착</p>
+                    <p>· 우4짝: 우출발+4줄→짝 도착</p>
+                </div>
+            </details>
+        </div>
+    </main>
+
+    <!-- 코인 샤워 캔버스 -->
+    <canvas id="coinShowerCanvas"></canvas>
+
+    <!-- 토스트 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 레벨업 오버레이 -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title" id="levelupTitle">LEVEL UP!</div>
+            <div class="levelup-bonus" id="levelupBonus">+0 칩</div>
+        </div>
+    </div>
+
+    <!-- 하단 네비 (모바일) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="index.html" class="bottom-nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">홈</span>
+            </a>
+            <a href="ladder.html" class="bottom-nav-item active">
+                <span class="nav-icon">🪜</span>
+                <span class="nav-label">사다리</span>
+            </a>
+            <button class="bottom-nav-item" onclick="SoundManager.toggleMute()">
+                <span class="nav-icon">🔊</span>
+                <span class="nav-label">사운드</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Core -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script src="js/core/sound-manager.js"></script>
+    <script src="js/core/coin-shower.js"></script>
+    <script src="js/core/level-manager.js"></script>
+
+    <!-- Game -->
+    <script src="js/games/ladder.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ChipManager.init();
+            SoundManager.init();
+            CoinShower.init();
+            LevelManager.init();
+            LadderGame.init();
+
+            ChipManager.onBalanceChange(() => {
+                document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            });
+
+            LevelManager.onEvent((event) => {
+                if (event.type === 'levelup') {
+                    const overlay = document.getElementById('levelupOverlay');
+                    document.getElementById('levelupTitle').textContent = `LEVEL ${event.level}!`;
+                    document.getElementById('levelupBonus').textContent = `+${event.bonus.toLocaleString()} 보너스 칩`;
+                    overlay.classList.add('active');
+                    CoinShower.start(2000, 'mega');
+                    setTimeout(() => overlay.classList.remove('active'), 3000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
