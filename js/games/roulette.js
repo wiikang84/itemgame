@@ -264,25 +264,26 @@ const Roulette = (() => {
     }
 
     /**
-     * 볼 그리기 (글로우 펄스 지원)
+     * 볼 그리기 (8px 확대 + 글로우 펄스)
      */
     function _drawBall(cx, cy) {
+        const ballSize = 8; // 6→8px (포켓 대비 잘 보이도록)
         const bx = cx + Math.cos(ballAngle) * ballRadius;
         const by = cy + Math.sin(ballAngle) * ballRadius;
 
-        // 글로우 링 펄스 (볼 착지 후 포징 중)
+        // 글로우 링 펄스 (포징 중)
         if (ballGlowing) {
-            const pulseSize = 12 + Math.sin(glowPhase) * 6; // 12~18px 펄스
-            const pulseAlpha = 0.4 + Math.sin(glowPhase) * 0.2; // 0.2~0.6 알파
+            const pulseSize = 14 + Math.sin(glowPhase) * 7;
+            const pulseAlpha = 0.45 + Math.sin(glowPhase) * 0.25;
 
             // 외곽 글로우
-            const glowGrad = ctx.createRadialGradient(bx, by, 4, bx, by, pulseSize + 8);
+            const glowGrad = ctx.createRadialGradient(bx, by, ballSize, bx, by, pulseSize + 10);
             glowGrad.addColorStop(0, `rgba(255, 215, 0, ${pulseAlpha})`);
             glowGrad.addColorStop(0.5, `rgba(255, 215, 0, ${pulseAlpha * 0.4})`);
             glowGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
 
             ctx.beginPath();
-            ctx.arc(bx, by, pulseSize + 8, 0, 2 * Math.PI);
+            ctx.arc(bx, by, pulseSize + 10, 0, 2 * Math.PI);
             ctx.fillStyle = glowGrad;
             ctx.fill();
 
@@ -290,31 +291,39 @@ const Roulette = (() => {
             ctx.beginPath();
             ctx.arc(bx, by, pulseSize, 0, 2 * Math.PI);
             ctx.strokeStyle = `rgba(255, 215, 0, ${pulseAlpha * 0.8})`;
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
         }
 
         // 볼 그림자
         ctx.beginPath();
-        ctx.arc(bx + 2, by + 2, 6, 0, 2 * Math.PI);
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.arc(bx + 2, by + 2, ballSize, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fill();
 
-        // 볼 본체
-        const ballGrad = ctx.createRadialGradient(bx - 2, by - 2, 0, bx, by, 6);
+        // 볼 본체 (3D 입체감)
+        const ballGrad = ctx.createRadialGradient(bx - 2, by - 2, 0, bx, by, ballSize);
         ballGrad.addColorStop(0, '#ffffff');
-        ballGrad.addColorStop(0.5, '#e8e8e8');
-        ballGrad.addColorStop(1, '#999999');
+        ballGrad.addColorStop(0.3, '#f5f5f5');
+        ballGrad.addColorStop(0.6, '#e0e0e0');
+        ballGrad.addColorStop(1, '#aaaaaa');
 
         ctx.beginPath();
-        ctx.arc(bx, by, 6, 0, 2 * Math.PI);
+        ctx.arc(bx, by, ballSize, 0, 2 * Math.PI);
         ctx.fillStyle = ballGrad;
         ctx.fill();
 
-        // 볼 하이라이트
+        // 볼 테두리 (입체감)
         ctx.beginPath();
-        ctx.arc(bx - 2, by - 2, 2, 0, 2 * Math.PI);
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.arc(bx, by, ballSize, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'rgba(150,150,150,0.4)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        // 볼 하이라이트 (반사광)
+        ctx.beginPath();
+        ctx.arc(bx - 2.5, by - 2.5, 3, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
         ctx.fill();
     }
 
@@ -566,24 +575,24 @@ const Roulette = (() => {
     }
 
     /**
-     * 휠 + 볼 애니메이션 (3-Phase 볼 물리 시스템)
+     * 휠 + 볼 애니메이션 (리얼 카지노급 물리)
      *
-     * Phase 1 (0~60%):   볼이 외곽 림에서 자유 회전 (독립)
-     * Phase 2 (60~75%):  볼이 안쪽으로 떨어지며 당첨 포켓에 진입 (바운스)
-     * Phase 3 (75~100%): 볼이 포켓에 고정, 휠과 함께 감속 회전
-     * Phase 4 (+3초):    포징 (줌인 + 글로우 + 하이라이트)
+     * Phase 1 (0~50%):   볼 고속 외곽 림 회전 (반대 방향, 나선형 감속)
+     * Phase 2 (50~70%):  볼 안쪽 낙하 + 포켓 진입 (자연스러운 나선)
+     * Phase 3 (70~88%):  포켓 바운스 (2~3칸 앞뒤로 튕김 → 긴장감)
+     * Phase 4 (88~100%): 포켓 안착, 휠과 함께 최종 감속
+     * Phase 5 (+3초):    포징 (줌인 + 글로우 + 하이라이트)
      *
-     * 핵심: Phase 3부터 볼은 휠의 일부 → 순간이동 버그 완전 해결
-     * 60fps 기준: Phase1=180f, Phase2=45f, Phase3=75f, Phase4=180f
+     * 개선: easeOutExpo 감속, 볼 8px, 포켓 바운스, 끝까지 틱 사운드
      */
     function _animateWheelWithBall(targetIdx) {
         return new Promise(resolve => {
             const sliceAngle = (2 * Math.PI) / WHEEL_ORDER.length;
             const targetAngle = -(targetIdx * sliceAngle + sliceAngle / 2);
-            const totalRotation = Math.PI * 10 + targetAngle - currentAngle;
+            const totalRotation = Math.PI * 12 + targetAngle - currentAngle; // 12π (더 많이 회전)
 
             const startAngleVal = currentAngle;
-            const duration = 5000; // 5초
+            const duration = 6000; // 6초 (감속 여유)
             const startTime = performance.now();
 
             showBall = true;
@@ -591,100 +600,138 @@ const Roulette = (() => {
             ballGlowing = false;
 
             const ballStartAngle = Math.random() * Math.PI * 2;
-            const ballOrbitRotation = -Math.PI * 14; // 자유 회전 총량
+            const ballOrbitRotation = -Math.PI * 16; // 볼 자유 회전 총량 (반대방향)
             const outerRadius = 190 - 10;
 
             // Phase 경계값
-            const PHASE1_END = 0.60; // 자유 회전 종료
-            const PHASE2_END = 0.75; // 포켓 진입 완료
-            // 0.75~1.00 = Phase 3 (휠 동기화 감속)
+            const P1_END = 0.50;  // 외곽 고속 회전 끝
+            const P2_END = 0.70;  // 포켓 진입 완료
+            const P3_END = 0.88;  // 바운스 끝, 안착
+            // 0.88~1.00 = Phase 4 (최종 감속)
 
-            let lastTickTime = 0;
+            // 포켓 바운스 시퀀스 (칸 오프셋: +2, -1, +1 → 0 안착)
+            const bounceOffsets = [2, -1, 1, 0];
+            const bounceDurations = [0.30, 0.25, 0.25, 0.20]; // 각 바운스 비율
+
+            let lastTickAngle = 0; // 틱 사운드: 포켓 지날 때마다
 
             function animate(time) {
                 const elapsed = time - startTime;
                 const progress = Math.min(elapsed / duration, 1);
 
-                // 휠 회전: easeOutQuart (전 구간 동일)
-                const wheelEased = 1 - Math.pow(1 - progress, 4);
+                // 휠 회전: easeOutExpo (마지막이 극적으로 느림)
+                const wheelEased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
                 currentAngle = startAngleVal + totalRotation * wheelEased;
 
-                // 당첨 포켓 중심 각도 (매 프레임 휠과 함께 이동)
+                // 당첨 포켓 중심 각도 (휠과 함께 이동)
                 const pocketAngle = currentAngle + targetIdx * sliceAngle + sliceAngle / 2 - Math.PI / 2;
 
-                if (progress < PHASE1_END) {
-                    // === Phase 1: 외곽 림 자유 회전 ===
-                    const p = progress / PHASE1_END; // 0→1
-                    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+                if (progress < P1_END) {
+                    // === Phase 1: 외곽 림 고속 회전 (나선형 감속) ===
+                    const p = progress / P1_END;
+                    const eased = 1 - Math.pow(1 - p, 3);
                     ballAngle = ballStartAngle + ballOrbitRotation * eased;
-                    ballRadius = outerRadius - 5;
+                    // 나선형: 서서히 안쪽으로 (림에서 약간 벗어남)
+                    ballRadius = (outerRadius - 3) - p * 8;
 
-                } else if (progress < PHASE2_END) {
-                    // === Phase 2: 포켓 진입 (안쪽으로 떨어지며 포켓에 고정) ===
-                    const p = (progress - PHASE1_END) / (PHASE2_END - PHASE1_END); // 0→1
-                    const easeIn = p * p; // easeInQuad
+                } else if (progress < P2_END) {
+                    // === Phase 2: 안쪽 낙하 + 포켓 진입 ===
+                    const p = (progress - P1_END) / (P2_END - P1_END);
+                    // 부드러운 S커브 (easeInOutQuad)
+                    const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
 
-                    // 볼 각도: 포켓으로 수렴
-                    // Phase1 끝 시점의 자유 각도에서 포켓 각도로 블렌딩
-                    const freeEndAngle = ballStartAngle + ballOrbitRotation; // Phase1 종료 각도
-                    let angleDiff = pocketAngle - freeEndAngle;
-                    // 최단 경로 정규화 (-π ~ +π)
+                    // 각도: Phase1 종료 각도에서 포켓으로 자연스럽게 수렴
+                    const freeEndAngle = ballStartAngle + ballOrbitRotation;
+                    // 포켓보다 2칸 앞에 도달 (바운스 시작점)
+                    const bounceStartAngle = pocketAngle + bounceOffsets[0] * sliceAngle;
+                    let angleDiff = bounceStartAngle - freeEndAngle;
                     angleDiff = angleDiff - Math.round(angleDiff / (2 * Math.PI)) * 2 * Math.PI;
-                    ballAngle = freeEndAngle + angleDiff * easeIn;
+                    ballAngle = freeEndAngle + angleDiff * eased;
 
-                    // 반지름: 외곽 → 포켓 안쪽으로
-                    const outerR = outerRadius - 5;
-                    const innerR = outerRadius - 30;
-                    ballRadius = outerR + (innerR - outerR) * easeIn;
+                    // 반지름: 나선형으로 안쪽으로 낙하
+                    const startR = outerRadius - 11; // Phase1 종료 반지름
+                    const endR = outerRadius - 28;
+                    ballRadius = startR + (endR - startR) * eased;
 
-                    // 바운스 효과 (포켓에 떨어질 때 통통)
-                    if (p > 0.5) {
-                        const bounceP = (p - 0.5) / 0.5;
-                        ballRadius += Math.sin(bounceP * Math.PI * 2) * 4;
+                } else if (progress < P3_END) {
+                    // === Phase 3: 포켓 바운스 (핵심 긴장감!) ===
+                    // 볼이 2~3칸 튕기며 최종 포켓에 안착
+                    const p = (progress - P2_END) / (P3_END - P2_END);
+
+                    // 현재 어떤 바운스 구간인지 계산
+                    let accum = 0;
+                    let bounceIdx = 0;
+                    for (let i = 0; i < bounceDurations.length; i++) {
+                        if (p < accum + bounceDurations[i]) {
+                            bounceIdx = i;
+                            break;
+                        }
+                        accum += bounceDurations[i];
+                        if (i === bounceDurations.length - 1) bounceIdx = i;
                     }
 
+                    const bounceP = (p - accum) / bounceDurations[bounceIdx];
+                    const fromOffset = bounceOffsets[bounceIdx];
+                    const toOffset = bounceIdx < bounceOffsets.length - 1 ? bounceOffsets[bounceIdx + 1] : 0;
+
+                    // 바운스 이징 (감쇠 곡선)
+                    const bounceEased = 1 - Math.pow(1 - Math.min(bounceP, 1), 2);
+                    const currentOffset = fromOffset + (toOffset - fromOffset) * bounceEased;
+
+                    ballAngle = pocketAngle + currentOffset * sliceAngle;
+                    ballRadius = outerRadius - 28;
+
+                    // 바운스 시 반지름 미세 진동
+                    ballRadius += Math.sin(bounceP * Math.PI) * 3 * (1 - p);
+
                 } else {
-                    // === Phase 3: 포켓 고정, 휠과 함께 감속 회전 ===
-                    // 볼은 이제 휠의 일부 → 순간이동 절대 없음
+                    // === Phase 4: 포켓 안착, 휠과 함께 최종 감속 ===
                     ballAngle = pocketAngle;
                     ballRadius = outerRadius - 30;
 
-                    // 미세한 안착 진동 (처음 10%만)
-                    const p = (progress - PHASE2_END) / (1 - PHASE2_END);
-                    if (p < 0.1) {
-                        const settleP = p / 0.1;
-                        ballRadius += Math.sin(settleP * Math.PI * 3) * 2 * (1 - settleP);
+                    // 안착 미세 진동 (처음만)
+                    const p = (progress - P3_END) / (1 - P3_END);
+                    if (p < 0.15) {
+                        const settleP = p / 0.15;
+                        ballRadius += Math.sin(settleP * Math.PI * 2) * 1.5 * (1 - settleP);
                     }
                 }
 
                 _drawWheel(currentAngle);
 
-                // 틱 사운드 (Phase 1 + Phase 2 초반)
-                if (progress < PHASE2_END && typeof SoundManager !== 'undefined') {
-                    const tickInterval = 80 + progress * 250; // 점점 느려짐
-                    if (time - lastTickTime > tickInterval) {
-                        SoundManager.playRouletteTick();
-                        lastTickTime = time;
+                // 틱 사운드: 포켓 지날 때마다 (Phase 3~4 포함, 끝까지)
+                if (typeof SoundManager !== 'undefined') {
+                    if (progress < P2_END) {
+                        // Phase 1~2: 시간 기반 틱
+                        const tickInterval = 60 + progress * 300;
+                        if (time - lastTickAngle > tickInterval) {
+                            SoundManager.playRouletteTick();
+                            lastTickAngle = time;
+                        }
+                    } else {
+                        // Phase 3~4: 각도 기반 틱 (포켓 지날 때)
+                        const angleDelta = Math.abs(ballAngle - lastTickAngle);
+                        if (angleDelta > sliceAngle * 0.8 || lastTickAngle === 0) {
+                            SoundManager.playRouletteTick();
+                            lastTickAngle = ballAngle;
+                        }
                     }
                 }
 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
-                    // === Phase 4: 포징 연출 시작 ===
+                    // === Phase 5: 포징 연출 시작 ===
                     ballAngle = pocketAngle;
                     ballRadius = outerRadius - 30;
 
-                    // 당첨 슬라이스 하이라이트 + 볼 글로우 ON
                     highlightSliceIdx = targetIdx;
                     ballGlowing = true;
                     glowPhase = 0;
 
-                    // 휠 줌인 (CSS transition)
                     const wrapper = document.querySelector('.wheel-wrapper');
                     if (wrapper) wrapper.classList.add('zoom-in');
 
-                    // 3초간 글로우 펄스 애니메이션
                     const posingDuration = 3000;
                     const posingStart = performance.now();
 
@@ -696,7 +743,6 @@ const Roulette = (() => {
                         if (posingElapsed < posingDuration) {
                             requestAnimationFrame(posingAnimate);
                         } else {
-                            // 포징 종료: 줌아웃 + 클린업
                             if (wrapper) wrapper.classList.remove('zoom-in');
                             highlightSliceIdx = -1;
                             ballGlowing = false;
