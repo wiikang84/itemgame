@@ -141,3 +141,18 @@ python -m http.server 8888
   - 사이드벳: Perfect Pairs(Mixed 5:1/Colored 12:1/Perfect 25:1) + 21+3(Flush~Suited Three 5:1~100:1)
   - UX: 리벳 버튼, 슈 인디케이터, 통계 패널(5항목), 테이블 글로우(승리/블랙잭), 최대 베팅 50,000
   - 변경 파일: blackjack.html, css/blackjack.css, js/games/blackjack.js, CLAUDE.md
+
+### 2026-02-19 | 룰렛 v2.0 전면 개선
+
+- **베팅 시스템 개편**: MAX_BET 상한 철폐 (잔액=한도), 칩 단위 확대 (100/500/1K/5K/10K/50K)
+- **퀵 베팅 버튼 추가**: REBET(이전 베팅 반복), x2(더블), ALL-IN(잔액 전부)
+- **UI 가독성 대폭 강화**:
+  - 베팅 셀: 40px→48px, 폰트 0.85rem→1rem, text-shadow 추가
+  - 빨강 셀: #cc0000→#e61919 (더 밝고 선명)
+  - 아웃사이드 배경: rgba(0,0,0,0.3)→rgba(0,0,0,0.6)
+  - 칩 버튼: 48px→56px + 바운스 애니메이션
+  - 히스토리: 28px→36px, 폰트 0.7rem→0.85rem
+  - 총 베팅액 표시 확대 (1.5rem + 글로우)
+- **승리 연출 강화**: 배수 기준→당첨금 절대액 기준 (1만/10만/100만칩)
+- **MEGA WIN 연출**: 100만칩 이상 당첨 시 풀스크린 오버레이 + 코인샤워 6초
+- 변경 파일: roulette.html, css/roulette.css, js/games/roulette.js, CLAUDE.md

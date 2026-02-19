@@ -1,5 +1,9 @@
 /* ============================================
-   룰렛 전용 스타일 (고품질 개선)
+   룰렛 전용 스타일 (v2.0 전면 개선)
+   - 가독성 대폭 강화
+   - 칩 단위 확대 (100~50K)
+   - 퀵 버튼 (REBET/x2/ALL-IN)
+   - MEGA WIN 연출
    ============================================ */
 
 .roulette-container {
@@ -106,8 +110,8 @@
 }
 
 .number-display.red {
-    background: #cc0000;
-    border-color: #ff3333;
+    background: #e61919;
+    border-color: #ff4444;
     color: #fff;
     box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
 }
@@ -128,52 +132,74 @@
     overflow-x: auto;
 }
 
-/* 숫자 그리드 */
+/* 숫자 그리드 - 셀 확대 */
 .number-grid {
     display: grid;
     grid-template-columns: repeat(13, 1fr);
-    gap: 2px;
+    gap: 3px;
     margin-bottom: 8px;
 }
 
 .bet-cell {
-    min-width: 40px;
-    height: 40px;
+    min-width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
     transition: all 0.2s;
     position: relative;
     user-select: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .bet-cell:hover {
     transform: scale(1.1);
     z-index: 5;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
 }
 
 .bet-cell.selected {
     border-color: var(--neon-gold);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5), inset 0 0 10px rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), inset 0 0 12px rgba(255, 215, 0, 0.25);
 }
 
 /* 칩 마커 → 스택 표현 */
 .bet-cell .chip-marker {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 4px;
+    top: -8px;
+    right: -8px;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 5px;
     background: linear-gradient(135deg, #ffd700, #ff8800);
-    border-radius: 10px;
-    font-size: 0.55rem;
+    border-radius: 11px;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 8px rgba(255, 215, 0, 0.4);
+    z-index: 10;
+    animation: rouletteChipPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 아웃사이드 베팅의 칩 마커 */
+.outside-bet .chip-marker {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 5px;
+    background: linear-gradient(135deg, #ffd700, #ff8800);
+    border-radius: 11px;
+    font-size: 0.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -213,8 +239,9 @@
     color: #fff;
 }
 
+/* 빨강 셀 - 밝기 강화 */
 .bet-cell.red-cell {
-    background: #cc0000;
+    background: #e61919;
     color: #fff;
 }
 
@@ -228,10 +255,10 @@
     grid-row: span 3;
     background: #006600;
     color: #fff;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
 }
 
-/* 외부 베팅 영역 (3x3 그리드) */
+/* 외부 베팅 영역 (3x3 그리드) - 가독성 강화 */
 .outside-bets {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -240,22 +267,23 @@
 }
 
 .outside-bet {
-    padding: 10px 8px;
+    padding: 12px 10px;
     text-align: center;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 700;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 4px;
     transition: all 0.2s;
     color: #fff;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.6);
     position: relative;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .outside-bet:hover {
     border-color: var(--neon-gold);
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
     transform: translateY(-1px);
 }
 
@@ -266,11 +294,11 @@
 }
 
 .outside-bet.red-bg {
-    background: rgba(204, 0, 0, 0.3);
+    background: rgba(230, 25, 25, 0.4);
 }
 
 .outside-bet.black-bg {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
 }
 
 /* 2:1 베팅 (줄) */
@@ -294,15 +322,18 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
+/* 칩 버튼 확대 */
 .bet-chip-option {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     border: 3px solid;
     font-weight: 800;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -330,18 +361,16 @@
     opacity: 1;
     transform: scale(1.15);
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    animation: chipBounce 0.3s ease;
 }
 
-.bet-chip-option.c10 {
-    background: linear-gradient(135deg, #999, #666);
-    border-color: #aaa;
-    color: #fff;
+@keyframes chipBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1.15); }
 }
-.bet-chip-option.c50 {
-    background: linear-gradient(135deg, #ff4444, #cc0000);
-    border-color: #ff6666;
-    color: #fff;
-}
+
+/* 칩 색상 (새 단위) */
 .bet-chip-option.c100 {
     background: linear-gradient(135deg, #2266ff, #0044cc);
     border-color: #4488ff;
@@ -357,17 +386,34 @@
     border-color: #888;
     color: #fff;
 }
+.bet-chip-option.c5000 {
+    background: linear-gradient(135deg, #cc44ff, #8800cc);
+    border-color: #dd66ff;
+    color: #fff;
+}
+.bet-chip-option.c10000 {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+    border-color: #ff6666;
+    color: #fff;
+}
+.bet-chip-option.c50000 {
+    background: linear-gradient(135deg, #ffd700, #cc8800);
+    border-color: #ffe44d;
+    color: #000;
+}
 
+/* 총 베팅액 표시 - 확대 */
 .total-bet-display {
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: var(--text-secondary);
     transition: all 0.3s;
 }
 
 .total-bet-display strong {
     color: var(--neon-gold);
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     transition: all 0.3s;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
 
 .total-bet-display.bet-highlight strong {
@@ -383,6 +429,63 @@
     100% { transform: scale(1); }
 }
 
+/* 퀵 베팅 버튼 */
+.quick-bet-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.quick-btn {
+    padding: 8px 18px;
+    border: 2px solid;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.quick-btn:hover {
+    transform: scale(1.05);
+}
+
+.quick-btn:active {
+    transform: scale(0.95);
+}
+
+.rebet-btn {
+    background: linear-gradient(135deg, #1a5276, #0e3a56);
+    border-color: #2980b9;
+    color: #85c1e9;
+}
+
+.rebet-btn:hover {
+    box-shadow: 0 0 12px rgba(41, 128, 185, 0.4);
+}
+
+.double-btn {
+    background: linear-gradient(135deg, #7d6608, #5a4a06);
+    border-color: #f1c40f;
+    color: #f9e79f;
+}
+
+.double-btn:hover {
+    box-shadow: 0 0 12px rgba(241, 196, 15, 0.4);
+}
+
+.allin-btn {
+    background: linear-gradient(135deg, #922b21, #641e16);
+    border-color: #e74c3c;
+    color: #f5b7b1;
+}
+
+.allin-btn:hover {
+    box-shadow: 0 0 12px rgba(231, 76, 60, 0.4);
+}
+
+/* 액션 버튼 */
 .roulette-action-buttons {
     display: flex;
     gap: 12px;
@@ -479,35 +582,35 @@
     100% { box-shadow: 0 0 30px rgba(255, 51, 102, 0.1), inset 0 0 40px rgba(0, 0, 0, 0.3); }
 }
 
-/* 히스토리 */
+/* 히스토리 - 크기 확대 */
 .history-bar {
     display: flex;
-    gap: 4px;
+    gap: 5px;
     flex-wrap: wrap;
     margin-top: 16px;
-    padding: 8px;
+    padding: 10px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: var(--radius-sm);
-    min-height: 36px;
+    min-height: 44px;
     align-items: center;
 }
 
 .history-num {
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: #fff;
     animation: rouletteChipPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.history-num.h-green { background: #006600; border: 1px solid #00cc00; }
-.history-num.h-red { background: #cc0000; }
-.history-num.h-black { background: #222; border: 1px solid #555; }
+.history-num.h-green { background: #006600; border: 2px solid #00cc00; }
+.history-num.h-red { background: #e61919; border: 1px solid rgba(255,255,255,0.15); }
+.history-num.h-black { background: #222; border: 2px solid #555; }
 
 /* 히스토리 빨강/검정 비율 미니 바 */
 .history-ratio-bar {
@@ -521,7 +624,7 @@
 }
 
 .history-ratio-red {
-    background: linear-gradient(90deg, #cc0000, #ff3333);
+    background: linear-gradient(90deg, #e61919, #ff4444);
     transition: width 0.5s ease;
 }
 
@@ -539,15 +642,85 @@
     display: flex;
     justify-content: space-between;
     margin-top: 4px;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     color: var(--text-dim);
 }
 
-.history-ratio-labels .ratio-red { color: #ff3333; }
+.history-ratio-labels .ratio-red { color: #ff4444; }
 .history-ratio-labels .ratio-black { color: #aaa; }
 .history-ratio-labels .ratio-green { color: #00cc00; }
 
-/* 반응형 */
+/* ============================================
+   MEGA WIN 오버레이
+   ============================================ */
+.mega-win-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.mega-win-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mega-win-content {
+    text-align: center;
+    animation: megaWinZoom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mega-win-title {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow:
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 40px rgba(255, 215, 0, 0.5),
+        0 0 80px rgba(255, 215, 0, 0.3),
+        0 4px 0 #cc8800;
+    letter-spacing: 8px;
+    animation: megaWinPulse 0.5s ease infinite alternate;
+}
+
+.mega-win-amount {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    margin-top: 12px;
+}
+
+.mega-win-chips {
+    font-size: 1.5rem;
+    color: #ffd700;
+    letter-spacing: 4px;
+    margin-top: 4px;
+}
+
+@keyframes megaWinZoom {
+    0% { transform: scale(0.1) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(3deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes megaWinPulse {
+    from { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.5), 0 0 80px rgba(255, 215, 0, 0.3), 0 4px 0 #cc8800; }
+    to { text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 215, 0, 0.7), 0 0 120px rgba(255, 215, 0, 0.5), 0 4px 0 #cc8800; }
+}
+
+/* ============================================
+   반응형
+   ============================================ */
 @media (max-width: 768px) {
     .roulette-frame {
         padding: 16px;
@@ -564,9 +737,9 @@
     }
 
     .bet-cell {
-        min-width: 28px;
-        height: 32px;
-        font-size: 0.7rem;
+        min-width: 32px;
+        height: 36px;
+        font-size: 0.8rem;
     }
 
     /* 모바일에서도 3열 유지 */
@@ -575,40 +748,59 @@
     }
 
     .bet-chip-option {
-        width: 40px;
-        height: 40px;
-        font-size: 0.65rem;
+        width: 46px;
+        height: 46px;
+        font-size: 0.7rem;
     }
 
     .roulette-title {
         font-size: 1.4rem;
     }
+
+    .history-num {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+
+    .quick-btn {
+        padding: 6px 14px;
+        font-size: 0.75rem;
+    }
+
+    .mega-win-title {
+        font-size: 2.5rem;
+    }
+
+    .mega-win-amount {
+        font-size: 2rem;
+    }
 }
 
 @media (max-width: 480px) {
     .wheel-wrapper {
-        width: 240px;
-        height: 240px;
+        width: 260px;
+        height: 260px;
     }
 
     .wheel-canvas {
-        width: 240px;
-        height: 240px;
+        width: 260px;
+        height: 260px;
     }
 
     .number-grid {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
     }
 
     .bet-cell {
-        min-width: 22px;
-        height: 26px;
-        font-size: 0.6rem;
+        min-width: 26px;
+        height: 30px;
+        font-size: 0.7rem;
     }
 
     .outside-bet {
-        padding: 8px 4px;
-        font-size: 0.7rem;
+        padding: 10px 6px;
+        font-size: 0.8rem;
     }
 
     .spin-roulette-btn {
@@ -617,8 +809,30 @@
     }
 
     .bet-chip-option {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         font-size: 0.6rem;
+    }
+
+    .total-bet-display {
+        font-size: 1rem;
+    }
+
+    .total-bet-display strong {
+        font-size: 1.2rem;
+    }
+
+    .quick-btn {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+    }
+
+    .mega-win-title {
+        font-size: 2rem;
+        letter-spacing: 4px;
+    }
+
+    .mega-win-amount {
+        font-size: 1.5rem;
     }
 }

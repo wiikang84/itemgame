@@ -80,16 +80,24 @@
                 <!-- 칩 선택 -->
                 <div class="bet-chip-selector">
                     <span style="color:var(--text-secondary);font-size:0.85rem">칩:</span>
-                    <button class="bet-chip-option c10" data-value="10" onclick="Roulette.selectChip(10)">10</button>
-                    <button class="bet-chip-option c50" data-value="50" onclick="Roulette.selectChip(50)">50</button>
                     <button class="bet-chip-option c100 active" data-value="100" onclick="Roulette.selectChip(100)">100</button>
                     <button class="bet-chip-option c500" data-value="500" onclick="Roulette.selectChip(500)">500</button>
                     <button class="bet-chip-option c1000" data-value="1000" onclick="Roulette.selectChip(1000)">1K</button>
+                    <button class="bet-chip-option c5000" data-value="5000" onclick="Roulette.selectChip(5000)">5K</button>
+                    <button class="bet-chip-option c10000" data-value="10000" onclick="Roulette.selectChip(10000)">10K</button>
+                    <button class="bet-chip-option c50000" data-value="50000" onclick="Roulette.selectChip(50000)">50K</button>
                 </div>
 
                 <!-- 총 베팅 -->
                 <div class="total-bet-display">
                     총 베팅: <strong id="totalBet">0</strong> 칩
+                </div>
+
+                <!-- 퀵 베팅 버튼 -->
+                <div class="quick-bet-buttons">
+                    <button class="quick-btn rebet-btn" onclick="Roulette.rebet()">REBET</button>
+                    <button class="quick-btn double-btn" onclick="Roulette.doubleBet()">x2</button>
+                    <button class="quick-btn allin-btn" onclick="Roulette.allIn()">ALL-IN</button>
                 </div>
 
                 <!-- 액션 버튼 -->

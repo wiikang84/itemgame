@@ -20,7 +20,7 @@ const Roulette = (() => {
     const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
     const MIN_BET = 10;
-    const MAX_BET = 10000;
+    // const MAX_BET = 10000; // 상한 제거 - 잔액이 곧 한도
 
     let canvas, ctx;
     let currentAngle = 0;
@@ -29,6 +29,7 @@ const Roulette = (() => {
     let selectedChipValue = 100;
     let lastResult = null;
     let history = [];
+    let lastBets = {}; // REBET용 이전 베팅 기록
 
     // 볼 애니메이션용
     let ballAngle = 0;
@@ -419,9 +420,10 @@ const Roulette = (() => {
     }
 
     /**
-     * 숫자 약어 포맷 (1000→1K)
+     * 숫자 약어 포맷 (1000→1K, 1000000→1M)
      */
     function _formatShort(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M';
         if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
         return n.toString();
     }
@@ -474,16 +476,23 @@ const Roulette = (() => {
             _showResult(resultNumber, winAmount, true);
             _highlightWinningBets(resultNumber);
 
-            const net = winAmount - totalBet;
-            if (net >= totalBet * 10) {
+            // 당첨금 절대액 기준 연출 (개선: 배수 → 절대액)
+            if (winAmount >= 1000000) {
+                // MEGA WIN: 100만칩 이상
                 if (typeof SoundManager !== 'undefined') SoundManager.playBigWin();
-                // 대박: 코인 샤워 + 화면 쉐이크
+                if (typeof CoinShower !== 'undefined') CoinShower.start(6000, 'epic');
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 800);
+                _showMegaWin(winAmount);
+            } else if (winAmount >= 100000) {
+                // 대박: 10만칩 이상
+                if (typeof SoundManager !== 'undefined') SoundManager.playBigWin();
                 if (typeof CoinShower !== 'undefined') CoinShower.start(4000, 'epic');
                 document.body.classList.add('shake');
                 setTimeout(() => document.body.classList.remove('shake'), 500);
-            } else if (net >= totalBet * 3) {
+            } else if (winAmount >= 10000) {
+                // 중간 연출: 1만칩 이상
                 if (typeof SoundManager !== 'undefined') SoundManager.playWin();
-                // 좋은 당첨: 코인 샤워
                 if (typeof CoinShower !== 'undefined') CoinShower.start(2000, 'big');
             } else {
                 if (typeof SoundManager !== 'undefined') SoundManager.playWin();
@@ -494,6 +503,8 @@ const Roulette = (() => {
         }
 
         isSpinning = false;
+        // 이전 베팅 기록 저장 (REBET용)
+        lastBets = JSON.parse(JSON.stringify(bets));
         bets = {};
         _updateBetMarkers();
         _render();
@@ -805,13 +816,122 @@ const Roulette = (() => {
         }
     }
 
+    /**
+     * MEGA WIN 특별 연출 (100만칩 이상)
+     */
+    function _showMegaWin(amount) {
+        // MEGA WIN 오버레이 생성
+        let overlay = document.getElementById('megaWinOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'megaWinOverlay';
+            overlay.className = 'mega-win-overlay';
+            overlay.innerHTML = `
+                <div class="mega-win-content">
+                    <div class="mega-win-title">MEGA WIN!</div>
+                    <div class="mega-win-amount">+${amount.toLocaleString()}</div>
+                    <div class="mega-win-chips">CHIPS</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        } else {
+            overlay.querySelector('.mega-win-amount').textContent = `+${amount.toLocaleString()}`;
+        }
+        overlay.classList.add('active');
+        setTimeout(() => overlay.classList.remove('active'), 4000);
+    }
+
+    /**
+     * REBET - 이전 베팅 그대로 다시 걸기
+     */
+    function rebet() {
+        if (isSpinning) return;
+        if (Object.keys(lastBets).length === 0) {
+            _showStatus('이전 베팅 기록이 없습니다!');
+            return;
+        }
+
+        const rebetTotal = Object.values(lastBets).reduce((sum, v) => sum + v, 0);
+        if (rebetTotal > ChipManager.getBalance()) {
+            _showStatus('칩이 부족합니다!');
+            return;
+        }
+
+        bets = JSON.parse(JSON.stringify(lastBets));
+        if (typeof SoundManager !== 'undefined') SoundManager.playChipPlace();
+        _updateBetMarkers();
+        _render();
+    }
+
+    /**
+     * 현재 베팅 x2 더블
+     */
+    function doubleBet() {
+        if (isSpinning) return;
+        const currentTotal = _getTotalBet();
+        if (currentTotal === 0) {
+            _showStatus('베팅을 먼저 놓아주세요!');
+            return;
+        }
+
+        // 잔액 확인
+        if (currentTotal * 2 > ChipManager.getBalance()) {
+            _showStatus('칩이 부족합니다!');
+            return;
+        }
+
+        // 모든 베팅 2배
+        Object.keys(bets).forEach(key => {
+            bets[key] *= 2;
+        });
+
+        if (typeof SoundManager !== 'undefined') SoundManager.playChipPlace();
+        _updateBetMarkers();
+        _render();
+    }
+
+    /**
+     * ALL-IN - 선택된 칩 값 무시하고 잔액 전부를 현재 선택 영역에 배분
+     * 이미 베팅이 있으면 그 비율대로, 없으면 마지막 클릭한 곳에 올인
+     */
+    function allIn() {
+        if (isSpinning) return;
+        const balance = ChipManager.getBalance();
+        const currentTotal = _getTotalBet();
+        const available = balance - currentTotal;
+
+        if (available <= 0) {
+            _showStatus('추가로 걸 수 있는 칩이 없습니다!');
+            return;
+        }
+
+        const keys = Object.keys(bets);
+        if (keys.length === 0) {
+            _showStatus('베팅 영역을 먼저 선택하세요!');
+            return;
+        }
+
+        // 현재 베팅 비율대로 잔액 배분
+        const ratio = {};
+        keys.forEach(key => { ratio[key] = bets[key] / currentTotal; });
+        keys.forEach(key => {
+            bets[key] += Math.floor(available * ratio[key]);
+        });
+
+        if (typeof SoundManager !== 'undefined') SoundManager.playChipPlace();
+        _updateBetMarkers();
+        _render();
+    }
+
     return {
         init,
         spin,
         selectChip,
         clearBets,
+        rebet,
+        doubleBet,
+        allIn,
         getColor,
-        MIN_BET,
-        MAX_BET
+        MIN_BET
     };
 })();
