@@ -33,11 +33,13 @@ itemgame/
 ├── slot.html               # 슬롯머신 "LUCKY JACKPOT"
 ├── blackjack.html          # 블랙잭
 ├── roulette.html           # 룰렛
+├── sea-story.html          # 바다이야기 슬롯
 ├── css/
 │   ├── common.css          # 공통 다크 카지노 테마 + 레벨/XP UI
 │   ├── slot.css            # 슬롯 전용 (v5.1 프리미엄 비주얼)
 │   ├── blackjack.css       # 블랙잭 전용
-│   └── roulette.css        # 룰렛 전용
+│   ├── roulette.css        # 룰렛 전용
+│   └── sea-story.css       # 바다이야기 전용
 ├── js/
 │   ├── core/
 │   │   ├── firebase-config.js  # Firebase 설정 + Firestore 헬퍼
@@ -48,7 +50,8 @@ itemgame/
 │   └── games/
 │       ├── slot-machine.js     # 슬롯머신 로직 v3.0
 │       ├── blackjack.js        # 블랙잭 로직
-│       └── roulette.js         # 룰렛 로직
+│       ├── roulette.js         # 룰렛 로직
+│       └── sea-story.js       # 바다이야기 로직
 ├── firestore.rules         # Firestore 보안 규칙
 ├── CLAUDE.md
 └── .gitignore
@@ -81,6 +84,16 @@ itemgame/
 - 세미서클 펠트 테이블 + 골드 림 + 스포트라이트/비네팅
 - 3D 칩 (엣지 스팟 + 두께 그림자) + 페이스 카드 아이콘 (J♞/Q♛/K♚)
 - 3D 아크 궤적 카드 딜 + 플립 애니메이션
+
+### 바다이야기 "SEA STORY" (v1.0)
+- **릴 구성**: 5x3 릴, 9 페이라인, RTP ~96%
+- **심볼 11종**: 인어공주, 상어, 문어, 거북이, 돌고래, 열대어, 조개, 불가사리, 게, WILD(삼지창), BONUS(닻)
+- **와일드(🔱)**: 보너스 제외 모든 심볼 대체, 최고 배당 x1000
+- **보너스(⚓ Scatter)**: 3개+ 출현 시 무료스핀 (10/15/25회), 프로그레시브 배율 (최대 x10)
+- **5단계 승리 연출**: 당첨 → 좋은 당첨 → 대어 → 보물발견 → 인어의축복
+- **갬블/더블업**: 물고기 방향 맞추기 (50/50), 연속 갬블 가능
+- **수중 비주얼**: 딥오션 블루 팔레트, 버블 파티클, 수중 광선, 오션 크롬 캐비닛
+- **오토스핀**: 10/25/50/100/무제한 횟수 선택 메뉴
 
 ### 룰렛
 - 유럽식 37칸 (0~36)
@@ -209,3 +222,37 @@ python -m http.server 8888
 - **승리 시 테이블 글로우**: 골드 림이 그린으로 발광
 - **SPIN 버튼**: 레드 그라디언트 + 골드 보더 + 인셋 하이라이트
 - 변경 파일: roulette.html, css/roulette.css, js/games/roulette.js, CLAUDE.md
+
+### 2026-02-19 | 룰렛 v3.1 자동스핀 기능 추가
+
+- **AUTO 스핀 기능 추가** (기존에 없던 신규 기능)
+  - `toggleAutoSpin()`, `_stopAutoSpin()`, `_updateAutoBtn()` 함수 추가
+  - `_scheduleNextAutoSpin()` - 잔액/베팅 확인 후 800ms 후 다음 스핀
+  - 자동스핀 시 이전 베팅(`lastBets`) 자동 복원
+  - 자동스핀 중 칩 부족/베팅 없음 시 자동 정지
+- **안전 메커니즘 추가**
+  - `spin()` 함수 try-catch-finally 래핑 → isSpinning 항상 해제 보장
+  - `_animateWheelWithBall` 마스터 타임아웃 12초 + safeResolve 패턴
+  - quickMode: 포징 3초→1.5초, 딜레이 단축
+- **AUTO 버튼 CSS**: 블루 기본 + 레드 active 상태 + pulse 애니메이션
+- 변경 파일: roulette.html, css/roulette.css, js/games/roulette.js, CLAUDE.md
+
+### 2026-02-19 | 바다이야기 SEA STORY v1.0 신규 게임 추가
+
+- **바다이야기 슬롯머신 신규 생성** (4개 파일 신규)
+  - `sea-story.html` - 해양 테마 슬롯머신 페이지
+  - `css/sea-story.css` - 수중 테마 CSS (딥오션 블루 팔레트)
+  - `js/games/sea-story.js` - SeaStory 게임 모듈
+- **해양 심볼 11종**: 인어공주(x600), 상어(x300), 문어(x200), 거북이(x150), 돌고래(x100), 열대어(x80), 조개(x50), 불가사리(x40), 게(x30), 🔱WILD(x1000), ⚓BONUS(프리스핀)
+- **수중 비주얼 테마**
+  - 컬러 팔레트: 골드→시안(#00d4ff), 레드→코랄(#ff6b6b), 딥오션 배경(#020818)
+  - 수중 스포트라이트 (12개 블루 광선)
+  - 버블 효과 (Canvas 기반 25개 버블 파티클)
+  - LED 스트립: 블루+시안 교차
+  - 스핀 버튼: 틸 그라디언트
+  - 캐비닛: 오션 크롬 프레임
+- **게임 로직**: LUCKY JACKPOT과 동일 (5x3릴, 9페이라인, RTP~96%, 프리스핀, 갬블/더블업)
+- **승리 티어**: 당첨/좋은 당첨/대어/보물발견/인어의축복
+- **더블업**: "물고기가 어느 쪽으로 헤엄칠까?" (왼쪽/오른쪽)
+- **로비(index.html)**: 바다이야기 게임 카드 추가 (시안 테마 PLAY 버튼)
+- 변경 파일: sea-story.html(신규), css/sea-story.css(신규), js/games/sea-story.js(신규), index.html, CLAUDE.md

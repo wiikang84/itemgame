@@ -41,6 +41,9 @@ const Roulette = (() => {
     let ballGlowing = false;    // 볼 글로우 펄스 활성화
     let glowPhase = 0;         // 글로우 펄스 위상
 
+    // v3.0: 자동스핀
+    let autoSpin = false;
+
     /**
      * 숫자의 색상
      */
@@ -493,19 +496,30 @@ const Roulette = (() => {
     }
 
     /**
-     * 스핀
+     * 스핀 (v3.0: try-catch-finally + 자동스핀 지원)
      */
     async function spin() {
         if (isSpinning) return;
 
+        // 자동스핀: 이전 베팅 자동 복원
+        if (autoSpin && _getTotalBet() === 0 && Object.keys(lastBets).length > 0) {
+            const rebetTotal = Object.values(lastBets).reduce((sum, v) => sum + v, 0);
+            if (rebetTotal <= ChipManager.getBalance()) {
+                bets = JSON.parse(JSON.stringify(lastBets));
+                _updateBetMarkers();
+            }
+        }
+
         const totalBet = _getTotalBet();
         if (totalBet === 0) {
             _showStatus('베팅을 먼저 놓아주세요!');
+            _stopAutoSpin();
             return;
         }
 
         if (!ChipManager.deductChips(totalBet)) {
             _showStatus('칩이 부족합니다!');
+            _stopAutoSpin();
             return;
         }
 
@@ -523,61 +537,129 @@ const Roulette = (() => {
         const resultIdx = Math.floor(Math.random() * WHEEL_ORDER.length);
         const resultNumber = WHEEL_ORDER[resultIdx];
 
-        // 볼 + 휠 애니메이션
-        await _animateWheelWithBall(resultIdx);
+        try {
+            // 볼 + 휠 애니메이션 (자동스핀 시 포징 단축)
+            await _animateWheelWithBall(resultIdx, autoSpin);
 
-        lastResult = resultNumber;
-        history.unshift(resultNumber);
-        if (history.length > 20) history.pop();
+            lastResult = resultNumber;
+            history.unshift(resultNumber);
+            if (history.length > 20) history.pop();
 
-        if (typeof SoundManager !== 'undefined') SoundManager.playBallLand();
+            if (typeof SoundManager !== 'undefined') SoundManager.playBallLand();
 
-        // 당첨 계산
-        const winAmount = _calculateWinnings(resultNumber);
+            // 당첨 계산
+            const winAmount = _calculateWinnings(resultNumber);
 
-        if (winAmount > 0) {
-            ChipManager.addChips(winAmount);
-            _showResult(resultNumber, winAmount, true);
-            _highlightWinningBets(resultNumber);
-            // 테이블 글로우
-            const tableOuter = document.getElementById('rouletteTableOuter');
-            if (tableOuter) {
-                tableOuter.classList.add('win-glow');
-                setTimeout(() => tableOuter.classList.remove('win-glow'), 3000);
-            }
+            if (winAmount > 0) {
+                ChipManager.addChips(winAmount);
+                _showResult(resultNumber, winAmount, true);
+                _highlightWinningBets(resultNumber);
+                // 테이블 글로우
+                const tableOuter = document.getElementById('rouletteTableOuter');
+                if (tableOuter) {
+                    tableOuter.classList.add('win-glow');
+                    setTimeout(() => tableOuter.classList.remove('win-glow'), 3000);
+                }
 
-            // 당첨금 절대액 기준 연출 (개선: 배수 → 절대액)
-            if (winAmount >= 1000000) {
-                // MEGA WIN: 100만칩 이상
-                if (typeof SoundManager !== 'undefined') SoundManager.playBigWin();
-                if (typeof CoinShower !== 'undefined') CoinShower.start(6000, 'epic');
-                document.body.classList.add('shake');
-                setTimeout(() => document.body.classList.remove('shake'), 800);
-                _showMegaWin(winAmount);
-            } else if (winAmount >= 100000) {
-                // 대박: 10만칩 이상
-                if (typeof SoundManager !== 'undefined') SoundManager.playBigWin();
-                if (typeof CoinShower !== 'undefined') CoinShower.start(4000, 'epic');
-                document.body.classList.add('shake');
-                setTimeout(() => document.body.classList.remove('shake'), 500);
-            } else if (winAmount >= 10000) {
-                // 중간 연출: 1만칩 이상
-                if (typeof SoundManager !== 'undefined') SoundManager.playWin();
-                if (typeof CoinShower !== 'undefined') CoinShower.start(2000, 'big');
+                // 당첨금 절대액 기준 연출
+                if (winAmount >= 1000000) {
+                    if (typeof SoundManager !== 'undefined') SoundManager.playBigWin();
+                    if (typeof CoinShower !== 'undefined') CoinShower.start(autoSpin ? 3000 : 6000, 'epic');
+                    document.body.classList.add('shake');
+                    setTimeout(() => document.body.classList.remove('shake'), 800);
+                    if (!autoSpin) _showMegaWin(winAmount);
+                } else if (winAmount >= 100000) {
+                    if (typeof SoundManager !== 'undefined') SoundManager.playBigWin();
+                    if (typeof CoinShower !== 'undefined') CoinShower.start(autoSpin ? 2000 : 4000, 'epic');
+                    document.body.classList.add('shake');
+                    setTimeout(() => document.body.classList.remove('shake'), 500);
+                } else if (winAmount >= 10000) {
+                    if (typeof SoundManager !== 'undefined') SoundManager.playWin();
+                    if (typeof CoinShower !== 'undefined') CoinShower.start(autoSpin ? 1000 : 2000, 'big');
+                } else {
+                    if (typeof SoundManager !== 'undefined') SoundManager.playWin();
+                }
             } else {
-                if (typeof SoundManager !== 'undefined') SoundManager.playWin();
+                _showResult(resultNumber, 0, false);
+                if (typeof SoundManager !== 'undefined') SoundManager.playLose();
             }
-        } else {
-            _showResult(resultNumber, 0, false);
-            if (typeof SoundManager !== 'undefined') SoundManager.playLose();
+        } catch (err) {
+            console.error('[Roulette] spin error:', err);
+        } finally {
+            isSpinning = false;
+            // 이전 베팅 기록 저장 (REBET/자동스핀용)
+            lastBets = JSON.parse(JSON.stringify(bets));
+            bets = {};
+            _updateBetMarkers();
+            _render();
         }
 
-        isSpinning = false;
-        // 이전 베팅 기록 저장 (REBET용)
-        lastBets = JSON.parse(JSON.stringify(bets));
-        bets = {};
-        _updateBetMarkers();
-        _render();
+        // 자동스핀 다음 라운드 스케줄링
+        _scheduleNextAutoSpin();
+    }
+
+    /**
+     * v3.0: 자동스핀 다음 라운드 스케줄링
+     */
+    function _scheduleNextAutoSpin() {
+        if (!autoSpin) return;
+
+        const rebetTotal = Object.values(lastBets).reduce((sum, v) => sum + v, 0);
+        if (rebetTotal <= 0) {
+            _stopAutoSpin();
+            _showStatus('자동스핀 종료: 베팅 기록 없음');
+            return;
+        }
+        if (rebetTotal > ChipManager.getBalance()) {
+            _stopAutoSpin();
+            _showStatus('자동스핀 종료: 칩 부족');
+            return;
+        }
+
+        setTimeout(() => {
+            if (autoSpin) {
+                spin();
+            }
+        }, 800);
+    }
+
+    /**
+     * v3.0: 자동스핀 토글
+     */
+    function toggleAutoSpin() {
+        if (isSpinning && autoSpin) {
+            // 스핀 중 정지 요청 → 현재 스핀 후 멈춤
+            _stopAutoSpin();
+            return;
+        }
+        if (isSpinning) return;
+
+        if (autoSpin) {
+            _stopAutoSpin();
+        } else {
+            // 시작 조건: 베팅이 있거나 lastBets가 있어야 함
+            if (_getTotalBet() === 0 && Object.keys(lastBets).length === 0) {
+                _showStatus('베팅을 먼저 놓아주세요!');
+                return;
+            }
+            autoSpin = true;
+            _updateAutoBtn();
+            if (typeof SoundManager !== 'undefined') SoundManager.playClick();
+            spin();
+        }
+    }
+
+    function _stopAutoSpin() {
+        autoSpin = false;
+        _updateAutoBtn();
+    }
+
+    function _updateAutoBtn() {
+        const btn = document.getElementById('autoSpinBtn');
+        if (btn) {
+            btn.classList.toggle('active', autoSpin);
+            btn.textContent = autoSpin ? 'STOP' : 'AUTO';
+        }
     }
 
     /**
@@ -591,8 +673,24 @@ const Roulette = (() => {
      *
      * 개선: easeOutExpo 감속, 볼 8px, 포켓 바운스, 끝까지 틱 사운드
      */
-    function _animateWheelWithBall(targetIdx) {
+    function _animateWheelWithBall(targetIdx, quickMode) {
         return new Promise(resolve => {
+            let resolved = false;
+            const safeResolve = () => { if (resolved) return; resolved = true; resolve(); };
+
+            // v3.0: 마스터 타임아웃 — 12초 내 완료 안 되면 강제 해결
+            const masterTimeout = setTimeout(() => {
+                if (!resolved) {
+                    console.warn('[Roulette] Master timeout: force resolving animation');
+                    showBall = false;
+                    highlightSliceIdx = -1;
+                    ballGlowing = false;
+                    const wrapper = document.querySelector('.wheel-wrapper');
+                    if (wrapper) wrapper.classList.remove('zoom-in');
+                    _drawWheel(currentAngle);
+                    safeResolve();
+                }
+            }, 12000);
             const sliceAngle = (2 * Math.PI) / WHEEL_ORDER.length;
             const targetAngle = -(targetIdx * sliceAngle + sliceAngle / 2);
             const totalRotation = Math.PI * 12 + targetAngle - currentAngle; // 12π (더 많이 회전)
@@ -738,10 +836,12 @@ const Roulette = (() => {
                     const wrapper = document.querySelector('.wheel-wrapper');
                     if (wrapper) wrapper.classList.add('zoom-in');
 
-                    const posingDuration = 3000;
+                    // v3.0: 자동스핀 시 포징 1.5초, 수동 시 3초
+                    const posingDuration = quickMode ? 1500 : 3000;
                     const posingStart = performance.now();
 
                     function posingAnimate(time) {
+                        if (resolved) return; // 마스터 타임아웃으로 이미 해결됨
                         const posingElapsed = time - posingStart;
                         glowPhase = (posingElapsed / 200) * Math.PI;
                         _drawWheel(currentAngle);
@@ -756,13 +856,14 @@ const Roulette = (() => {
                             setTimeout(() => {
                                 showBall = false;
                                 _drawWheel(currentAngle);
-                                resolve();
-                            }, 500);
+                                clearTimeout(masterTimeout); // v3.0: 마스터 타임아웃 해제
+                                safeResolve();
+                            }, quickMode ? 200 : 500);
                         }
                     }
 
                     _drawWheel(currentAngle);
-                    setTimeout(() => requestAnimationFrame(posingAnimate), 200);
+                    setTimeout(() => requestAnimationFrame(posingAnimate), quickMode ? 100 : 200);
                 }
             }
 
@@ -1119,6 +1220,7 @@ const Roulette = (() => {
         rebet,
         doubleBet,
         allIn,
+        toggleAutoSpin,
         getColor,
         MIN_BET
     };

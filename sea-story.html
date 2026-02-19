@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>바다이야기 - ItemGame</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/sea-story.css">
+</head>
+<body class="sea-page">
+    <!-- 수중 광선 오버레이 -->
+    <div class="spotlight-overlay"></div>
+    <!-- 버블 캔버스 -->
+    <canvas class="bubble-canvas" id="bubbleCanvas"></canvas>
+
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-logo" onclick="location.href='index.html'" style="cursor:pointer">ITEM<span>GAME</span></div>
+        <div class="header-center">
+            <div class="header-chips">
+                <div class="chip-icon">$</div>
+                <div class="chip-balance" id="headerChips">0</div>
+            </div>
+            <div class="level-badge">
+                <span class="level-text" id="levelDisplay">Lv.1</span>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+                <span class="xp-text" id="xpText">0/500</span>
+            </div>
+        </div>
+        <nav class="header-nav">
+            <button class="nav-btn" onclick="location.href='index.html'">로비</button>
+            <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container">
+        <div class="slot-cabinet">
+
+            <!-- ═══ 탑 박스 (타이틀 + 잭팟) ═══ -->
+            <div class="cabinet-top">
+                <!-- LED 스트립 (블루+시안 교차) -->
+                <div class="led-strip">
+                    <span class="led-dot led-blue"></span>
+                    <span class="led-dot led-cyan"></span>
+                    <span class="led-dot led-blue"></span>
+                    <span class="led-dot led-cyan"></span>
+                    <span class="led-dot led-blue"></span>
+                    <span class="led-dot led-cyan"></span>
+                    <span class="led-dot led-blue"></span>
+                    <span class="led-dot led-cyan"></span>
+                    <span class="led-dot led-blue"></span>
+                    <span class="led-dot led-cyan"></span>
+                </div>
+                <!-- 장식 요소 (해양 테마) -->
+                <div class="cabinet-decorations">
+                    <span class="deco-star left">🐚</span>
+                    <span class="deco-diamond left-inner">🌊</span>
+                    <span class="deco-crown">🔱</span>
+                    <span class="deco-diamond right-inner">🌊</span>
+                    <span class="deco-star right">🐚</span>
+                </div>
+                <div class="cabinet-corner-light left"></div>
+                <div class="cabinet-corner-light right"></div>
+                <div class="game-title">바다이야기</div>
+                <div class="game-subtitle">SEA STORY &bull; OCEAN ADVENTURE</div>
+                <!-- v5.0: 하단 골드 라인 -->
+                <div class="gold-line-bottom"></div>
+            </div>
+
+            <!-- ═══ 프리스핀 / 멀티플라이어 ═══ -->
+            <div class="free-spin-counter" id="freeSpinCounter" style="display:none">
+                <span class="fs-label">무료 스핀</span>
+                <span class="fs-count">0</span>
+            </div>
+            <div class="multiplier-display" id="multiplierDisplay" style="display:none">
+                <span class="mult-label">배율</span>
+                <span class="mult-value">x1</span>
+            </div>
+
+            <!-- ═══ 릴 프레임 (캐비닛 메인 바디) ═══ -->
+            <div class="reels-frame">
+                <div class="reels-container" id="reelsContainer">
+                    <div class="reels-grid" id="reelsGrid">
+                        <!-- JS 생성 -->
+                    </div>
+                    <!-- 비네트 오버레이 -->
+                    <div class="reel-vignette"></div>
+                </div>
+            </div>
+
+            <!-- ═══ 인포 바 (LED 디스플레이) ═══ -->
+            <div class="info-bar">
+                <div class="info-cell">
+                    <span class="info-label">크레딧</span>
+                    <span class="info-value led-display" id="creditDisplay">0</span>
+                </div>
+                <div class="info-cell result-cell">
+                    <span class="info-value result-text" id="slotResult">스핀하세요</span>
+                </div>
+                <div class="info-cell">
+                    <span class="info-label">당첨</span>
+                    <span class="info-value led-display" id="winDisplay">0</span>
+                </div>
+            </div>
+
+            <!-- 게임 통계 -->
+            <div class="game-stats" id="gameStats">
+                <span>스핀: 0</span>
+                <span>당첨: 0</span>
+                <span>최고: 0</span>
+            </div>
+
+            <!-- ═══ 캐비닛 벨리 (컨트롤 영역) ═══ -->
+            <div class="cabinet-belly">
+                <!-- 베팅 정보 바 -->
+                <div class="bet-info-bar">
+                    <div class="bet-info-item">
+                        <span class="bet-info-label">베팅</span>
+                        <span class="bet-info-value led-small" id="betAmount">100</span>
+                    </div>
+                    <div class="bet-info-item">
+                        <span class="bet-info-label">라인</span>
+                        <span class="bet-info-value led-small">9</span>
+                    </div>
+                    <div class="bet-info-item">
+                        <span class="bet-info-label">총 베팅</span>
+                        <span class="bet-info-value led-small" id="totalBet">100</span>
+                    </div>
+                </div>
+
+                <!-- v5.0: 캐비닛 버튼 바 (삼분할 레이아웃) -->
+                <div class="cabinet-button-bar">
+                    <!-- 좌: 베팅 컨트롤 -->
+                    <div class="btn-group btn-group-left">
+                        <button class="cab-btn cab-btn-info" onclick="togglePaytable()" title="배당표">
+                            <span class="cab-btn-icon">i</span>
+                            <span class="cab-btn-label">배당</span>
+                        </button>
+                        <button class="cab-btn cab-btn-bet" onclick="SeaStory.decreaseBet()">
+                            <span class="cab-btn-icon">&minus;</span>
+                            <span class="cab-btn-label">베팅</span>
+                        </button>
+                        <button class="cab-btn cab-btn-bet" onclick="SeaStory.increaseBet()">
+                            <span class="cab-btn-icon">+</span>
+                            <span class="cab-btn-label">베팅</span>
+                        </button>
+                    </div>
+                    <!-- 중: SPIN + MAX + AUTO -->
+                    <div class="btn-group btn-group-center">
+                        <button class="cab-btn cab-btn-maxbet" onclick="SeaStory.setBet(1000)">
+                            <span class="cab-btn-label">최대<br>베팅</span>
+                        </button>
+                        <button class="cab-btn cab-btn-spin" id="spinButton" onclick="SeaStory.spin()">
+                            <span class="cab-btn-label">스핀</span>
+                        </button>
+                        <!-- 오토스핀: 버튼 + 옵션 메뉴 -->
+                        <div class="auto-spin-wrapper">
+                            <button class="cab-btn cab-btn-auto" id="autoSpinBtn" onclick="SeaStory.toggleAutoSpin()">
+                                <span class="cab-btn-label">자동</span>
+                            </button>
+                            <div class="auto-spin-menu" id="autoSpinMenu" style="display:none">
+                                <div class="auto-menu-title">자동 스핀 횟수</div>
+                                <button class="auto-menu-item" onclick="SeaStory.startAutoSpin(10)">10회</button>
+                                <button class="auto-menu-item" onclick="SeaStory.startAutoSpin(25)">25회</button>
+                                <button class="auto-menu-item" onclick="SeaStory.startAutoSpin(50)">50회</button>
+                                <button class="auto-menu-item" onclick="SeaStory.startAutoSpin(100)">100회</button>
+                                <button class="auto-menu-item" onclick="SeaStory.startAutoSpin(-1)">무제한</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 우: LINES 디스플레이 -->
+                    <div class="btn-group btn-group-right">
+                        <div class="lines-display">
+                            <span class="lines-label">LINES</span>
+                            <span class="lines-value">9</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ 갬블(더블업) 패널 ═══ -->
+            <div class="gamble-panel" id="gamblePanel" style="display:none">
+                <div class="gamble-header">
+                    더블업! <span class="gamble-amount">0</span> 칩
+                </div>
+                <div class="gamble-hint">물고기가 어느 쪽으로 헤엄칠까? 맞추면 2배!</div>
+                <div class="gamble-card-area">
+                    <div class="gamble-card" id="gambleCard">?</div>
+                </div>
+                <div class="gamble-buttons">
+                    <button class="gamble-btn gamble-red" onclick="SeaStory.gambleDouble('red')">🐟 왼쪽</button>
+                    <button class="gamble-btn gamble-black" onclick="SeaStory.gambleDouble('black')">🐟 오른쪽</button>
+                    <button class="gamble-btn gamble-collect" onclick="SeaStory.gambleCollect()">받기</button>
+                </div>
+            </div>
+
+            <!-- ═══ 배당표 (기본 숨김, 배당 버튼으로 토글) ═══ -->
+            <div class="paytable" id="paytableSection" style="display:none">
+                <h3 class="paytable-title">배당표</h3>
+                <div class="paytable-special">
+                    <div class="paytable-special-item">
+                        <span class="paytable-symbol wild-badge">🔱 WILD</span>
+                        <span class="paytable-desc">삼지창이 보너스 제외 모든 심볼을 대체합니다</span>
+                    </div>
+                    <div class="paytable-special-item">
+                        <span class="paytable-symbol scatter-badge">⚓ BONUS</span>
+                        <span class="paytable-desc">닻 3개 이상 출현 시 무료스핀 (10/15/25회)</span>
+                    </div>
+                </div>
+                <div class="paytable-grid" id="paytableGrid">
+                    <!-- JS 생성 -->
+                </div>
+                <p class="paytable-footer">
+                    9 페이라인 &bull; 3개+ 연속 매치 &bull; 🔱 삼지창 WILD &bull; ⚓ 닻 BONUS 무료스핀
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ═══ 오버레이 ═══ -->
+    <div class="free-spin-banner" id="freeSpinBanner">
+        <div class="fs-text">무료 스핀!</div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-content">
+            <div class="win-tier-text">당첨!</div>
+            <div class="win-amount">+0</div>
+        </div>
+    </div>
+
+    <!-- 코인 샤워 캔버스 -->
+    <canvas id="coinShowerCanvas"></canvas>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 레벨업 오버레이 -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title" id="levelupTitle">LEVEL UP!</div>
+            <div class="levelup-bonus" id="levelupBonus">+0 칩</div>
+        </div>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="index.html" class="bottom-nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">홈</span>
+            </a>
+            <a href="index.html#dailyBonusBanner" class="bottom-nav-item">
+                <span class="nav-icon">🎁</span>
+                <span class="nav-label">보너스</span>
+            </a>
+            <button class="bottom-nav-item" onclick="SoundManager.toggleMute()">
+                <span class="nav-icon">🔊</span>
+                <span class="nav-label">사운드</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- 스크립트 -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script src="js/core/sound-manager.js"></script>
+    <script src="js/core/coin-shower.js"></script>
+    <script src="js/core/level-manager.js"></script>
+    <script src="js/games/sea-story.js"></script>
+    <script>
+        // 페이테이블 토글
+        let _paytableVisible = false;
+        function togglePaytable() {
+            const section = document.getElementById('paytableSection');
+            if (!section) return;
+            _paytableVisible = !_paytableVisible;
+            section.style.display = _paytableVisible ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ChipManager.init();
+            SoundManager.init();
+            CoinShower.init();
+            LevelManager.init();
+
+            ChipManager.onBalanceChange(() => {
+                document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+                document.getElementById('creditDisplay').textContent = ChipManager.getBalance().toLocaleString();
+            });
+            document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            document.getElementById('creditDisplay').textContent = ChipManager.getBalance().toLocaleString();
+
+            // 레벨업 리스너
+            LevelManager.onEvent((event) => {
+                if (event.type === 'levelup') {
+                    const overlay = document.getElementById('levelupOverlay');
+                    if (overlay) {
+                        document.getElementById('levelupTitle').textContent = `LEVEL ${event.level}!`;
+                        document.getElementById('levelupBonus').textContent = `+${event.bonus.toLocaleString()} 보너스 칩`;
+                        overlay.classList.add('active');
+                        setTimeout(() => overlay.classList.remove('active'), 3000);
+                    }
+                }
+            });
+
+            SeaStory.init();
+            _buildPaytable();
+            _initBubbles();
+        });
+
+        // 페이테이블 생성
+        function _buildPaytable() {
+            const grid = document.getElementById('paytableGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            SeaStory.SYMBOLS.forEach(sym => {
+                if (sym.type === 'wild' || sym.type === 'scatter') return;
+                const item = document.createElement('div');
+                item.className = 'paytable-item';
+                item.innerHTML = `
+                    <span class="pt-symbol">${sym.label || sym.name}</span>
+                    <span class="paytable-info">
+                        <span class="pt-name">${sym.name}</span>
+                        <span class="pt-pays">
+                            <span class="multiplier">x${sym.pay[0]}</span>
+                            <span class="multiplier">x${sym.pay[1]}</span>
+                            <span class="multiplier">x${sym.pay[2]}</span>
+                        </span>
+                    </span>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        // 버블 배경 효과
+        function _initBubbles() {
+            const canvas = document.getElementById('bubbleCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let bubbles = [];
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            // 버블 생성
+            for (let i = 0; i < 25; i++) {
+                bubbles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height + Math.random() * 200,
+                    r: 2 + Math.random() * 6,
+                    speed: 0.3 + Math.random() * 0.8,
+                    wobble: Math.random() * Math.PI * 2,
+                    wobbleSpeed: 0.01 + Math.random() * 0.02,
+                    opacity: 0.1 + Math.random() * 0.25
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                bubbles.forEach(b => {
+                    b.y -= b.speed;
+                    b.wobble += b.wobbleSpeed;
+                    const wx = b.x + Math.sin(b.wobble) * 15;
+
+                    if (b.y < -20) {
+                        b.y = canvas.height + 10;
+                        b.x = Math.random() * canvas.width;
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(wx, b.y, b.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(100, 200, 255, ${b.opacity})`;
+                    ctx.fill();
+                    // 하이라이트
+                    ctx.beginPath();
+                    ctx.arc(wx - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(200, 240, 255, ${b.opacity * 1.5})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // 키보드: Space=스핀, Space 중 스핀=퀵스톱
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                SeaStory.spin();
+            }
+        });
+    </script>
+</body>
+</html>

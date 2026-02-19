@@ -689,6 +689,43 @@
     box-shadow: none;
 }
 
+/* AUTO 스핀 버튼 */
+.auto-spin-btn {
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #1a3a5c, #0e2640);
+    border: 2px solid #2980b9;
+    border-radius: 12px;
+    color: #85c1e9;
+    font-family: var(--font-title);
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.auto-spin-btn:hover {
+    box-shadow: 0 0 16px rgba(41, 128, 185, 0.5);
+    transform: scale(1.05);
+    border-color: #5dade2;
+}
+
+.auto-spin-btn:active { transform: scale(0.97); }
+
+.auto-spin-btn.active {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border-color: #ff6b6b;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+    animation: autoPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes autoPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(231, 76, 60, 0.8), 0 0 50px rgba(231, 76, 60, 0.3); }
+}
+
 /* ============================================
    히스토리 바
    ============================================ */
