@@ -1,12 +1,12 @@
 /**
- * LadderGame v1.0 - 네온 사다리
+ * LadderGame v1.2 - 네온 사다리
  * ItemGame - 소셜 카지노
  *
  * 네임드 스타일 사다리 게임
  * - 2선 사다리, 3줄 or 4줄 가로선
- * - 베팅: 출발(좌/우), 줄수(3/4), 도착(홀/짝), 조합
- * - Canvas 기반 네온 비주얼 + 볼 애니메이션
- * - 3단계 긴장감: 사다리 공개 → 출발점 공개 → 볼 하강
+ * - 베팅: 홀/짝(1.95x) + 조합(홀3/짝3/홀4/짝4, 3.8x)
+ * - Canvas 기반 네온 비주얼 + 애벌레 애니메이션
+ * - v1.2: 극적 슬로모션 (~20초), 베팅 6종 단순화
  */
 
 const LadderGame = (() => {
@@ -188,16 +188,16 @@ const LadderGame = (() => {
         // 상단 라벨
         ctx.font = `bold ${Math.max(13, cW * 0.035)}px Arial, sans-serif`;
         ctx.textAlign = 'center';
-        ctx.fillStyle = C.odd;
-        ctx.fillText('좌출발', lx, ty - 14);
-        ctx.fillStyle = C.even;
-        ctx.fillText('우출발', rx, ty - 14);
+        ctx.fillStyle = C.textDim;
+        ctx.fillText('좌', lx, ty - 14);
+        ctx.fillStyle = C.textDim;
+        ctx.fillText('우', rx, ty - 14);
 
         // 하단 라벨
         ctx.fillStyle = C.odd;
-        ctx.fillText('홀(좌)', lx, by + 24);
+        ctx.fillText('홀', lx, by + 24);
         ctx.fillStyle = C.even;
-        ctx.fillText('짝(우)', rx, by + 24);
+        ctx.fillText('짝', rx, by + 24);
     }
 
     // /** v1.0 골든 파이어볼 (v1.1에서 애벌레로 교체) */
@@ -435,77 +435,85 @@ const LadderGame = (() => {
         stats.rounds++;
 
         try {
-            // 1. 카운트다운
+            // 1. 카운트다운 (v1.2: 900ms - 무게감)
             for (let i = 3; i >= 1; i--) {
                 _drawCountdown(i);
                 if (typeof SoundManager !== 'undefined') SoundManager.playCountTick();
-                await _delay(750);
+                await _delay(900);
             }
 
-            // 2. 사다리 가로선 공개 (하나씩)
+            // 2. 사다리 가로선 공개 (v1.2: 800ms - 천천히)
             for (let i = 1; i <= result.rungs; i++) {
                 _clearCanvas();
                 _drawLadder(true, result.rungPositions, i);
                 if (typeof SoundManager !== 'undefined') SoundManager.playReelStop(i - 1);
-                await _delay(400);
+                await _delay(800);
             }
 
-            // 줄수 텍스트
+            // 줄수 텍스트 (v1.2: 크게, 1초)
             ctx.save();
-            ctx.font = `bold ${cW * 0.06}px Arial, sans-serif`;
+            ctx.font = `bold ${cW * 0.08}px Arial, sans-serif`;
             ctx.textAlign = 'center';
-            ctx.shadowBlur = 15;
+            ctx.shadowBlur = 25;
             ctx.shadowColor = C.rungGlow;
             ctx.fillStyle = C.rung;
             ctx.fillText(`${result.rungs}줄`, cW / 2, cH * 0.50);
             ctx.restore();
-            await _delay(500);
+            await _delay(1000);
 
-            // 3. 출발점 표시 (깜빡)
+            // 3. 출발점 표시 (v1.2: 4회 깜빡, 느리게)
             const sx = result.start === 'left' ? _lx() : _rx();
             const sColor = result.start === 'left' ? C.odd : C.even;
 
-            for (let blink = 0; blink < 3; blink++) {
+            for (let blink = 0; blink < 4; blink++) {
                 _clearCanvas();
                 _drawLadder(true, result.rungPositions, result.rungs);
                 ctx.save();
-                ctx.shadowBlur = 35;
+                ctx.shadowBlur = 45;
                 ctx.shadowColor = sColor;
                 ctx.fillStyle = sColor;
                 ctx.beginPath();
-                ctx.arc(sx, _ty(), 13, 0, Math.PI * 2);
+                ctx.arc(sx, _ty(), 15, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
-                await _delay(180);
+                await _delay(300);
 
                 _clearCanvas();
                 _drawLadder(true, result.rungPositions, result.rungs);
-                await _delay(120);
+                await _delay(200);
             }
 
             if (typeof SoundManager !== 'undefined') SoundManager.playAnticipation();
-            await _delay(300);
+            await _delay(800);
 
-            // 4. 볼 애니메이션
+            // 4. 애벌레 하강 (v1.2: 극적 슬로모션 ~15초)
             const path = _calcPath(result);
             trail = [];
+            const totalSegs = path.length - 1;
 
-            for (let i = 0; i < path.length - 1; i++) {
+            for (let i = 0; i < totalSegs; i++) {
                 const from = path[i];
                 const to = path[i + 1];
                 const isH = Math.abs(to.x - from.x) > 1;
-                const isLast = (i === path.length - 2);
+                const isLast = (i === totalSegs - 1);
 
                 let dur;
-                if (isH) dur = 300;
-                else if (isLast) dur = 1200; // 마지막 구간 슬로모션
-                else dur = 450;
+                if (isH) dur = 600;           // 가로선 교차: 0.6초
+                else if (isLast) dur = 3000;   // 마지막 하강: 3초 극적 슬로모션
+                else dur = 1200;               // 일반 수직: 1.2초
 
-                await _animSeg(from, to, dur, isH);
+                // 마지막 구간 직전 극적 서스펜스
+                if (isLast) {
+                    if (typeof SoundManager !== 'undefined') SoundManager.playAnticipation();
+                    await _delay(1200);
+                }
 
+                await _animSeg(from, to, dur, isH, isLast ? _easeInOutQuint : null);
+
+                // 가로선 교차 후 일시정지 (긴장감)
                 if (isH) {
                     if (typeof SoundManager !== 'undefined') SoundManager.playCountTick();
-                    await _delay(60);
+                    await _delay(500);
                 }
             }
 
@@ -586,14 +594,14 @@ const LadderGame = (() => {
         }
     }
 
-    function _animSeg(from, to, dur, isH) {
+    function _animSeg(from, to, dur, isH, easeFn) {
         return new Promise(resolve => {
             const t0 = performance.now();
 
             function frame(now) {
                 const elapsed = now - t0;
                 let p = Math.min(elapsed / dur, 1);
-                p = isH ? _easeInOutQuad(p) : _easeInOutCubic(p);
+                p = easeFn ? easeFn(p) : (isH ? _easeInOutQuad(p) : _easeInOutCubic(p));
 
                 const x = from.x + (to.x - from.x) * p;
                 const y = from.y + (to.y - from.y) * p;
@@ -670,18 +678,24 @@ const LadderGame = (() => {
 
     function _evalBets(r) {
         let w = 0;
-        // 싱글 1.95x
-        if (bets.leftStart && r.start === 'left') w += bets.leftStart * PAYOUT_SINGLE;
-        if (bets.rightStart && r.start === 'right') w += bets.rightStart * PAYOUT_SINGLE;
-        if (bets.three && r.rungs === 3) w += bets.three * PAYOUT_SINGLE;
-        if (bets.four && r.rungs === 4) w += bets.four * PAYOUT_SINGLE;
+        // v1.0 싱글 (제거됨)
+        // if (bets.leftStart && r.start === 'left') w += bets.leftStart * PAYOUT_SINGLE;
+        // if (bets.rightStart && r.start === 'right') w += bets.rightStart * PAYOUT_SINGLE;
+        // if (bets.three && r.rungs === 3) w += bets.three * PAYOUT_SINGLE;
+        // if (bets.four && r.rungs === 4) w += bets.four * PAYOUT_SINGLE;
+        // 홀짝 1.95x
         if (bets.odd && r.end === 'left') w += bets.odd * PAYOUT_SINGLE;
         if (bets.even && r.end === 'right') w += bets.even * PAYOUT_SINGLE;
-        // 조합 3.8x
-        if (bets.left3 && r.start === 'left' && r.rungs === 3) w += bets.left3 * PAYOUT_COMBO;
-        if (bets.left4 && r.start === 'left' && r.rungs === 4) w += bets.left4 * PAYOUT_COMBO;
-        if (bets.right3 && r.start === 'right' && r.rungs === 3) w += bets.right3 * PAYOUT_COMBO;
-        if (bets.right4 && r.start === 'right' && r.rungs === 4) w += bets.right4 * PAYOUT_COMBO;
+        // v1.0 조합 (제거됨)
+        // if (bets.left3 && r.start === 'left' && r.rungs === 3) w += bets.left3 * PAYOUT_COMBO;
+        // if (bets.left4 && r.start === 'left' && r.rungs === 4) w += bets.left4 * PAYOUT_COMBO;
+        // if (bets.right3 && r.start === 'right' && r.rungs === 3) w += bets.right3 * PAYOUT_COMBO;
+        // if (bets.right4 && r.start === 'right' && r.rungs === 4) w += bets.right4 * PAYOUT_COMBO;
+        // v1.2 조합 3.8x (도착 + 줄수)
+        if (bets.odd3 && r.end === 'left' && r.rungs === 3) w += bets.odd3 * PAYOUT_COMBO;
+        if (bets.even3 && r.end === 'right' && r.rungs === 3) w += bets.even3 * PAYOUT_COMBO;
+        if (bets.odd4 && r.end === 'left' && r.rungs === 4) w += bets.odd4 * PAYOUT_COMBO;
+        if (bets.even4 && r.end === 'right' && r.rungs === 4) w += bets.even4 * PAYOUT_COMBO;
         return Math.floor(w);
     }
 
@@ -724,7 +738,8 @@ const LadderGame = (() => {
     }
 
     function _updateBetDisplay() {
-        ['leftStart', 'rightStart', 'three', 'four', 'odd', 'even', 'left3', 'left4', 'right3', 'right4'].forEach(k => {
+        // v1.0: ['leftStart', 'rightStart', 'three', 'four', 'odd', 'even', 'left3', 'left4', 'right3', 'right4']
+        ['odd', 'even', 'odd3', 'even3', 'odd4', 'even4'].forEach(k => {
             const el = document.getElementById('bet-' + k);
             if (el) el.textContent = bets[k] ? bets[k].toLocaleString() : '';
         });
@@ -765,6 +780,7 @@ const LadderGame = (() => {
     function _delay(ms) { return new Promise(r => setTimeout(r, ms)); }
     function _easeInOutQuad(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
     function _easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1; }
+    function _easeInOutQuint(t) { return t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2; }
     function _saveStats() {
         try { localStorage.setItem('ladder_stats', JSON.stringify(stats)); } catch (e) {}
     }

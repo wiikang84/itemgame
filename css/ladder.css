@@ -195,8 +195,9 @@ body.ladder-page {
     gap: 6px;
 }
 
+/* v1.0: grid-template-columns: 1fr 1fr 1fr 1fr; */
 .bet-row.combo-row {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
 }
 
 .bet-btn {
