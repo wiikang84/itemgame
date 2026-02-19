@@ -238,85 +238,104 @@ const SlotMachine = (() => {
 
         stats.spins++;
 
-        // 새 결과 생성
-        const newGrid = _generateResult();
+        // v3.1: try-catch-finally로 isSpinning 항상 해제 보장
+        try {
+            // 새 결과 생성
+            const newGrid = _generateResult();
 
-        // 릴 애니메이션
-        await _animateReels(newGrid);
+            // 릴 애니메이션 (마스터 타임아웃 포함)
+            await _animateReels(newGrid);
 
-        currentGrid = newGrid;
+            currentGrid = newGrid;
 
-        // 스캐터 카운트 & 사운드
-        const scatterCount = _countScatters();
-        if (scatterCount >= 1 && typeof SoundManager !== 'undefined') {
-            SoundManager.playScatterLand(scatterCount);
-        }
-
-        // 와일드 사운드
-        const wildCount = _countWilds();
-        if (wildCount >= 1 && typeof SoundManager !== 'undefined') {
-            SoundManager.playWildLand();
-        }
-
-        // 당첨 체크 (와일드 대체 적용)
-        const winResult = _checkWins();
-        let totalWin = winResult.totalWin;
-
-        // 프리스핀 멀티플라이어 적용
-        if (isFreeSpinMode && totalWin > 0) {
-            totalWin = Math.floor(totalWin * freeSpinMultiplier);
-        }
-
-        // 승리 처리
-        if (totalWin > 0) {
-            ChipManager.addChips(totalWin);
-            if (isFreeSpinMode) freeSpinTotalWin += totalWin;
-            stats.wins++;
-            if (totalWin > stats.biggestWin) stats.biggestWin = totalWin;
-
-            _highlightWins(winResult.winLines);
-            _drawPaylines(winResult.winLines);
-
-            // 승리 등급 판정 & 연출
-            const ratio = totalWin / currentBet;
-            await _showWinCelebration(totalWin, ratio);
-
-            // 프리스핀 중 멀티플라이어 증가
-            if (isFreeSpinMode) {
-                freeSpinMultiplier = Math.min(freeSpinMultiplier + 1, 10);
-                _updateMultiplierUI();
-                if (typeof SoundManager !== 'undefined') SoundManager.playMultiplierUp();
+            // 스캐터 카운트 & 사운드
+            const scatterCount = _countScatters();
+            if (scatterCount >= 1 && typeof SoundManager !== 'undefined') {
+                SoundManager.playScatterLand(scatterCount);
             }
 
-            // 갬블 옵션 (프리스핀/자동스핀 아닐 때만)
-            if (!isFreeSpinMode && !autoSpin) {
-                gambleAmount = totalWin;
-                _showGambleUI();
+            // 와일드 사운드
+            const wildCount = _countWilds();
+            if (wildCount >= 1 && typeof SoundManager !== 'undefined') {
+                SoundManager.playWildLand();
             }
-        } else {
-            _showResult('', 'none');
-            if (typeof SoundManager !== 'undefined') SoundManager.playLose();
-            // 프리스핀 중 패배시 멀티플라이어 감소 (최소 1)
-            if (isFreeSpinMode) {
-                freeSpinMultiplier = Math.max(1, freeSpinMultiplier - 1);
-                _updateMultiplierUI();
+
+            // 당첨 체크 (와일드 대체 적용)
+            const winResult = _checkWins();
+            let totalWin = winResult.totalWin;
+
+            // 프리스핀 멀티플라이어 적용
+            if (isFreeSpinMode && totalWin > 0) {
+                totalWin = Math.floor(totalWin * freeSpinMultiplier);
             }
+
+            // 승리 처리
+            if (totalWin > 0) {
+                ChipManager.addChips(totalWin);
+                if (isFreeSpinMode) freeSpinTotalWin += totalWin;
+                stats.wins++;
+                if (totalWin > stats.biggestWin) stats.biggestWin = totalWin;
+
+                _highlightWins(winResult.winLines);
+                _drawPaylines(winResult.winLines);
+
+                // 승리 등급 판정 & 연출
+                // v3.1: 자동스핀 중에는 연출 시간 단축 (빠른 진행)
+                const ratio = totalWin / currentBet;
+                if (autoSpin || isFreeSpinMode) {
+                    await _showWinCelebrationQuick(totalWin, ratio);
+                } else {
+                    await _showWinCelebration(totalWin, ratio);
+                }
+
+                // 프리스핀 중 멀티플라이어 증가
+                if (isFreeSpinMode) {
+                    freeSpinMultiplier = Math.min(freeSpinMultiplier + 1, 10);
+                    _updateMultiplierUI();
+                    if (typeof SoundManager !== 'undefined') SoundManager.playMultiplierUp();
+                }
+
+                // 갬블 옵션 (프리스핀/자동스핀 아닐 때만)
+                if (!isFreeSpinMode && !autoSpin) {
+                    gambleAmount = totalWin;
+                    _showGambleUI();
+                }
+            } else {
+                _showResult('', 'none');
+                if (typeof SoundManager !== 'undefined') SoundManager.playLose();
+                // 프리스핀 중 패배시 멀티플라이어 감소 (최소 1)
+                if (isFreeSpinMode) {
+                    freeSpinMultiplier = Math.max(1, freeSpinMultiplier - 1);
+                    _updateMultiplierUI();
+                }
+            }
+
+            // 스캐터 3개+ → 프리스핀 트리거
+            if (scatterCount >= 3) {
+                await _triggerFreeSpins(scatterCount);
+            }
+        } catch (err) {
+            // v3.1: 에러 발생해도 스핀 상태 복구
+            console.error('[SlotMachine] spin error:', err);
+        } finally {
+            // v3.1: 어떤 경우든 isSpinning 해제 보장
+            isSpinning = false;
+            if (spinBtn) {
+                spinBtn.disabled = false;
+                spinBtn.classList.remove('spinning');
+            }
+            _updateUI();
+            _saveStats();
         }
 
-        // 스캐터 3개+ → 프리스핀 트리거
-        if (scatterCount >= 3) {
-            await _triggerFreeSpins(scatterCount);
-        }
+        // 다음 스핀 (프리스핀 or 오토) — finally 이후 실행
+        _scheduleNextSpin();
+    }
 
-        isSpinning = false;
-        if (spinBtn) {
-            spinBtn.disabled = false;
-            spinBtn.classList.remove('spinning');
-        }
-        _updateUI();
-        _saveStats();
-
-        // 다음 스핀 (프리스핀 or 오토)
+    /**
+     * v3.1: 다음 스핀 스케줄링 (분리하여 안정성 확보)
+     */
+    function _scheduleNextSpin() {
         if (isFreeSpinMode && freeSpinsRemaining > 0) {
             setTimeout(spin, 1200);
         } else if (isFreeSpinMode && freeSpinsRemaining <= 0) {
@@ -341,7 +360,7 @@ const SlotMachine = (() => {
                     } else {
                         stopAutoSpin();
                     }
-                }, 800);
+                }, 600); // v3.1: 800ms → 600ms (자동스핀 간격 단축)
             }
         }
     }
@@ -369,6 +388,13 @@ const SlotMachine = (() => {
         return new Promise((resolve) => {
             const reels = document.querySelectorAll('.reel');
             let completedReels = 0;
+            let resolved = false; // v3.1: 중복 resolve 방지
+
+            const safeResolve = () => {
+                if (resolved) return;
+                resolved = true;
+                resolve();
+            };
 
             // 앤티시페이션: 스캐터가 2개 이상이면 마지막 릴 지연
             let scatterSoFar = 0;
@@ -378,6 +404,26 @@ const SlotMachine = (() => {
                 }
             }
             const hasAnticipation = scatterSoFar >= 2;
+
+            // v3.1: 마스터 타임아웃 — 전체 애니메이션이 8초 내 완료 안 되면 강제 해결
+            const masterTimeout = setTimeout(() => {
+                if (!resolved) {
+                    console.warn('[SlotMachine] Master timeout: force resolving _animateReels');
+                    // 모든 릴을 최종 상태로 강제 설정
+                    reels.forEach((reelEl, col) => {
+                        const stripEl = reelEl.querySelector('.reel-strip');
+                        if (stripEl) {
+                            stripEl.style.transition = 'none';
+                            stripEl.innerHTML = '';
+                            for (let r = 0; r < ROWS; r++) {
+                                stripEl.appendChild(_createSymbolEl(newGrid[col][r], r, col));
+                            }
+                            stripEl.style.transform = 'translateY(0px)';
+                        }
+                    });
+                    safeResolve();
+                }
+            }, 8000);
 
             reels.forEach((reelEl, col) => {
                 const stripEl = reelEl.querySelector('.reel-strip');
@@ -446,13 +492,15 @@ const SlotMachine = (() => {
 
                         completedReels++;
                         if (completedReels >= COLS) {
-                            resolve();
+                            clearTimeout(masterTimeout); // v3.1: 마스터 타임아웃 해제
+                            safeResolve();
                         }
                     };
 
                     stripEl.addEventListener('transitionend', onEnd);
-                    // 안전 타이머: transitionend가 발생하지 않을 경우 (탭 전환 등) 4초 후 강제 완료
-                    const safetyTimer = setTimeout(onEnd, 4000);
+                    // v3.1: 동적 안전 타이머 (duration 기반 + 여유 2초)
+                    const safetyMs = Math.ceil(duration * 1000) + 2000;
+                    const safetyTimer = setTimeout(onEnd, safetyMs);
                 }, col * 120 + extraDelay);
             });
         });
@@ -632,6 +680,53 @@ const SlotMachine = (() => {
                 // v5.1: 릴 프레임 LED 버스트 해제
                 const reelsFrame = document.querySelector('.reels-frame');
                 if (reelsFrame) reelsFrame.classList.remove('win-led-burst');
+                resolve();
+            }, duration);
+        });
+    }
+
+    /**
+     * v3.1: 자동스핀/프리스핀용 빠른 승리 연출 (시간 단축)
+     */
+    async function _showWinCelebrationQuick(amount, ratio) {
+        let tier, soundFn;
+        // 동일한 티어 분류
+        if (ratio >= 100) { tier = 'epic'; soundFn = 'playEpicWin'; }
+        else if (ratio >= 50) { tier = 'mega'; soundFn = 'playMegaWin'; }
+        else if (ratio >= 15) { tier = 'big'; soundFn = 'playBigWin'; }
+        else if (ratio >= 5) { tier = 'nice'; soundFn = 'playNiceWin'; }
+        else { tier = 'small'; soundFn = 'playSmallWin'; }
+
+        // 사운드
+        if (typeof SoundManager !== 'undefined' && SoundManager[soundFn]) {
+            SoundManager[soundFn]();
+        }
+
+        // 단축된 duration (원래의 ~40%)
+        const durationMap = { small: 500, nice: 800, big: 1200, mega: 1600, epic: 2000 };
+        const duration = durationMap[tier];
+
+        // 코인 샤워 (Big 이상)
+        if (ratio >= 15) {
+            const coinTier = ratio >= 100 ? 'epic' : ratio >= 50 ? 'mega' : 'big';
+            if (typeof CoinShower !== 'undefined') CoinShower.start(duration, coinTier);
+        }
+
+        // 오버레이 + 결과 표시
+        _showWinOverlay(amount, tier);
+        const tierLabels = { small: '당첨', nice: '좋은 당첨', big: '대박', mega: '초대박', epic: '잭팟' };
+        _showResult(`${tierLabels[tier]}! +${amount.toLocaleString()}`, 'win');
+
+        document.body.classList.add('win-glow');
+        const reelsFrame = document.querySelector('.reels-frame');
+        if (reelsFrame) reelsFrame.classList.add('win-led-burst');
+
+        return new Promise(resolve => {
+            setTimeout(() => {
+                _hideWinOverlay();
+                document.body.classList.remove('win-glow');
+                const rf = document.querySelector('.reels-frame');
+                if (rf) rf.classList.remove('win-led-burst');
                 resolve();
             }, duration);
         });

@@ -178,3 +178,18 @@ python -m http.server 8888
 - **총 애니메이션**: 5초 → **6초** (감속 여유)
 - **휠 회전량**: 10π → **12π** (더 많이 돌아서 리얼함)
 - 변경 파일: js/games/roulette.js, CLAUDE.md
+
+### 2026-02-19 | 블랙잭 ALL-IN + 슬롯머신 자동스핀 안정화
+
+- **블랙잭 v2.1: ALL-IN 기능 추가**
+  - `allIn()` 함수 추가 (잔액 전부 베팅, MAX_BET 50,000 상한)
+  - blackjack.html에 ALL-IN 버튼 추가 (빨간 그라디언트 스타일)
+  - 모듈 export에 allIn 추가
+- **슬롯머신 v3.1: 자동스핀 멈춤 현상 수정**
+  - `spin()` 함수 try-catch-finally 래핑 → isSpinning 항상 해제 보장
+  - `_animateReels` 마스터 타임아웃 8초 추가 (전체 애니메이션 강제 완료)
+  - 릴별 안전 타이머: 고정 4000ms → 동적 계산 (duration + 2초)
+  - 자동스핀용 빠른 승리 연출 `_showWinCelebrationQuick()` 추가 (원래의 ~40% 시간)
+  - 다음 스핀 스케줄링 `_scheduleNextSpin()` 함수 분리
+  - 자동스핀 간격 800ms → 600ms로 단축
+- 변경 파일: js/games/blackjack.js, blackjack.html, js/games/slot-machine.js, CLAUDE.md

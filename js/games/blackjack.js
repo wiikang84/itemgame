@@ -243,6 +243,21 @@ const Blackjack = (() => {
     }
 
     /**
+     * v2.1: ALL-IN (잔액 전부 베팅)
+     */
+    function allIn() {
+        if (gamePhase !== 'betting') return;
+        const balance = ChipManager.getBalance();
+        if (balance <= 0) {
+            _showStatus('칩이 부족합니다!');
+            return;
+        }
+        currentBet = Math.min(balance, MAX_BET);
+        if (typeof SoundManager !== 'undefined') SoundManager.playChipPlace();
+        _render();
+    }
+
+    /**
      * v2.0: 리벳 (이전 베팅 금액으로 빠른 딜)
      */
     function rebet() {
@@ -1102,6 +1117,7 @@ const Blackjack = (() => {
         newGame,
         /* v2.0 신규 메서드 */
         rebet,
+        allIn,
         surrender,
         acceptInsurance,
         declineInsurance,
