@@ -1,46 +1,84 @@
 /* ═══════════════════════════════════
-   LadderGame v1.2 - 네온 사다리 CSS
-   테마: 카와이 파스텔 네온 (다크퍼플 + 핑크 + 민트)
+   LadderGame v4.0 - 4선 캐릭터 사다리 CSS
+   테마: 귀여운 컬러풀 자연 (초록 체크무늬 + 나무 + 파스텔)
    ═══════════════════════════════════ */
+
+/* v3.0 CRT 레트로 테마 → v4.0 귀여운 컬러풀 테마로 전면 교체 */
+
+/* === Google Fonts === */
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+@font-face {
+    font-family: 'DungGeunMo';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* === v3.0 CRT 스캔라인 + 비네팅 제거 (주석처리 보존)
+body.ladder-page::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+body.ladder-page::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+    pointer-events: none;
+    z-index: 9998;
+}
+*/
 
 /* === 배경 === */
 body.ladder-page {
-    background: #1a0a2e;
-    background-image:
-        radial-gradient(ellipse at 30% 20%, rgba(255, 120, 240, 0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 80%, rgba(60, 255, 220, 0.05) 0%, transparent 60%);
+    background: linear-gradient(180deg, #87CEAB 0%, #5DAA3A 30%, #4A8E2D 100%);
+    font-family: 'DungGeunMo', 'Jua', sans-serif;
 }
 
 /* === 게임 타이틀 === */
 .ladder-title {
     text-align: center;
-    padding: 12px 0 8px;
+    padding: 12px 0 4px;
 }
 
 .ladder-title h1 {
-    font-family: 'Poppins', Arial, sans-serif;
-    font-size: 2rem;
+    font-family: 'Jua', 'DungGeunMo', sans-serif;
+    font-size: 2.2rem;
     font-weight: 800;
-    letter-spacing: 6px;
-    background: linear-gradient(135deg, #FF78F0, #3CFFDC, #FF78F0);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: ladderTitleShift 4s ease-in-out infinite;
+    letter-spacing: 8px;
+    color: #FFD700;
+    text-shadow: 2px 2px 0 #C49A2C, 0 0 10px rgba(255, 215, 0, 0.5);
     margin: 0;
 }
 
 .ladder-title .subtitle {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.35);
-    letter-spacing: 3px;
-    margin-top: 2px;
+    font-family: 'DungGeunMo', 'Jua', sans-serif;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 1px;
+    margin-top: 4px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes ladderTitleShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+.ladder-title .round-info {
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 0.75rem;
+    color: #FFF8DC;
+    margin-top: 2px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* === 히스토리 바 === */
@@ -58,9 +96,9 @@ body.ladder-page {
 .history-bar::-webkit-scrollbar { display: none; }
 
 .hist-dot {
-    min-width: 28px;
+    min-width: 36px;
     height: 28px;
-    border-radius: 50%;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -68,16 +106,7 @@ body.ladder-page {
     font-weight: 700;
     color: #fff;
     flex-shrink: 0;
-}
-
-.hist-odd {
-    background: linear-gradient(135deg, #6070cc, #8CA0FF);
-    box-shadow: 0 0 6px rgba(140, 160, 255, 0.5);
-}
-
-.hist-even {
-    background: linear-gradient(135deg, #cc6080, #FF8CA0);
-    box-shadow: 0 0 6px rgba(255, 140, 160, 0.5);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 /* === 캔버스 컨테이너 === */
@@ -90,14 +119,15 @@ body.ladder-page {
 
 .ladder-canvas-wrap canvas {
     border-radius: 12px;
-    border: 2px solid rgba(255, 120, 240, 0.25);
-    box-shadow: 0 0 30px rgba(255, 120, 240, 0.1), inset 0 0 30px rgba(0, 0, 0, 0.3);
+    border: 3px solid #8B6914;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.1);
     max-width: 100%;
 }
 
 /* === 결과 === */
 .ladder-result {
     text-align: center;
+    font-family: 'Jua', 'DungGeunMo', sans-serif;
     font-size: 1.6rem;
     font-weight: 800;
     min-height: 44px;
@@ -107,20 +137,109 @@ body.ladder-page {
 }
 
 .result-win {
-    color: #3CFFDC;
-    text-shadow: 0 0 12px rgba(60, 255, 220, 0.7), 0 0 30px rgba(60, 255, 220, 0.3);
+    color: #FFD700;
+    text-shadow: 2px 2px 0 #C49A2C, 0 0 15px rgba(255, 215, 0, 0.6);
     animation: resultPulse 0.6s ease;
 }
 
 .result-lose {
-    color: #ff4444;
-    text-shadow: 0 0 12px rgba(255, 68, 68, 0.5);
+    color: #FF6B6B;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes resultPulse {
     0% { transform: scale(0.5); opacity: 0; }
     50% { transform: scale(1.2); }
     100% { transform: scale(1); opacity: 1; }
+}
+
+/* === 캐릭터 선택 === */
+.char-selector {
+    padding: 0 12px 8px;
+}
+
+.section-title {
+    font-family: 'DungGeunMo', 'Jua', sans-serif;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 6px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.char-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+}
+
+.char-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    border-radius: 12px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.char-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.char-btn:active {
+    transform: scale(0.95);
+}
+
+.char-emoji {
+    font-size: 1.8rem;
+}
+
+.char-name {
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 0.7rem;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 캐릭터별 선택 색상 */
+.char-cat.active {
+    border-color: #FF8844;
+    background: rgba(255, 136, 68, 0.3);
+    box-shadow: 0 0 15px rgba(255, 136, 68, 0.5);
+    animation: charBounce 0.4s ease;
+}
+
+.char-duck.active {
+    border-color: #FFD700;
+    background: rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    animation: charBounce 0.4s ease;
+}
+
+.char-penguin.active {
+    border-color: #4488FF;
+    background: rgba(68, 136, 255, 0.3);
+    box-shadow: 0 0 15px rgba(68, 136, 255, 0.5);
+    animation: charBounce 0.4s ease;
+}
+
+.char-sheep.active {
+    border-color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    animation: charBounce 0.4s ease;
+}
+
+@keyframes charBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.1) translateY(-4px); }
+    100% { transform: scale(1) translateY(0); }
 }
 
 /* === 칩 선택 === */
@@ -134,27 +253,30 @@ body.ladder-page {
 .chip-select-btn {
     width: 52px;
     height: 34px;
-    border-radius: 17px;
-    border: 2px solid rgba(255, 215, 0, 0.3);
-    background: rgba(255, 215, 0, 0.08);
-    color: #ffd700;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    background: rgba(139, 105, 20, 0.5);
+    color: #FFD700;
+    font-family: 'DungGeunMo', sans-serif;
     font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .chip-select-btn:hover {
-    border-color: rgba(255, 215, 0, 0.6);
-    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.8);
+    background: rgba(139, 105, 20, 0.7);
 }
 
 .chip-select-btn.active {
-    background: linear-gradient(135deg, #ffd700, #ffaa00);
-    color: #000;
-    border-color: #ffd700;
+    background: linear-gradient(135deg, #FFD700, #E6B800);
+    color: #3D2B00;
+    border-color: #FFD700;
     box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
     transform: scale(1.08);
+    text-shadow: none;
 }
 
 /* === 베팅 패널 === */
@@ -167,117 +289,114 @@ body.ladder-page {
 }
 
 .bet-section-title {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
-    margin-bottom: 5px;
+    font-family: 'DungGeunMo', 'Jua', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 6px;
+    text-align: center;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .payout-badge {
-    background: rgba(255, 120, 240, 0.15);
-    color: #FF78F0;
-    padding: 1px 7px;
-    border-radius: 10px;
-    font-size: 0.65rem;
+    background: rgba(255, 215, 0, 0.25);
+    color: #FFD700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.7rem;
     font-weight: 700;
+    border: 1px solid rgba(255, 215, 0, 0.4);
 }
 
-.payout-badge.combo {
-    background: rgba(60, 255, 220, 0.15);
-    color: #3CFFDC;
-}
-
-.bet-row {
+.dest-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 6px;
 }
 
-/* v1.0: grid-template-columns: 1fr 1fr 1fr 1fr; */
-.bet-row.combo-row {
-    grid-template-columns: 1fr 1fr;
-}
-
-.bet-btn {
-    position: relative;
-    padding: 12px 8px;
+.dest-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 4px;
     border-radius: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.04);
-    color: #fff;
-    font-size: 0.9rem;
-    font-weight: 700;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.12);
     cursor: pointer;
     transition: all 0.2s;
-    text-align: center;
-    line-height: 1.2;
 }
 
-.bet-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-1px);
+.dest-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
-.bet-btn:active {
-    transform: scale(0.96);
+.dest-btn:active {
+    transform: scale(0.95);
 }
 
-/* 홀 베팅 (파스텔 블루) */
-.bet-left, .bet-odd {
-    border-color: rgba(140, 160, 255, 0.3);
-    background: rgba(140, 160, 255, 0.08);
+.dest-icon {
+    font-size: 1.4rem;
 }
 
-.bet-left:hover, .bet-odd:hover {
-    border-color: rgba(140, 160, 255, 0.6);
-    box-shadow: 0 0 12px rgba(140, 160, 255, 0.2);
+.dest-label {
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 0.75rem;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* 짝 베팅 (파스텔 핑크) */
-.bet-right, .bet-even {
-    border-color: rgba(255, 140, 160, 0.3);
-    background: rgba(255, 140, 160, 0.08);
+/* 도착지별 색상 */
+.dest-0 {
+    border-color: rgba(255, 107, 107, 0.5);
+    background: rgba(255, 107, 107, 0.15);
+}
+.dest-0:hover {
+    border-color: rgba(255, 107, 107, 0.8);
+    box-shadow: 0 0 12px rgba(255, 107, 107, 0.3);
 }
 
-.bet-right:hover, .bet-even:hover {
-    border-color: rgba(255, 140, 160, 0.6);
-    box-shadow: 0 0 12px rgba(255, 140, 160, 0.2);
+.dest-1 {
+    border-color: rgba(78, 205, 196, 0.5);
+    background: rgba(78, 205, 196, 0.15);
+}
+.dest-1:hover {
+    border-color: rgba(78, 205, 196, 0.8);
+    box-shadow: 0 0 12px rgba(78, 205, 196, 0.3);
 }
 
-/* v1.0 줄수 (미사용, 레거시 유지) */
-.bet-three, .bet-four {
-    border-color: rgba(255, 120, 240, 0.3);
-    background: rgba(255, 120, 240, 0.08);
+.dest-2 {
+    border-color: rgba(255, 230, 109, 0.5);
+    background: rgba(255, 230, 109, 0.15);
+}
+.dest-2:hover {
+    border-color: rgba(255, 230, 109, 0.8);
+    box-shadow: 0 0 12px rgba(255, 230, 109, 0.3);
 }
 
-.bet-three:hover, .bet-four:hover {
-    border-color: rgba(255, 120, 240, 0.6);
-    box-shadow: 0 0 12px rgba(255, 120, 240, 0.2);
+.dest-3 {
+    border-color: rgba(149, 232, 107, 0.5);
+    background: rgba(149, 232, 107, 0.15);
 }
-
-/* 조합 (민트) */
-.bet-combo {
-    border-color: rgba(60, 255, 220, 0.25);
-    background: rgba(60, 255, 220, 0.05);
-    font-size: 0.85rem;
-    padding: 12px 6px;
-}
-
-.bet-combo:hover {
-    border-color: rgba(60, 255, 220, 0.5);
-    box-shadow: 0 0 12px rgba(60, 255, 220, 0.2);
+.dest-3:hover {
+    border-color: rgba(149, 232, 107, 0.8);
+    box-shadow: 0 0 12px rgba(149, 232, 107, 0.3);
 }
 
 /* 베팅 금액 표시 */
 .bet-amount {
     display: block;
-    font-size: 0.65rem;
-    color: #ffd700;
-    margin-top: 3px;
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 0.6rem;
+    color: #FFD700;
     min-height: 14px;
     font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* === 컨트롤 패널 === */
@@ -287,20 +406,22 @@ body.ladder-page {
 
 .total-bet-bar {
     text-align: center;
+    font-family: 'DungGeunMo', sans-serif;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: 8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .total-bet-bar span {
-    color: #ffd700;
+    color: #FFD700;
     font-weight: 700;
     font-size: 1rem;
 }
 
 .ctrl-buttons {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 1fr 2fr 1fr 1fr;
     gap: 8px;
 }
 
@@ -308,14 +429,16 @@ body.ladder-page {
     padding: 12px 8px;
     border-radius: 10px;
     border: 2px solid;
+    font-family: 'DungGeunMo', 'Jua', sans-serif;
     font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .ctrl-btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .ctrl-btn:active {
@@ -323,79 +446,170 @@ body.ladder-page {
 }
 
 .btn-clear {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .btn-clear:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
+/* START 버튼: 나무+주황 느낌 */
 .btn-start {
-    background: linear-gradient(135deg, #FF78F0, #FF50E0);
-    border-color: #FF78F0;
+    background: linear-gradient(180deg, #FF8C00, #CC6600);
+    border-color: #FFD700;
     color: #fff;
     font-size: 1.1rem;
     letter-spacing: 3px;
-    box-shadow: 0 0 20px rgba(255, 120, 240, 0.3);
+    box-shadow: 0 4px 12px rgba(204, 102, 0, 0.4);
     animation: startPulse 2s ease-in-out infinite;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.4);
 }
 
 .btn-start:hover {
-    box-shadow: 0 0 30px rgba(255, 120, 240, 0.5);
+    box-shadow: 0 4px 20px rgba(255, 140, 0, 0.6);
 }
 
 @keyframes startPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(255, 120, 240, 0.3); }
-    50% { box-shadow: 0 0 35px rgba(255, 120, 240, 0.6); }
+    0%, 100% { box-shadow: 0 4px 12px rgba(204, 102, 0, 0.4); }
+    50% { box-shadow: 0 4px 24px rgba(255, 140, 0, 0.7); }
+}
+
+.btn-auto {
+    background: rgba(68, 136, 255, 0.2);
+    border-color: rgba(68, 136, 255, 0.5);
+    color: #6BA3FF;
+}
+
+.btn-auto:hover {
+    border-color: rgba(68, 136, 255, 0.8);
+    box-shadow: 0 0 12px rgba(68, 136, 255, 0.3);
+}
+
+.btn-auto.active {
+    background: rgba(255, 80, 80, 0.3);
+    border-color: #FF6B6B;
+    color: #FF6B6B;
+    animation: autoPulse 1s ease-in-out infinite;
+}
+
+@keyframes autoPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 107, 107, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.6); }
 }
 
 .btn-rebet {
-    background: rgba(60, 255, 220, 0.08);
-    border-color: rgba(60, 255, 220, 0.3);
-    color: #3CFFDC;
+    background: rgba(149, 232, 107, 0.15);
+    border-color: rgba(149, 232, 107, 0.4);
+    color: #95E86B;
 }
 
 .btn-rebet:hover {
-    border-color: rgba(60, 255, 220, 0.6);
-    box-shadow: 0 0 12px rgba(60, 255, 220, 0.2);
+    border-color: rgba(149, 232, 107, 0.7);
+    box-shadow: 0 0 12px rgba(149, 232, 107, 0.3);
+}
+
+/* === 속도 컨트롤 === */
+.speed-controls {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.speed-btn {
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    background: rgba(139, 105, 20, 0.3);
+    color: rgba(255, 215, 0, 0.6);
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.speed-btn:hover {
+    border-color: rgba(255, 215, 0, 0.6);
+}
+
+.speed-btn.active {
+    background: rgba(255, 215, 0, 0.25);
+    border-color: #FFD700;
+    color: #FFD700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
 
 /* === 통계 === */
 .ladder-stats {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 16px;
-    padding: 8px 0 16px;
+    gap: 12px;
+    padding: 8px 12px 16px;
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+/* === 규칙 카드 === */
+.rules-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.rules-card summary {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DungGeunMo', sans-serif;
+}
+
+.rules-content {
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.35);
+    margin-top: 8px;
+    line-height: 1.7;
+    font-family: 'DungGeunMo', sans-serif;
+}
+
+.rules-content strong {
+    color: #FFD700;
 }
 
 /* === 반응형 === */
 @media (max-width: 480px) {
-    .ladder-title h1 { font-size: 1.5rem; letter-spacing: 4px; }
+    .ladder-title h1 { font-size: 1.6rem; letter-spacing: 6px; }
+    .char-emoji { font-size: 1.5rem; }
+    .char-btn { padding: 8px 4px; }
     .chip-select-btn { width: 46px; height: 30px; font-size: 0.68rem; }
-    .bet-btn { padding: 10px 6px; font-size: 0.82rem; }
-    .bet-combo { font-size: 0.7rem; padding: 8px 3px; }
-    .bet-row.combo-row { gap: 4px; }
-    .ctrl-btn { padding: 10px 6px; font-size: 0.8rem; }
-    .btn-start { font-size: 1rem; }
+    .dest-btn { padding: 8px 3px; }
+    .dest-icon { font-size: 1.2rem; }
+    .dest-label { font-size: 0.65rem; }
+    .ctrl-btn { padding: 10px 6px; font-size: 0.75rem; }
+    .ctrl-buttons { grid-template-columns: 1fr 1.5fr 1fr 1fr; gap: 4px; }
+    .btn-start { font-size: 0.9rem; letter-spacing: 1px; }
     .ladder-result { font-size: 1.3rem; }
 }
 
 @media (min-width: 769px) {
-    .bet-panel {
+    .bet-panel,
+    .ctrl-panel,
+    .chip-selector,
+    .char-selector {
         max-width: 500px;
-        margin: 0 auto;
-    }
-    .ctrl-panel {
-        max-width: 500px;
-        margin: 0 auto;
-    }
-    .chip-selector {
-        max-width: 500px;
-        margin: 0 auto;
+        margin-left: auto;
+        margin-right: auto;
     }
 }

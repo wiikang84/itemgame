@@ -766,6 +766,62 @@ const SoundManager = (() => {
         _playNoise(0.1, 0.15);
     }
 
+    /** v3.0 사다리: 출발점 교대 드럼롤 */
+    function playLadderDrumroll() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 빠른 드럼롤 (점점 빨라짐)
+        for (let i = 0; i < 20; i++) {
+            const t = now + i * (0.08 - i * 0.002);
+            _playToneAt(200 + (i % 2) * 100, 0.06, 'square', 0.04, t);
+            if (i % 3 === 0) {
+                setTimeout(() => _playNoise(0.03, 0.04), i * 60);
+            }
+        }
+    }
+
+    /** v4.0 사다리: 캐릭터 선택 시 귀여운 팝 사운드 */
+    function playCharSelect() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 밝은 팝 사운드
+        _playToneAt(880, 0.1, 'sine', 0.12, now);
+        _playToneAt(1320, 0.08, 'sine', 0.08, now + 0.05);
+        _playToneAt(1760, 0.12, 'sine', 0.06, now + 0.1);
+        // 가벼운 스파클
+        _playToneAt(2200, 0.06, 'sine', 0.03, now + 0.12);
+    }
+
+    /** v3.0 사다리: 빈칸 통과 (하강 톤) */
+    function playLadderEmpty() {
+        if (_muted) return;
+        _playTone(400, 0.2, 'sine', 0.1);
+        setTimeout(() => _playTone(250, 0.25, 'sine', 0.08), 100);
+        setTimeout(() => _playTone(150, 0.3, 'sine', 0.05), 200);
+    }
+
+    /** v3.0 사다리: 조합 당첨 빅윈 (8비트 레트로 팡파레) */
+    function playLadderBigWin() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 저음 임팩트
+        _playToneAt(60, 0.8, 'sine', 0.15, now);
+        _playNoise(0.2, 0.12);
+        // 8비트 팡파레 멜로디
+        const melody = [523, 659, 784, 1047, 784, 1047, 1319, 1568];
+        melody.forEach((f, i) => {
+            _playToneAt(f, 0.2, 'square', 0.08, now + 0.3 + i * 0.1);
+            _playToneAt(f * 0.5, 0.2, 'triangle', 0.04, now + 0.3 + i * 0.1);
+        });
+        // 코인 사운드
+        for (let i = 0; i < 15; i++) {
+            _playToneAt(1500 + Math.random() * 2000, 0.04, 'sine', 0.02, now + 0.8 + i * 0.05);
+        }
+    }
+
     // ─── 블랙잭/룰렛용 (기존 유지) ───
 
     function playCardDeal() {
@@ -841,12 +897,16 @@ const SoundManager = (() => {
         playLose,
         playBonus,
         // 사다리
+        playCharSelect,
         playLadderTick,
         playLadderRungReveal,
         playLadderBlink,
         playLadderCross,
         playLadderSuspense,
         playLadderLand,
+        playLadderDrumroll,
+        playLadderEmpty,
+        playLadderBigWin,
         // 레거시
         playWin,
         playCardDeal,

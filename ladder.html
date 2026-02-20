@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사다리 게임 - ItemGame</title>
+    <title>사다리 타기 - ItemGame</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/ladder.css">
 </head>
@@ -32,8 +32,9 @@
     <main class="container">
         <!-- 타이틀 -->
         <div class="ladder-title">
-            <h1>LADDER</h1>
-            <div class="subtitle">꿈틀꿈틀 애벌레 사다리 🐛</div>
+            <h1>사다리 타기</h1>
+            <div class="subtitle">캐릭터를 골라 도착지를 맞춰라!</div>
+            <div class="round-info" id="roundInfo">제 1회</div>
         </div>
 
         <!-- 히스토리 바 -->
@@ -47,6 +48,29 @@
         <!-- 결과 -->
         <div class="ladder-result" id="ladderResult"></div>
 
+        <!-- 캐릭터 선택 -->
+        <div class="char-selector">
+            <div class="section-title">캐릭터 선택</div>
+            <div class="char-row">
+                <button class="char-btn char-cat" data-char="0" onclick="LadderGame.selectChar(0)">
+                    <span class="char-emoji">🐱</span>
+                    <span class="char-name">고양이</span>
+                </button>
+                <button class="char-btn char-duck" data-char="1" onclick="LadderGame.selectChar(1)">
+                    <span class="char-emoji">🦆</span>
+                    <span class="char-name">오리</span>
+                </button>
+                <button class="char-btn char-penguin" data-char="2" onclick="LadderGame.selectChar(2)">
+                    <span class="char-emoji">🐧</span>
+                    <span class="char-name">펭귄</span>
+                </button>
+                <button class="char-btn char-sheep" data-char="3" onclick="LadderGame.selectChar(3)">
+                    <span class="char-emoji">🐑</span>
+                    <span class="char-name">양</span>
+                </button>
+            </div>
+        </div>
+
         <!-- 칩 선택 -->
         <div class="chip-selector">
             <button class="chip-select-btn active" data-value="100" onclick="LadderGame.setChip(100)">100</button>
@@ -56,45 +80,30 @@
             <button class="chip-select-btn" data-value="10000" onclick="LadderGame.setChip(10000)">10K</button>
         </div>
 
-        <!-- 베팅 패널 (v1.2 단순화: 홀짝 + 조합만) -->
+        <!-- 도착지 예측 베팅 -->
         <div class="bet-panel">
-            <!-- v1.0 출발(좌/우) 섹션 제거 -->
-            <!-- v1.0 줄수(3/4) 섹션 제거 -->
-
-            <!-- 홀짝 -->
             <div class="bet-section">
-                <div class="bet-section-title">홀짝 <span class="payout-badge">1.95x</span></div>
-                <div class="bet-row">
-                    <button class="bet-btn bet-odd" onclick="LadderGame.placeBet('odd')">
-                        홀
-                        <span class="bet-amount" id="bet-odd"></span>
+                <div class="bet-section-title">도착지 예측 <span class="payout-badge">3.6x</span></div>
+                <div class="dest-row">
+                    <button class="dest-btn dest-0" onclick="LadderGame.placeBet(0)">
+                        <span class="dest-icon">🎁</span>
+                        <span class="dest-label">1번</span>
+                        <span class="bet-amount" id="bet-dest0"></span>
                     </button>
-                    <button class="bet-btn bet-even" onclick="LadderGame.placeBet('even')">
-                        짝
-                        <span class="bet-amount" id="bet-even"></span>
+                    <button class="dest-btn dest-1" onclick="LadderGame.placeBet(1)">
+                        <span class="dest-icon">💎</span>
+                        <span class="dest-label">2번</span>
+                        <span class="bet-amount" id="bet-dest1"></span>
                     </button>
-                </div>
-            </div>
-
-            <!-- 조합 -->
-            <div class="bet-section">
-                <div class="bet-section-title">조합 <span class="payout-badge combo">3.8x</span></div>
-                <div class="bet-row combo-row">
-                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('odd3')">
-                        홀3
-                        <span class="bet-amount" id="bet-odd3"></span>
+                    <button class="dest-btn dest-2" onclick="LadderGame.placeBet(2)">
+                        <span class="dest-icon">⭐</span>
+                        <span class="dest-label">3번</span>
+                        <span class="bet-amount" id="bet-dest2"></span>
                     </button>
-                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('even3')">
-                        짝3
-                        <span class="bet-amount" id="bet-even3"></span>
-                    </button>
-                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('odd4')">
-                        홀4
-                        <span class="bet-amount" id="bet-odd4"></span>
-                    </button>
-                    <button class="bet-btn bet-combo" onclick="LadderGame.placeBet('even4')">
-                        짝4
-                        <span class="bet-amount" id="bet-even4"></span>
+                    <button class="dest-btn dest-3" onclick="LadderGame.placeBet(3)">
+                        <span class="dest-icon">🍀</span>
+                        <span class="dest-label">4번</span>
+                        <span class="bet-amount" id="bet-dest3"></span>
                     </button>
                 </div>
             </div>
@@ -106,9 +115,16 @@
                 총 베팅: <span id="totalBetDisplay">0</span>
             </div>
             <div class="ctrl-buttons">
-                <button class="ctrl-btn btn-clear" onclick="LadderGame.clearBets()">전체취소</button>
+                <button class="ctrl-btn btn-clear" onclick="LadderGame.clearBets()">취소</button>
                 <button class="ctrl-btn btn-start" id="startBtn" onclick="LadderGame.start()">START</button>
+                <button class="ctrl-btn btn-auto" id="autoBtn" onclick="LadderGame.toggleAuto()">AUTO</button>
                 <button class="ctrl-btn btn-rebet" onclick="LadderGame.reBet()">리벳</button>
+            </div>
+            <!-- 속도 컨트롤 -->
+            <div class="speed-controls">
+                <button class="speed-btn active" data-speed="1" onclick="LadderGame.setSpeed(1)">1x</button>
+                <button class="speed-btn" data-speed="2" onclick="LadderGame.setSpeed(2)">2x</button>
+                <button class="speed-btn" data-speed="3" onclick="LadderGame.setSpeed(3)">3x</button>
             </div>
         </div>
 
@@ -117,18 +133,17 @@
 
         <!-- 규칙 -->
         <div style="padding: 0 12px 20px; max-width: 500px; margin: 0 auto;">
-            <details style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px;">
-                <summary style="color: rgba(255,255,255,0.4); font-size: 0.8rem; cursor: pointer;">게임 규칙</summary>
-                <div style="color: rgba(255,255,255,0.35); font-size: 0.75rem; margin-top: 8px; line-height: 1.7;">
-                    <p><strong style="color:#FF78F0;">홀짝 베팅 (1.95배)</strong></p>
-                    <p>· 홀: 좌측 도착</p>
-                    <p>· 짝: 우측 도착</p>
-                    <p style="margin-top:8px;"><strong style="color:#3CFFDC;">조합 베팅 (3.8배)</strong></p>
-                    <p>· 도착 + 줄수를 동시에 맞추면 고배당!</p>
-                    <p>· 홀3: 홀 도착 + 3줄</p>
-                    <p>· 짝3: 짝 도착 + 3줄</p>
-                    <p>· 홀4: 홀 도착 + 4줄</p>
-                    <p>· 짝4: 짝 도착 + 4줄</p>
+            <details class="rules-card">
+                <summary>게임 규칙</summary>
+                <div class="rules-content">
+                    <p><strong>게임 방법</strong></p>
+                    <p>1. 캐릭터 4마리 중 1마리를 선택하세요</p>
+                    <p>2. 도착지 4곳 중 어디에 도착할지 예측하고 베팅!</p>
+                    <p>3. START를 누르면 캐릭터가 사다리를 타고 올라갑니다</p>
+                    <p>4. 가로선을 만나면 옆으로 이동합니다</p>
+                    <p style="margin-top:8px;"><strong>배당</strong></p>
+                    <p>도착지 맞추면 <strong style="color:#FFD700;">3.6배</strong> 당첨!</p>
+                    <p>(25% 확률, 4곳 중 1곳)</p>
                 </div>
             </details>
         </div>
