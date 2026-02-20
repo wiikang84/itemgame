@@ -1,12 +1,15 @@
 /**
- * LadderGame v1.2 - 네온 사다리
+ * LadderGame v2.0 - 네온 사다리
  * ItemGame - 소셜 카지노
  *
  * 네임드 스타일 사다리 게임
  * - 2선 사다리, 3줄 or 4줄 가로선
  * - 베팅: 홀/짝(1.95x) + 조합(홀3/짝3/홀4/짝4, 3.8x)
- * - Canvas 기반 네온 비주얼 + 애벌레 애니메이션
- * - v1.2: 극적 슬로모션 (~20초), 베팅 6종 단순화
+ * - Canvas 기반 카와이 파스텔 비주얼 + 애벌레 애니메이션
+ * - v2.0: 점진적 가로선 발견 시스템 (긴장감 극대화)
+ *   → 가로선을 숨기고 애벌레가 내려가면서 하나씩 발견
+ *   → 4개 체크포인트 (3줄=1개 빈칸, 4줄=모두 가로선)
+ *   → 각 체크포인트에서 "?" 서스펜스 연출
  */
 
 const LadderGame = (() => {
@@ -66,6 +69,9 @@ const LadderGame = (() => {
     let animFrameId = null;
     // 고정 별 위치 (한 번만 생성)
     let starPositions = [];
+    // v2.0: 점진적 가로선 공개 시스템
+    let visibleRungs = [];   // 발견된 가로선 y좌표 배열
+    let emptyChecks = [];    // 비어있던 체크포인트 y좌표 배열
 
     // ═══════════════════════════════════
     //  초기화
@@ -275,6 +281,92 @@ const LadderGame = (() => {
         });
     }
 
+    /** v2.0: 점진적 공개 사다리 (visibleRungs + emptyChecks 사용) */
+    function _drawLadderV2() {
+        const lx = _lx(), rx = _rx(), ty = _ty(), by = _by();
+
+        // 세로선 (핑크 네온 멀티레이어 글로우)
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = C.ladderGlow;
+        ctx.strokeStyle = C.ladder;
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(lx, ty); ctx.lineTo(lx, by); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(rx, ty); ctx.lineTo(rx, by); ctx.stroke();
+
+        // 내부 밝은 코어 라인
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(lx, ty); ctx.lineTo(lx, by); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(rx, ty); ctx.lineTo(rx, by); ctx.stroke();
+
+        // 발견된 가로선 (민트 네온)
+        if (visibleRungs.length > 0) {
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = C.rungGlow;
+            ctx.strokeStyle = C.rung;
+            ctx.lineWidth = 3;
+            visibleRungs.forEach(ry => {
+                ctx.beginPath(); ctx.moveTo(lx, ry); ctx.lineTo(rx, ry); ctx.stroke();
+                // 교차점 글로우
+                ctx.shadowBlur = 8;
+                [lx, rx].forEach(x => {
+                    ctx.fillStyle = C.rung;
+                    ctx.beginPath(); ctx.arc(x, ry, 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath(); ctx.arc(x, ry, 2.5, 0, Math.PI * 2); ctx.fill();
+                });
+            });
+        }
+
+        // 빈 체크포인트 (✕ 표시)
+        if (emptyChecks.length > 0) {
+            ctx.shadowBlur = 0;
+            emptyChecks.forEach(ry => {
+                ctx.strokeStyle = 'rgba(255, 100, 100, 0.4)';
+                ctx.lineWidth = 2.5;
+                const sz = 8;
+                const mx = (lx + rx) / 2;
+                ctx.beginPath(); ctx.moveTo(mx - sz, ry - sz); ctx.lineTo(mx + sz, ry + sz); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(mx + sz, ry - sz); ctx.lineTo(mx - sz, ry + sz); ctx.stroke();
+            });
+        }
+        ctx.restore();
+
+        // 상단 엔드포인트
+        [lx, rx].forEach(x => {
+            ctx.save();
+            ctx.shadowBlur = 15; ctx.shadowColor = C.ladderGlow;
+            ctx.fillStyle = C.ladder;
+            ctx.beginPath(); ctx.arc(x, ty, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(x, ty, 3.5, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        });
+
+        // 상단 라벨
+        ctx.font = `bold ${Math.max(13, cW * 0.035)}px Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = C.textDim;
+        ctx.fillText('좌', lx, ty - 18);
+        ctx.fillText('우', rx, ty - 18);
+
+        // 하단 엔드포인트 + 라벨
+        [{x: lx, c: C.odd, l: '홀'}, {x: rx, c: C.even, l: '짝'}].forEach(item => {
+            ctx.save();
+            ctx.shadowBlur = 15; ctx.shadowColor = item.c;
+            ctx.fillStyle = item.c;
+            ctx.beginPath(); ctx.arc(item.x, by, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(item.x, by, 3.5, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+            ctx.fillStyle = item.c;
+            ctx.fillText(item.l, item.x, by + 28);
+        });
+    }
+
     // /** v1.0 골든 파이어볼 (v1.1에서 애벌레로 교체) */
     // function _drawBall(x, y) {
     //     for (let i = 0; i < trail.length; i++) {
@@ -436,7 +528,9 @@ const LadderGame = (() => {
 
     function _drawIdle() {
         _clearCanvas();
-        _drawLadder(false);
+        visibleRungs = [];
+        emptyChecks = [];
+        _drawLadderV2();
 
         ctx.save();
         ctx.font = `bold ${Math.max(15, cW * 0.04)}px Arial, sans-serif`;
@@ -450,7 +544,7 @@ const LadderGame = (() => {
 
     function _drawCountdown(num) {
         _clearCanvas();
-        _drawLadder(false);
+        _drawLadderV2();
 
         ctx.fillStyle = 'rgba(26, 10, 46, 0.6)';
         ctx.fillRect(0, 0, cW, cH);
@@ -466,9 +560,11 @@ const LadderGame = (() => {
         ctx.restore();
     }
 
-    function _drawFrame(x, y, rungPos, rungCount) {
+    /* v1.2: function _drawFrame(x, y, rungPos, rungCount) { ... } */
+    /** v2.0: 모듈 변수 visibleRungs/emptyChecks 사용 */
+    function _drawFrame(x, y) {
         _clearCanvas();
-        _drawLadder(true, rungPos, rungCount);
+        _drawLadderV2();
         _drawBall(x, y);
     }
 
@@ -476,12 +572,20 @@ const LadderGame = (() => {
     //  결과 생성
     // ═══════════════════════════════════
 
+    /** v2.0: 항상 4개 체크포인트 생성, rungActive로 3줄/4줄 구분 */
     function _generateResult() {
         const start = Math.random() < 0.5 ? 'left' : 'right';
         const rungs = Math.random() < 0.5 ? 3 : 4;
         const end = (rungs % 2 === 0) ? start : (start === 'left' ? 'right' : 'left');
-        const rungPositions = _genRungPos(rungs);
-        return { start, rungs, end, rungPositions };
+        // 항상 4개 위치 생성
+        const allPositions = _genRungPos(4);
+        // 3줄이면 랜덤 1개를 빈칸으로
+        const rungActive = [true, true, true, true];
+        if (rungs === 3) {
+            const emptyIdx = Math.floor(Math.random() * 4);
+            rungActive[emptyIdx] = false;
+        }
+        return { start, rungs, end, allPositions, rungActive };
     }
 
     function _genRungPos(num) {
@@ -497,172 +601,233 @@ const LadderGame = (() => {
         return pos.sort((a, b) => a - b);
     }
 
-    function _calcPath(r) {
-        const lx = _lx(), rx = _rx(), ty = _ty(), by = _by();
-        const path = [];
-        let cx = r.start === 'left' ? lx : rx;
-
-        path.push({ x: cx, y: ty });
-        for (const ry of r.rungPositions) {
-            path.push({ x: cx, y: ry });
-            cx = (cx === lx) ? rx : lx;
-            path.push({ x: cx, y: ry });
-        }
-        path.push({ x: cx, y: by });
-        return path;
-    }
+    /* v1.2 _calcPath - 주석처리 (v2.0에서 동적 경로로 전환) */
+    // function _calcPath(r) {
+    //     const lx = _lx(), rx = _rx(), ty = _ty(), by = _by();
+    //     const path = [];
+    //     let cx = r.start === 'left' ? lx : rx;
+    //     path.push({ x: cx, y: ty });
+    //     for (const ry of r.rungPositions) {
+    //         path.push({ x: cx, y: ry });
+    //         cx = (cx === lx) ? rx : lx;
+    //         path.push({ x: cx, y: ry });
+    //     }
+    //     path.push({ x: cx, y: by });
+    //     return path;
+    // }
 
     // ═══════════════════════════════════
     //  게임 플로우
     // ═══════════════════════════════════
 
+    /* ═══ v1.2 start() 주석처리 (v2.0으로 대체) ═══ */
+    // async function start_v12() { ... } // git history 참조
+
+    /** v2.0: 점진적 가로선 발견 + 극적 서스펜스 */
     async function start() {
         if (isPlaying) return;
 
         const totalBet = _getTotalBet();
-        if (totalBet <= 0) {
-            _toast('베팅을 먼저 해주세요!'); return;
-        }
-        if (totalBet > ChipManager.getBalance()) {
-            _toast('칩이 부족합니다!'); return;
-        }
+        if (totalBet <= 0) { _toast('베팅을 먼저 해주세요!'); return; }
+        if (totalBet > ChipManager.getBalance()) { _toast('칩이 부족합니다!'); return; }
 
         isPlaying = true;
         lastBets = { ...bets };
         ChipManager.deductChips(totalBet);
-
         if (typeof LevelManager !== 'undefined') LevelManager.addXP(totalBet);
         _updateUI();
         _disableBets(true);
 
         result = _generateResult();
         trail = [];
+        visibleRungs = [];
+        emptyChecks = [];
         stats.rounds++;
 
+        const lx = _lx(), rx = _rx(), ty = _ty(), by = _by();
+
         try {
-            // 1. 카운트다운 (v1.2: 900ms - 무게감)
+            // ── 1. 카운트다운 ──
             for (let i = 3; i >= 1; i--) {
                 _drawCountdown(i);
                 if (typeof SoundManager !== 'undefined') SoundManager.playLadderTick();
-                await _delay(900);
-            }
-
-            // 2. 사다리 가로선 공개 (v1.2: 800ms - 천천히)
-            for (let i = 1; i <= result.rungs; i++) {
-                _clearCanvas();
-                _drawLadder(true, result.rungPositions, i);
-                if (typeof SoundManager !== 'undefined') SoundManager.playLadderRungReveal();
                 await _delay(800);
             }
 
-            // 줄수 텍스트 (v1.2: 크게, 1초)
-            ctx.save();
-            ctx.font = `bold ${cW * 0.08}px Arial, sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.shadowBlur = 25;
-            ctx.shadowColor = C.rungGlow;
-            ctx.fillStyle = C.rung;
-            ctx.fillText(`${result.rungs}줄`, cW / 2, cH * 0.50);
-            ctx.restore();
-            await _delay(1000);
-
-            // 3. 출발점 표시 (v1.2: 4회 깜빡, 느리게)
-            const sx = result.start === 'left' ? _lx() : _rx();
+            // ── 2. 출발점 결정 + 깜빡임 (가로선은 아직 안 보임!) ──
+            const sx = result.start === 'left' ? lx : rx;
             const sColor = result.start === 'left' ? C.odd : C.even;
+            const sLabel = result.start === 'left' ? '좌 출발!' : '우 출발!';
 
             for (let blink = 0; blink < 4; blink++) {
                 _clearCanvas();
-                _drawLadder(true, result.rungPositions, result.rungs);
+                _drawLadderV2();
                 ctx.save();
-                ctx.shadowBlur = 45;
-                ctx.shadowColor = sColor;
+                ctx.shadowBlur = 45; ctx.shadowColor = sColor;
                 ctx.fillStyle = sColor;
-                ctx.beginPath();
-                ctx.arc(sx, _ty(), 15, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(sx, ty, 15, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
                 if (typeof SoundManager !== 'undefined') SoundManager.playLadderBlink();
-                await _delay(300);
-
+                await _delay(280);
                 _clearCanvas();
-                _drawLadder(true, result.rungPositions, result.rungs);
-                await _delay(200);
+                _drawLadderV2();
+                await _delay(180);
             }
 
-            if (typeof SoundManager !== 'undefined') SoundManager.playLadderSuspense();
-            await _delay(800);
+            // 출발 방향 텍스트
+            _clearCanvas();
+            _drawLadderV2();
+            ctx.save();
+            ctx.font = `bold ${cW * 0.07}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.shadowBlur = 20; ctx.shadowColor = sColor;
+            ctx.fillStyle = sColor;
+            ctx.fillText(sLabel, cW / 2, cH * 0.50);
+            ctx.restore();
+            await _delay(1000);
 
-            // 4. 애벌레 하강 (v1.2: 극적 슬로모션 ~15초)
-            const path = _calcPath(result);
-            trail = [];
-            const totalSegs = path.length - 1;
+            // ── 3. 애벌레 등장 + 점진적 하강 ──
+            let curX = sx;
+            let curY = ty;
+            trail = [{ x: curX, y: curY }];
 
-            for (let i = 0; i < totalSegs; i++) {
-                const from = path[i];
-                const to = path[i + 1];
-                const isH = Math.abs(to.x - from.x) > 1;
-                const isLast = (i === totalSegs - 1);
+            // 체크포인트 사이 구간 계산
+            const checkYs = result.allPositions; // 4개 체크포인트 y좌표
+            const segments = [];
+            // 시작 → 첫 번째 체크포인트
+            segments.push({ fromY: ty, toY: checkYs[0], idx: 0 });
+            for (let i = 1; i < 4; i++) {
+                segments.push({ fromY: checkYs[i - 1], toY: checkYs[i], idx: i });
+            }
+            // 마지막 체크포인트 → 바닥
+            segments.push({ fromY: checkYs[3], toY: by, idx: -1 });
 
-                let dur;
-                if (isH) dur = 600;           // 가로선 교차: 0.6초
-                else if (isLast) dur = 3000;   // 마지막 하강: 3초 극적 슬로모션
-                else dur = 1200;               // 일반 수직: 1.2초
+            for (let s = 0; s < segments.length; s++) {
+                const seg = segments[s];
+                const isCheckpoint = seg.idx >= 0;
+                const isLastSeg = (s === segments.length - 1);
 
-                // 마지막 구간 직전 극적 서스펜스
-                if (isLast) {
+                // ── 수직 하강 ──
+                const vertDur = isLastSeg ? 2500 : 1000;
+                const vertEase = isLastSeg ? _easeInOutQuint : _easeInOutCubic;
+
+                if (isLastSeg) {
+                    // 마지막 하강 전 서스펜스
                     if (typeof SoundManager !== 'undefined') SoundManager.playLadderSuspense();
-                    await _delay(1200);
+                    await _delay(1000);
                 }
 
-                await _animSeg(from, to, dur, isH, isLast ? _easeInOutQuint : null);
+                await _animSeg(
+                    { x: curX, y: seg.fromY },
+                    { x: curX, y: seg.toY },
+                    vertDur, false, vertEase
+                );
+                curY = seg.toY;
 
-                // 가로선 교차 후 일시정지 (긴장감)
-                if (isH) {
-                    if (typeof SoundManager !== 'undefined') SoundManager.playLadderCross();
-                    await _delay(500);
+                // ── 체크포인트 도달: 가로선 있을까? ──
+                if (isCheckpoint) {
+                    const hasRung = result.rungActive[seg.idx];
+                    const checkY = checkYs[seg.idx];
+
+                    // 드럼롤 서스펜스 (짧은 떨림)
+                    if (typeof SoundManager !== 'undefined') SoundManager.playLadderSuspense();
+
+                    // "?" 표시하며 대기
+                    for (let q = 0; q < 3; q++) {
+                        _clearCanvas();
+                        _drawLadderV2();
+                        _drawBall(curX, curY);
+                        ctx.save();
+                        ctx.font = `bold ${cW * 0.08}px Arial, sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = '#FFE4A0';
+                        ctx.fillStyle = q % 2 === 0 ? '#FFE4A0' : '#FF78F0';
+                        ctx.fillText('?', (lx + rx) / 2, checkY - 20);
+                        ctx.restore();
+                        await _delay(250);
+                    }
+                    await _delay(300);
+
+                    if (hasRung) {
+                        // ── 가로선 발견! ──
+                        visibleRungs.push(checkY);
+                        if (typeof SoundManager !== 'undefined') SoundManager.playLadderRungReveal();
+
+                        // 가로선 등장 플래시
+                        _clearCanvas();
+                        _drawLadderV2();
+                        _drawBall(curX, curY);
+                        ctx.save();
+                        ctx.shadowBlur = 40; ctx.shadowColor = C.rungGlow;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 5;
+                        ctx.beginPath(); ctx.moveTo(lx, checkY); ctx.lineTo(rx, checkY); ctx.stroke();
+                        ctx.restore();
+                        await _delay(300);
+
+                        // 가로선 교차 이동
+                        const toX = (curX === lx) ? rx : lx;
+                        await _animSeg(
+                            { x: curX, y: curY },
+                            { x: toX, y: curY },
+                            500, true, _easeInOutQuad
+                        );
+                        curX = toX;
+                        if (typeof SoundManager !== 'undefined') SoundManager.playLadderCross();
+                        await _delay(400);
+                    } else {
+                        // ── 빈칸! 그냥 통과 ──
+                        emptyChecks.push(checkY);
+                        _clearCanvas();
+                        _drawLadderV2();
+                        _drawBall(curX, curY);
+                        // 통과 효과 (약한 실패음)
+                        if (typeof SoundManager !== 'undefined') {
+                            SoundManager.playClick();
+                        }
+                        await _delay(500);
+                    }
                 }
             }
 
-            // 5. 도착 플래시
-            const endX = result.end === 'left' ? _lx() : _rx();
-            const endColor = result.end === 'left' ? C.odd : C.even;
+            // ── 4. 도착 플래시 ──
+            const endX = curX;
+            const endColor = (endX === lx) ? C.odd : C.even;
             if (typeof SoundManager !== 'undefined') SoundManager.playLadderLand();
 
-            for (let f = 0; f < 3; f++) {
+            for (let f = 0; f < 4; f++) {
                 _clearCanvas();
-                _drawLadder(true, result.rungPositions, result.rungs);
+                _drawLadderV2();
                 ctx.save();
-                ctx.shadowBlur = 45 - f * 10;
+                ctx.shadowBlur = 50 - f * 10;
                 ctx.shadowColor = endColor;
                 ctx.fillStyle = endColor;
                 ctx.beginPath();
-                ctx.arc(endX, _by(), 18 - f * 2, 0, Math.PI * 2);
+                ctx.arc(endX, by, 20 - f * 2, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
-                _drawBall(endX, _by());
-                await _delay(150);
+                _drawBall(endX, by);
+                await _delay(140);
             }
 
-            // 6. 결과 표시
+            // ── 5. 결과 표시 ──
             _clearCanvas();
-            _drawLadder(true, result.rungPositions, result.rungs);
-            _drawBall(endX, _by());
+            _drawLadderV2();
+            _drawBall(endX, by);
 
-            // 캔버스 위 결과 텍스트
             const startLbl = result.start === 'left' ? '좌출발' : '우출발';
             const endLbl = result.end === 'left' ? '홀' : '짝';
             ctx.save();
-            ctx.font = `bold ${cW * 0.055}px Arial, sans-serif`;
+            ctx.font = `bold ${cW * 0.06}px Arial, sans-serif`;
             ctx.textAlign = 'center';
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = C.ball;
+            ctx.shadowBlur = 15; ctx.shadowColor = endColor;
             ctx.fillStyle = '#ffffff';
             ctx.fillText(`${startLbl} · ${result.rungs}줄 · ${endLbl}`, cW / 2, cH * 0.50);
             ctx.restore();
 
             // 베팅 평가
             const totalWin = _evalBets(result);
-
             _addHistory(result);
             _renderHistory();
 
@@ -670,7 +835,6 @@ const LadderGame = (() => {
                 ChipManager.addChips(totalWin);
                 stats.wins++;
                 if (totalWin > stats.biggestWin) stats.biggestWin = totalWin;
-
                 const ratio = totalWin / totalBet;
                 if (ratio >= 3) {
                     if (typeof SoundManager !== 'undefined') SoundManager.playMegaWin();
@@ -688,12 +852,14 @@ const LadderGame = (() => {
             }
 
             _updateUI();
-            await _delay(2000);
+            await _delay(2500);
 
         } catch (err) {
             console.error('[LadderGame] error:', err);
         } finally {
             isPlaying = false;
+            visibleRungs = [];
+            emptyChecks = [];
             _disableBets(false);
             _updateUI();
             _saveStats();
@@ -716,7 +882,7 @@ const LadderGame = (() => {
                 trail.push({ x, y });
                 if (trail.length > MAX_TRAIL) trail.shift();
 
-                _drawFrame(x, y, result.rungPositions, result.rungs);
+                _drawFrame(x, y);
 
                 if (p < 1) {
                     animFrameId = requestAnimationFrame(frame);
