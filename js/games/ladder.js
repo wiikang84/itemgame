@@ -88,7 +88,8 @@ const LadderGame = (() => {
     let currentRungs = [];    // [{row, leftLane, rightLane, y}, ...]
     let currentPaths = {};    // {0: {segments, destLane}, ...}
     let revealedRows = [];    // 공개된 행 번호
-    let fogAlpha = {};        // 행별 안개 투명도
+    let fogAlpha = {};        // 행별 안개 투명도 (v4.0 레거시, 미사용)
+    let rungRevealTime = {};  // v4.1: 행별 공개 시각 (글로우 효과용)
 
     // 오토 + 속도
     let autoMode = false;
@@ -417,7 +418,17 @@ const LadderGame = (() => {
                 const rx = _laneX(rung.rightLane);
 
                 if (isRevealed) {
-                    // 공개된 가로선: 나무 판자
+                    // 공개된 가로선: 나무 판자 + 등장 글로우
+                    const revealAge = Date.now() - (rungRevealTime[row] || 0);
+                    const glowIntensity = Math.max(0, 1 - revealAge / 600); // 600ms 페이드
+
+                    ctx.save();
+                    if (glowIntensity > 0) {
+                        // 등장 글로우: 골드빛 발광
+                        ctx.shadowBlur = 18 * glowIntensity;
+                        ctx.shadowColor = `rgba(255, 215, 0, ${glowIntensity})`;
+                    }
+
                     const rungGrad = ctx.createLinearGradient(0, rung.y - 4, 0, rung.y + 4);
                     rungGrad.addColorStop(0, '#D4AA3C');
                     rungGrad.addColorStop(0.5, '#E8C050');
@@ -431,8 +442,11 @@ const LadderGame = (() => {
                     ctx.lineWidth = 1;
                     _roundRect(lx - 2, rung.y - 4, rx - lx + 4, 8, 3);
                     ctx.stroke();
+                    ctx.restore();
                 } else {
-                    // 숨겨진 가로선: 안개/구름
+                    // 숨겨진 가로선: 완전 숨김 (아무것도 그리지 않음)
+                    // v4.0 안개/구름 방식 제거 - 안개가 위치를 스포일러함
+                    /* v4.0 안개 방식 (주석처리 보존)
                     const fogA = fogAlpha[row] !== undefined ? fogAlpha[row] : 1;
                     if (fogA > 0) {
                         ctx.save();
@@ -445,6 +459,7 @@ const LadderGame = (() => {
                         ctx.fillRect(lx - 20, rung.y - 15, rx - lx + 40, 30);
                         ctx.restore();
                     }
+                    */
                 }
             }
         }
@@ -862,6 +877,7 @@ const LadderGame = (() => {
         currentRungs = [];
         revealedRows = [];
         fogAlpha = {};
+        rungRevealTime = {};
         _drawLadder();
 
         // 캐릭터 4마리를 하단에 표시
@@ -990,6 +1006,7 @@ const LadderGame = (() => {
         currentPaths = _calcAllPaths(currentRungs);
         revealedRows = [];
         fogAlpha = {};
+        rungRevealTime = {};
         trail = [];
         stats.rounds++;
 
@@ -1024,6 +1041,7 @@ const LadderGame = (() => {
                     for (const rung of currentRungs) {
                         if (rung.y >= minY && rung.y <= maxY && !revealedRows.includes(rung.row)) {
                             revealedRows.push(rung.row);
+                            rungRevealTime[rung.row] = Date.now();
                         }
                     }
                 }
@@ -1044,8 +1062,12 @@ const LadderGame = (() => {
                 if (isLastVert) {
                     if (typeof SoundManager !== 'undefined') SoundManager.playLadderSuspense();
                     // 모든 남은 행 공개
+                    const now = Date.now();
                     for (const rung of currentRungs) {
-                        if (!revealedRows.includes(rung.row)) revealedRows.push(rung.row);
+                        if (!revealedRows.includes(rung.row)) {
+                            revealedRows.push(rung.row);
+                            rungRevealTime[rung.row] = now;
+                        }
                     }
                 }
 
