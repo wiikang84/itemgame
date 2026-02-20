@@ -152,65 +152,134 @@ const LadderGame = (() => {
     //  4선 사다리 생성 알고리즘
     // ═══════════════════════════════════
 
-    /** v4.0: 4선 사다리 랜덤 생성 */
+    /**
+     * v4.0: 공정한 4선 사다리 생성 (결과 우선 방식)
+     *
+     * 원리: 먼저 랜덤 순열(도착 매핑)을 정하고,
+     * 그 순열을 만들어내는 사다리를 버블소트 방식으로 역으로 구성.
+     * → 모든 출발→도착 확률이 정확히 균등 (25%)
+     *
+     * 1) 랜덤 순열 선택 (24가지 중 1개)
+     * 2) 버블소트 스왑으로 필수 가로선 배치
+     * 3) 나머지 행에 서로 상쇄되는 랜덤 가로선 추가 (시각적 복잡성)
+     */
     function _generateLadder() {
         const ty = _ty(), by = _by();
         const height = by - ty;
         const rowHeight = height / (ROWS + 1);
-        const rungs = [];
 
-        let totalRungs = 0;
-        const targetMin = 6, targetMax = 10;
+        // 1) 랜덤 순열 생성 (bottom→top 매핑: 출발 lane i → 도착 lane perm[i])
+        const perm = [0, 1, 2, 3];
+        for (let i = perm.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [perm[i], perm[j]] = [perm[j], perm[i]];
+        }
 
-        for (let row = 0; row < ROWS; row++) {
-            const y = ty + rowHeight * (row + 1);
-            // 가능한 쌍: (0,1), (1,2), (2,3)
-            const possiblePairs = [[0,1], [1,2], [2,3]];
-            // 셔플
-            for (let i = possiblePairs.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [possiblePairs[i], possiblePairs[j]] = [possiblePairs[j], possiblePairs[i]];
-            }
+        // 2) 버블소트로 필수 스왑 계산
+        //    사다리는 bottom→top 이동이므로, 순열을 인접 전치(adjacent transposition)로 분해
+        const arr = [...perm]; // 현재 상태 (bottom에서의 lane 배치)
+        const swaps = [];      // [{leftLane, rightLane}] 순서대로 (bottom→top)
 
-            const selectedPairs = [];
-            for (const pair of possiblePairs) {
-                // 이미 선택된 쌍과 줄 공유하는지 체크
-                const conflict = selectedPairs.some(sp =>
-                    sp[0] === pair[0] || sp[0] === pair[1] ||
-                    sp[1] === pair[0] || sp[1] === pair[1]
-                );
-                if (!conflict) {
-                    // 확률적으로 추가 (60%)
-                    if (Math.random() < 0.6) {
-                        selectedPairs.push(pair);
-                    }
+        // 버블소트: arr을 [0,1,2,3]으로 정렬 (= top에서 올바른 위치)
+        let sorted = false;
+        while (!sorted) {
+            sorted = true;
+            for (let i = 0; i < arr.length - 1; i++) {
+                if (arr[i] > arr[i + 1]) {
+                    [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+                    swaps.push({ leftLane: i, rightLane: i + 1 });
+                    sorted = false;
                 }
-            }
-
-            for (const pair of selectedPairs) {
-                const jitter = (Math.random() - 0.5) * rowHeight * 0.15;
-                rungs.push({
-                    row: row,
-                    leftLane: pair[0],
-                    rightLane: pair[1],
-                    y: y + jitter
-                });
-                totalRungs++;
             }
         }
 
-        // 최소 가로선 수 보장
-        if (totalRungs < targetMin) {
-            const emptyRows = [];
-            for (let r = 0; r < ROWS; r++) {
-                if (!rungs.some(rg => rg.row === r)) emptyRows.push(r);
+        const rungs = [];
+        let currentRow = 0;
+
+        // 필수 스왑을 행에 배치
+        // 같은 행에 충돌 없는 스왑은 묶기 가능
+        let swapIdx = 0;
+        while (swapIdx < swaps.length && currentRow < ROWS) {
+            const rowSwaps = [];
+            const usedLanes = new Set();
+
+            // 이 행에 배치 가능한 스왑 수집
+            let peekIdx = swapIdx;
+            while (peekIdx < swaps.length) {
+                const sw = swaps[peekIdx];
+                if (!usedLanes.has(sw.leftLane) && !usedLanes.has(sw.rightLane)) {
+                    rowSwaps.push(sw);
+                    usedLanes.add(sw.leftLane);
+                    usedLanes.add(sw.rightLane);
+                    peekIdx++;
+                } else {
+                    break;
+                }
             }
-            while (totalRungs < targetMin && emptyRows.length > 0) {
-                const row = emptyRows.pop();
-                const y = ty + rowHeight * (row + 1);
+            swapIdx = peekIdx;
+
+            const y = ty + rowHeight * (currentRow + 1);
+            for (const sw of rowSwaps) {
+                const jitter = (Math.random() - 0.5) * rowHeight * 0.15;
+                rungs.push({
+                    row: currentRow,
+                    leftLane: sw.leftLane,
+                    rightLane: sw.rightLane,
+                    y: y + jitter
+                });
+            }
+            currentRow++;
+        }
+
+        // 3) 나머지 빈 행에 랜덤 더미 가로선 추가 (서로 상쇄되는 쌍)
+        //    같은 위치에 2개 가로선 = 갔다가 돌아옴 → 결과 불변
+        const filledRows = new Set(rungs.map(r => r.row));
+        const emptyRows = [];
+        for (let r = 0; r < ROWS; r++) {
+            if (!filledRows.has(r)) emptyRows.push(r);
+        }
+
+        // 빈 행을 쌍으로 묶어서 상쇄 가로선 배치
+        // 또는 단독 행에 겹치지 않는 2개 가로선 배치 (0-1 + 2-3)
+        for (let i = 0; i < emptyRows.length; i += 2) {
+            if (i + 1 < emptyRows.length) {
+                // 쌍: 같은 위치에 가로선 → 상쇄
                 const pair = [[0,1],[1,2],[2,3]][Math.floor(Math.random() * 3)];
-                rungs.push({ row, leftLane: pair[0], rightLane: pair[1], y });
-                totalRungs++;
+                const y1 = ty + rowHeight * (emptyRows[i] + 1);
+                const y2 = ty + rowHeight * (emptyRows[i + 1] + 1);
+                const jitter1 = (Math.random() - 0.5) * rowHeight * 0.15;
+                const jitter2 = (Math.random() - 0.5) * rowHeight * 0.15;
+                rungs.push({ row: emptyRows[i], leftLane: pair[0], rightLane: pair[1], y: y1 + jitter1 });
+                rungs.push({ row: emptyRows[i + 1], leftLane: pair[0], rightLane: pair[1], y: y2 + jitter2 });
+            } else {
+                // 홀수 남은 행: 충돌 없는 2개 동시 배치 (0-1 + 2-3) → 결과에 영향 없으려면 상쇄쌍 필요
+                // 단독 행은 가로선 없이 유지 (자연스러움)
+            }
+        }
+
+        // 최소 시각적 복잡성: 가로선이 너무 적으면 추가 상쇄쌍
+        if (rungs.length < 6) {
+            // 사용되지 않은 행 찾기
+            const usedRows = new Set(rungs.map(r => r.row));
+            for (let r = 0; r < ROWS && rungs.length < 8; r++) {
+                if (!usedRows.has(r)) {
+                    const y = ty + rowHeight * (r + 1);
+                    // 0-1과 2-3 동시 배치 (둘 다 추가해도 서로 독립이라 결과에 영향)
+                    // → 상쇄를 위해 이 행과 다른 행에 같은 쌍 배치
+                    const pair = [[0,1],[1,2],[2,3]][Math.floor(Math.random() * 3)];
+                    rungs.push({ row: r, leftLane: pair[0], rightLane: pair[1], y: y + (Math.random()-0.5)*rowHeight*0.15 });
+                    usedRows.add(r);
+
+                    // 상쇄 짝 찾기
+                    for (let r2 = r + 1; r2 < ROWS; r2++) {
+                        if (!usedRows.has(r2)) {
+                            const y2 = ty + rowHeight * (r2 + 1);
+                            rungs.push({ row: r2, leftLane: pair[0], rightLane: pair[1], y: y2 + (Math.random()-0.5)*rowHeight*0.15 });
+                            usedRows.add(r2);
+                            break;
+                        }
+                    }
+                }
             }
         }
 
