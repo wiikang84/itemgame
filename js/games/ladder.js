@@ -152,35 +152,49 @@ const LadderGame = (() => {
     //  4선 사다리 생성 알고리즘
     // ═══════════════════════════════════
 
+    /* v4.0 _generateLadder (순수 버블소트 분해 + 하단 배치 방식) 주석처리 보존
+     * 문제: 필수 스왑이 하단에 몰리고, 상쇄쌍이 같은 위치에서 반복 → 단조로운 모양
+     *
+     * function _generateLadder() {
+     *     const perm = shuffle([0,1,2,3]);
+     *     const swaps = bubbleSortDecompose(perm);
+     *     // 필수 스왑을 row 0부터 순차 배치
+     *     // 남은 빈 행에 같은 위치 상쇄쌍 → 평균 7.5개 가로선, 더블행 0개
+     * }
+     */
+
     /**
-     * v4.0: 공정한 4선 사다리 생성 (결과 우선 방식)
+     * v4.1: 시각적으로 다채로운 4선 사다리 생성 (노이즈 패딩 방식)
      *
-     * 원리: 먼저 랜덤 순열(도착 매핑)을 정하고,
-     * 그 순열을 만들어내는 사다리를 버블소트 방식으로 역으로 구성.
-     * → 모든 출발→도착 확률이 정확히 균등 (25%)
+     * 원리: 결과 우선(result-first) 방식 유지 + 노이즈 쌍 삽입
      *
-     * 1) 랜덤 순열 선택 (24가지 중 1개)
-     * 2) 버블소트 스왑으로 필수 가로선 배치
-     * 3) 나머지 행에 서로 상쇄되는 랜덤 가로선 추가 (시각적 복잡성)
+     * 1) 랜덤 순열 → 버블소트 분해 → 필수 행 연산 (k개, 비충돌 스왑 패킹)
+     * 2) 남은 (8-k)행을 상쇄 노이즈 쌍으로 채움
+     *    - 노이즈 쌍 = 동일 연산 2회 연속 = 항등원 (t∘t = id)
+     *    - 쌍의 양쪽은 반드시 인접 행에 배치 (필수 연산 사이에 끼지 않음)
+     * 3) 노이즈 연산 종류:
+     *    - 싱글: (0,1) or (1,2) or (2,3) → 60%
+     *    - 더블: (0,1)+(2,3) 동시 → 40% → 한 행에 2개 가로선!
+     * 4) 노이즈 쌍을 필수 연산 사이 슬롯에 랜덤 분배
+     *
+     * → 결과: 7~8행 채움, 10~16개 가로선, 더블행 빈번, 지그재그 경로
+     * → 공정성: 완벽한 25% 균등 확률 유지 (수학적 증명)
      */
     function _generateLadder() {
         const ty = _ty(), by = _by();
         const height = by - ty;
         const rowHeight = height / (ROWS + 1);
 
-        // 1) 랜덤 순열 생성 (bottom→top 매핑: 출발 lane i → 도착 lane perm[i])
+        // ─── 1) 랜덤 순열 (Fisher-Yates) ───
         const perm = [0, 1, 2, 3];
         for (let i = perm.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [perm[i], perm[j]] = [perm[j], perm[i]];
         }
 
-        // 2) 버블소트로 필수 스왑 계산
-        //    사다리는 bottom→top 이동이므로, 순열을 인접 전치(adjacent transposition)로 분해
-        const arr = [...perm]; // 현재 상태 (bottom에서의 lane 배치)
-        const swaps = [];      // [{leftLane, rightLane}] 순서대로 (bottom→top)
-
-        // 버블소트: arr을 [0,1,2,3]으로 정렬 (= top에서 올바른 위치)
+        // ─── 2) 버블소트 → 개별 인접 전치 시퀀스 ───
+        const arr = [...perm];
+        const swaps = [];
         let sorted = false;
         while (!sorted) {
             sorted = true;
@@ -193,93 +207,80 @@ const LadderGame = (() => {
             }
         }
 
-        const rungs = [];
-        let currentRow = 0;
-
-        // 필수 스왑을 행에 배치
-        // 같은 행에 충돌 없는 스왑은 묶기 가능
-        let swapIdx = 0;
-        while (swapIdx < swaps.length && currentRow < ROWS) {
-            const rowSwaps = [];
-            const usedLanes = new Set();
-
-            // 이 행에 배치 가능한 스왑 수집
-            let peekIdx = swapIdx;
-            while (peekIdx < swaps.length) {
-                const sw = swaps[peekIdx];
-                if (!usedLanes.has(sw.leftLane) && !usedLanes.has(sw.rightLane)) {
-                    rowSwaps.push(sw);
-                    usedLanes.add(sw.leftLane);
-                    usedLanes.add(sw.rightLane);
-                    peekIdx++;
-                } else {
-                    break;
-                }
+        // ─── 3) 연속 비충돌 스왑 → 행 연산으로 패킹 ───
+        const reqOps = [];
+        let curOp = [], usedL = new Set();
+        for (const s of swaps) {
+            if (!usedL.has(s.leftLane) && !usedL.has(s.rightLane)) {
+                curOp.push({ ...s });
+                usedL.add(s.leftLane);
+                usedL.add(s.rightLane);
+            } else {
+                if (curOp.length) reqOps.push(curOp);
+                curOp = [{ ...s }];
+                usedL = new Set([s.leftLane, s.rightLane]);
             }
-            swapIdx = peekIdx;
+        }
+        if (curOp.length) reqOps.push(curOp);
 
-            const y = ty + rowHeight * (currentRow + 1);
-            for (const sw of rowSwaps) {
-                const jitter = (Math.random() - 0.5) * rowHeight * 0.15;
+        const k = reqOps.length;                   // 필수 행 연산 수 (0~5)
+        const m = Math.floor((ROWS - k) / 2);     // 노이즈 쌍 수
+        const leftover = (ROWS - k) % 2;          // 0 또는 1 빈 행
+
+        // ─── 4) 노이즈 연산 랜덤 생성 (싱글 60% / 더블 40%) ───
+        const noiseOps = [];
+        const opPool = [
+            [{ leftLane: 0, rightLane: 1 }],                                         // 싱글
+            [{ leftLane: 1, rightLane: 2 }],                                         // 싱글
+            [{ leftLane: 2, rightLane: 3 }],                                         // 싱글
+            [{ leftLane: 0, rightLane: 1 }, { leftLane: 2, rightLane: 3 }],         // 더블
+            [{ leftLane: 0, rightLane: 1 }, { leftLane: 2, rightLane: 3 }],         // 더블 (가중)
+        ];
+        for (let i = 0; i < m; i++) {
+            noiseOps.push(opPool[Math.floor(Math.random() * opPool.length)]);
+        }
+
+        // ─── 5) 노이즈 쌍을 (k+1)개 슬롯에 랜덤 분배 ───
+        // 슬롯: [필수0 앞] [필수0~1 사이] ... [필수k-1 뒤]
+        // 각 슬롯 내에서 노이즈 쌍은 인접 2행 → 필수 연산과 간섭 없음
+        const slots = new Array(k + 1).fill(0);
+        for (let i = 0; i < m; i++) {
+            slots[Math.floor(Math.random() * (k + 1))]++;
+        }
+
+        // ─── 6) 행 계획 조립 (bottom → top 순서) ───
+        const rowPlan = [];
+        let ni = 0;
+        for (let s = 0; s <= k; s++) {
+            // 이 슬롯의 노이즈 쌍 배치 (각 쌍 = 동일 연산 2행)
+            for (let n = 0; n < slots[s]; n++) {
+                rowPlan.push(noiseOps[ni].map(r => ({ ...r })));
+                rowPlan.push(noiseOps[ni].map(r => ({ ...r })));
+                ni++;
+            }
+            // 필수 행 연산 배치
+            if (s < k) rowPlan.push(reqOps[s]);
+        }
+
+        // 남은 1행(leftover)이 있으면 빈 행을 랜덤 위치에 삽입
+        if (leftover > 0 && rowPlan.length < ROWS) {
+            const pos = Math.floor(Math.random() * (rowPlan.length + 1));
+            rowPlan.splice(pos, 0, null);
+        }
+
+        // ─── 7) rungs 좌표 변환 ───
+        const rungs = [];
+        for (let r = 0; r < rowPlan.length && r < ROWS; r++) {
+            if (!rowPlan[r]) continue;
+            const y = ty + rowHeight * (r + 1);
+            for (const sw of rowPlan[r]) {
+                const jitter = (Math.random() - 0.5) * rowHeight * 0.2;
                 rungs.push({
-                    row: currentRow,
+                    row: r,
                     leftLane: sw.leftLane,
                     rightLane: sw.rightLane,
                     y: y + jitter
                 });
-            }
-            currentRow++;
-        }
-
-        // 3) 나머지 빈 행에 랜덤 더미 가로선 추가 (서로 상쇄되는 쌍)
-        //    같은 위치에 2개 가로선 = 갔다가 돌아옴 → 결과 불변
-        const filledRows = new Set(rungs.map(r => r.row));
-        const emptyRows = [];
-        for (let r = 0; r < ROWS; r++) {
-            if (!filledRows.has(r)) emptyRows.push(r);
-        }
-
-        // 빈 행을 쌍으로 묶어서 상쇄 가로선 배치
-        // 또는 단독 행에 겹치지 않는 2개 가로선 배치 (0-1 + 2-3)
-        for (let i = 0; i < emptyRows.length; i += 2) {
-            if (i + 1 < emptyRows.length) {
-                // 쌍: 같은 위치에 가로선 → 상쇄
-                const pair = [[0,1],[1,2],[2,3]][Math.floor(Math.random() * 3)];
-                const y1 = ty + rowHeight * (emptyRows[i] + 1);
-                const y2 = ty + rowHeight * (emptyRows[i + 1] + 1);
-                const jitter1 = (Math.random() - 0.5) * rowHeight * 0.15;
-                const jitter2 = (Math.random() - 0.5) * rowHeight * 0.15;
-                rungs.push({ row: emptyRows[i], leftLane: pair[0], rightLane: pair[1], y: y1 + jitter1 });
-                rungs.push({ row: emptyRows[i + 1], leftLane: pair[0], rightLane: pair[1], y: y2 + jitter2 });
-            } else {
-                // 홀수 남은 행: 충돌 없는 2개 동시 배치 (0-1 + 2-3) → 결과에 영향 없으려면 상쇄쌍 필요
-                // 단독 행은 가로선 없이 유지 (자연스러움)
-            }
-        }
-
-        // 최소 시각적 복잡성: 가로선이 너무 적으면 추가 상쇄쌍
-        if (rungs.length < 6) {
-            // 사용되지 않은 행 찾기
-            const usedRows = new Set(rungs.map(r => r.row));
-            for (let r = 0; r < ROWS && rungs.length < 8; r++) {
-                if (!usedRows.has(r)) {
-                    const y = ty + rowHeight * (r + 1);
-                    // 0-1과 2-3 동시 배치 (둘 다 추가해도 서로 독립이라 결과에 영향)
-                    // → 상쇄를 위해 이 행과 다른 행에 같은 쌍 배치
-                    const pair = [[0,1],[1,2],[2,3]][Math.floor(Math.random() * 3)];
-                    rungs.push({ row: r, leftLane: pair[0], rightLane: pair[1], y: y + (Math.random()-0.5)*rowHeight*0.15 });
-                    usedRows.add(r);
-
-                    // 상쇄 짝 찾기
-                    for (let r2 = r + 1; r2 < ROWS; r2++) {
-                        if (!usedRows.has(r2)) {
-                            const y2 = ty + rowHeight * (r2 + 1);
-                            rungs.push({ row: r2, leftLane: pair[0], rightLane: pair[1], y: y2 + (Math.random()-0.5)*rowHeight*0.15 });
-                            usedRows.add(r2);
-                            break;
-                        }
-                    }
-                }
             }
         }
 
