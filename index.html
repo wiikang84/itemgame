@@ -6,31 +6,41 @@
     <title>ItemGame - 소셜 카지노</title>
     <link rel="stylesheet" href="css/common.css">
     <style>
-        /* === 로비 전용 스타일 === */
+        /* === 로비 전용 스타일 (v3.0 네온 사이버펑크) === */
         .hero {
             text-align: center;
             padding: 48px 0 32px;
         }
 
+        /* Hero 타이틀: Orbitron + 시안→핑크 그래디언트 + 글리치 */
         .hero-title {
+            font-family: var(--font-title);
             font-size: 3rem;
-            font-weight: 800;
-            color: var(--neon-gold);
-            text-shadow: var(--glow-gold);
-            letter-spacing: 4px;
+            font-weight: 900;
+            /* v2.0 원본: color: var(--neon-gold); */
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 15px rgba(0, 255, 245, 0.4)) drop-shadow(0 0 30px rgba(255, 45, 149, 0.2));
+            letter-spacing: 6px;
             margin-bottom: 8px;
+            position: relative;
+            animation: glitchText 3s infinite;
         }
 
         .hero-subtitle {
             font-size: 1.1rem;
             color: var(--text-secondary);
             margin-bottom: 32px;
+            letter-spacing: 2px;
         }
 
-        /* 데일리 보너스 배너 */
+        /* 데일리 보너스 배너: 시안+퍼플 그래디언트 */
         .daily-bonus-banner {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(170, 68, 255, 0.1));
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            /* v2.0 원본: background: linear-gradient(135deg, rgba(255, 215, 0, 0.15)...) */
+            background: linear-gradient(135deg, rgba(0, 255, 245, 0.08), rgba(179, 0, 255, 0.08));
+            border: 1px solid rgba(0, 255, 245, 0.2);
             border-radius: var(--radius);
             padding: 20px 28px;
             margin-bottom: 32px;
@@ -39,11 +49,12 @@
             justify-content: space-between;
             cursor: pointer;
             transition: all 0.3s;
+            backdrop-filter: blur(8px);
         }
 
         .daily-bonus-banner:hover {
-            border-color: var(--neon-gold);
-            box-shadow: var(--glow-gold);
+            border-color: var(--neon-cyan);
+            box-shadow: var(--glow-cyan);
         }
 
         .daily-bonus-banner.claimed {
@@ -52,12 +63,12 @@
         }
 
         .daily-bonus-banner.claimed:hover {
-            border-color: rgba(255, 215, 0, 0.3);
+            border-color: rgba(0, 255, 245, 0.2);
             box-shadow: none;
         }
 
         .bonus-info h3 {
-            color: var(--neon-gold);
+            color: var(--neon-cyan);
             font-size: 1.1rem;
             margin-bottom: 4px;
         }
@@ -68,10 +79,11 @@
         }
 
         .bonus-amount {
+            font-family: var(--font-title);
             font-size: 1.5rem;
             font-weight: 800;
-            color: var(--neon-gold);
-            text-shadow: var(--glow-gold);
+            color: var(--neon-cyan);
+            text-shadow: var(--glow-cyan);
         }
 
         /* 게임 그리드 */
@@ -82,19 +94,40 @@
             margin-top: 24px;
         }
 
+        /* 게임 카드: 글래스모피즘 + 호버 시 애니메이션 그래디언트 보더 */
         .game-card {
-            background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* v2.0 원본: background: var(--bg-card); */
+            background: rgba(10, 10, 30, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: var(--radius-lg);
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+        }
+
+        /* 호버 시 애니메이션 그래디언트 보더 (시안→핑크→퍼플) */
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: calc(var(--radius-lg) + 2px);
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple), var(--neon-cyan));
+            background-size: 300% 300%;
+            animation: neonBorderRotate 4s linear infinite;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
         }
 
         .game-card:hover {
-            border-color: rgba(255, 215, 0, 0.4);
             transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 245, 0.08);
         }
 
         .game-card-visual {
@@ -131,28 +164,40 @@
             opacity: 0.3;
         }
 
+        /* 게임별 카드 비주얼 배경 (네온 사이버펑크) */
         .game-slot .game-card-visual {
-            background: linear-gradient(135deg, #1a0033, #330066);
+            background: linear-gradient(135deg, #1a002e, #2a0050);
         }
-
         .game-slot .game-card-visual::before {
-            background: radial-gradient(circle at 50% 50%, rgba(170, 68, 255, 0.4), transparent 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(179, 0, 255, 0.4), transparent 70%);
         }
 
         .game-blackjack .game-card-visual {
-            background: linear-gradient(135deg, #002200, #004400);
+            background: linear-gradient(135deg, #001a08, #003318);
         }
-
         .game-blackjack .game-card-visual::before {
-            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.3), transparent 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.3), transparent 70%);
         }
 
         .game-roulette .game-card-visual {
-            background: linear-gradient(135deg, #330000, #660000);
+            background: linear-gradient(135deg, #2a0020, #50003a);
+        }
+        .game-roulette .game-card-visual::before {
+            background: radial-gradient(circle at 50% 50%, rgba(255, 45, 149, 0.3), transparent 70%);
         }
 
-        .game-roulette .game-card-visual::before {
-            background: radial-gradient(circle at 50% 50%, rgba(255, 51, 102, 0.3), transparent 70%);
+        .game-sea .game-card-visual {
+            background: linear-gradient(135deg, #001020, #002040);
+        }
+        .game-sea .game-card-visual::before {
+            background: radial-gradient(circle at 50% 50%, rgba(0, 187, 255, 0.3), transparent 70%);
+        }
+
+        .game-ladder .game-card-visual {
+            background: linear-gradient(135deg, #1a002e, #2a0050);
+        }
+        .game-ladder .game-card-visual::before {
+            background: radial-gradient(circle at 50% 50%, rgba(179, 0, 255, 0.3), transparent 70%);
         }
 
         .game-card-body {
@@ -160,9 +205,11 @@
         }
 
         .game-card-body h3 {
-            font-size: 1.3rem;
+            font-family: var(--font-title);
+            font-size: 1.2rem;
             margin-bottom: 8px;
             color: var(--text-primary);
+            letter-spacing: 1px;
         }
 
         .game-card-body p {
@@ -183,21 +230,33 @@
             color: var(--text-dim);
         }
 
+        /* Play 버튼: 네온 시안 보더 */
         .game-card-meta .play-btn {
-            background: linear-gradient(135deg, var(--neon-gold), #ffaa00);
-            color: #000;
-            border: none;
+            /* v2.0 원본: background: linear-gradient(135deg, var(--neon-gold), #ffaa00); */
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 2px solid var(--neon-cyan);
             padding: 8px 20px;
             border-radius: 20px;
             font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s;
+            letter-spacing: 2px;
         }
 
         .game-card-meta .play-btn:hover {
-            box-shadow: var(--glow-gold);
+            box-shadow: var(--glow-cyan);
+            background: rgba(0, 255, 245, 0.1);
             transform: scale(1.05);
+        }
+
+        /* 섹션 타이틀 */
+        .section-title {
+            font-family: var(--font-title);
+            color: var(--neon-cyan);
+            letter-spacing: 3px;
+            font-size: 1.1rem;
         }
 
         /* 하단 정보 */
@@ -217,12 +276,13 @@
             text-align: center;
             margin-top: 40px;
             padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(0, 255, 245, 0.05);
         }
 
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 2rem;
+                letter-spacing: 4px;
             }
 
             .games-grid {
@@ -281,7 +341,7 @@
         </div>
 
         <!-- 게임 선택 -->
-        <h2 class="text-gold mb-2">게임 선택</h2>
+        <h2 class="section-title mb-2">게임 선택</h2>
         <div class="games-grid">
             <!-- 슬롯머신 -->
             <div class="game-card game-slot" onclick="location.href='slot.html'">
@@ -323,27 +383,27 @@
             </div>
 
             <!-- 바다이야기 -->
-            <div class="game-card game-sea" onclick="location.href='sea-story.html'" style="border-color: rgba(0, 180, 255, 0.2);">
-                <div class="game-card-visual" style="background: linear-gradient(135deg, #020818 0%, #0a2040 50%, #051830 100%);"><span class="game-emoji">🧜‍♀️</span></div>
+            <div class="game-card game-sea" onclick="location.href='sea-story.html'">
+                <div class="game-card-visual"><span class="game-emoji">🧜‍♀️</span></div>
                 <div class="game-card-body">
-                    <h3 style="color: #00d4ff;">바다이야기</h3>
+                    <h3>바다이야기</h3>
                     <p>심해의 보물을 찾아라! 인어공주, 상어, 문어 등 해양 심볼로 대어를 낚아보세요.</p>
                     <div class="game-card-meta">
                         <span class="bet-range">베팅: 10 ~ 1,000</span>
-                        <button class="play-btn" style="background: linear-gradient(135deg, #00b8d4, #0098b8); border-color: #00d4ff;">PLAY</button>
+                        <button class="play-btn">PLAY</button>
                     </div>
                 </div>
             </div>
 
-            <!-- 사다리 (v4.0 캐릭터 사다리) -->
-            <div class="game-card game-ladder" onclick="location.href='ladder.html'" style="border-color: rgba(93, 170, 58, 0.4);">
-                <div class="game-card-visual" style="background: linear-gradient(135deg, #5DAA3A, #7EC850); background-image: repeating-conic-gradient(rgba(255,255,255,0.05) 0% 25%, transparent 0% 50%); background-size: 30px 30px;"><span class="game-emoji">🐱🦆🐧🐑</span></div>
+            <!-- 사다리 -->
+            <div class="game-card game-ladder" onclick="location.href='ladder.html'">
+                <div class="game-card-visual"><span class="game-emoji">🐱🦆🐧🐑</span></div>
                 <div class="game-card-body">
-                    <h3 style="color: #FFD700; text-shadow: 1px 1px 0 #C49A2C;">사다리 타기</h3>
+                    <h3>사다리 타기</h3>
                     <p>귀여운 캐릭터 4마리 중 하나를 골라 도착지를 맞춰라! 3.6배 당첨</p>
                     <div class="game-card-meta">
                         <span class="bet-range">베팅: 100 ~ 10,000</span>
-                        <button class="play-btn" style="background: linear-gradient(135deg, #FF8C00, #CC6600); border-color: #FFD700; color: #fff;">PLAY</button>
+                        <button class="play-btn">PLAY</button>
                     </div>
                 </div>
             </div>
@@ -358,7 +418,7 @@
         <footer class="footer">
             <p>ItemGame은 소셜 카지노 게임입니다. 실제 현금 거래가 아닙니다.</p>
             <p>가상 칩은 환전이 불가하며, 유저간 거래가 불가합니다.</p>
-            <p class="mt-1">© 2026 ItemGame. All rights reserved.</p>
+            <p class="mt-1">&copy; 2026 ItemGame. All rights reserved.</p>
         </footer>
     </main>
 
@@ -405,6 +465,7 @@
     <script src="js/core/sound-manager.js"></script>
     <script src="js/core/coin-shower.js"></script>
     <script src="js/core/level-manager.js"></script>
+    <script src="js/core/neon-particles.js"></script>
     <script>
         // 초기화
         document.addEventListener('DOMContentLoaded', async () => {
@@ -412,6 +473,7 @@
             SoundManager.init();
             CoinShower.init();
             LevelManager.init();
+            NeonParticles.init();
             updateChipDisplay();
             checkDailyBonus();
             buildStreakCalendar();
@@ -513,14 +575,12 @@
             const gap = now - _resetLastClick;
             _resetLastClick = now;
 
-            /* 500ms 이내 연속 클릭이면 카운트 증가, 아니면 리셋 */
             if (gap < 500) {
                 _resetClickCount++;
             } else {
                 _resetClickCount = 1;
             }
 
-            /* 50회 도달 → 이스터에그 발동! */
             if (_resetClickCount >= 50) {
                 _resetClickCount = 0;
                 clearTimeout(_resetConfirmTimer);
@@ -532,10 +592,8 @@
                 return;
             }
 
-            /* 빠르게 클릭 중이면 confirm 안 띄움 (연타 허용) */
             clearTimeout(_resetConfirmTimer);
             _resetConfirmTimer = setTimeout(() => {
-                /* 클릭 멈추고 1초 후에 일반 리셋 confirm */
                 if (_resetClickCount > 0 && _resetClickCount < 50) {
                     _resetClickCount = 0;
                     if (confirm('칩을 10,000으로 리셋하시겠습니까?')) {

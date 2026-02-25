@@ -273,6 +273,7 @@
     <script src="js/core/sound-manager.js"></script>
     <script src="js/core/coin-shower.js"></script>
     <script src="js/core/level-manager.js"></script>
+    <script src="js/core/neon-particles.js"></script>
     <script src="js/games/slot-machine.js"></script>
     <script>
         // 페이테이블 토글
@@ -289,6 +290,7 @@
             SoundManager.init();
             CoinShower.init();
             LevelManager.init();
+            NeonParticles.init();
 
             ChipManager.onBalanceChange(() => {
                 document.getElementById('headerChips').textContent = ChipManager.formatBalance();

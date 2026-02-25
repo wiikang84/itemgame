@@ -49,7 +49,9 @@ const LadderGame = (() => {
     // const BALL_RADIUS = 13;
 
     const MAX_TRAIL = 10;
-    const CHAR_SIZE = 16;
+    /* v4.0 원본: const CHAR_SIZE = 16; → v5.0: let으로 변경하여 동적 SCALE 적용 */
+    let CHAR_SIZE = 16;
+    let SCALE = 1;  // v5.0: 모듈 레벨 SCALE (cW / 480)
 
     /* v3.0 색상 객체 (주석처리 보존)
     const C = {
@@ -142,6 +144,10 @@ const LadderGame = (() => {
         canvas.style.height = cH + 'px';
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // v5.0: SCALE 기반 CHAR_SIZE 동적 계산 (모바일 대응)
+        SCALE = cW / 480;
+        CHAR_SIZE = Math.round(16 * SCALE);
     }
 
     // ═══ 좌표 헬퍼 ═══
@@ -339,33 +345,48 @@ const LadderGame = (() => {
     }
     */
 
-    /** v4.0: 초록 체크무늬 자연 배경 */
-    function _clearCanvas() {
-        // 초록 체크무늬 바닥
+    /* v4.0 초록 체크무늬 자연 배경 (주석처리 보존)
+    function _clearCanvas_v40() {
         const tileSize = 30;
-        const light = '#7EC850';
-        const dark = '#5DAA3A';
+        const light = '#7EC850'; const dark = '#5DAA3A';
         for (let y = 0; y < cH; y += tileSize) {
             for (let x = 0; x < cW; x += tileSize) {
                 const isLight = ((Math.floor(x / tileSize) + Math.floor(y / tileSize)) % 2 === 0);
-                ctx.fillStyle = isLight ? light : dark;
-                ctx.fillRect(x, y, tileSize, tileSize);
+                ctx.fillStyle = isLight ? light : dark; ctx.fillRect(x, y, tileSize, tileSize);
             }
         }
+    }
+    */
 
-        // 상단 하늘 영역 (부드러운 그라디언트)
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, cH * 0.15);
-        skyGrad.addColorStop(0, 'rgba(135, 200, 255, 0.4)');
-        skyGrad.addColorStop(1, 'rgba(135, 200, 255, 0)');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, cW, cH * 0.15);
+    /** v5.0: 딥 다크 + 사이버 그리드 배경 */
+    function _clearCanvas() {
+        // 딥 다크 베이스
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, cW, cH);
 
-        // 하단 풀밭 느낌 (약간 어둡게)
-        const grassGrad = ctx.createLinearGradient(0, cH * 0.85, 0, cH);
-        grassGrad.addColorStop(0, 'rgba(40, 80, 20, 0)');
-        grassGrad.addColorStop(1, 'rgba(40, 80, 20, 0.3)');
-        ctx.fillStyle = grassGrad;
-        ctx.fillRect(0, cH * 0.85, cW, cH * 0.15);
+        // 사이버 그리드
+        const gridSize = 40;
+        ctx.strokeStyle = 'rgba(0, 255, 245, 0.04)';
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x < cW; x += gridSize) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cH); ctx.stroke();
+        }
+        for (let y = 0; y < cH; y += gridSize) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(cW, y); ctx.stroke();
+        }
+
+        // 네온 방사형 글로우
+        const glow1 = ctx.createRadialGradient(cW * 0.3, cH * 0.2, 0, cW * 0.3, cH * 0.2, cW * 0.5);
+        glow1.addColorStop(0, 'rgba(0, 255, 245, 0.06)');
+        glow1.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow1;
+        ctx.fillRect(0, 0, cW, cH);
+
+        const glow2 = ctx.createRadialGradient(cW * 0.7, cH * 0.8, 0, cW * 0.7, cH * 0.8, cW * 0.5);
+        glow2.addColorStop(0, 'rgba(255, 45, 149, 0.04)');
+        glow2.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow2;
+        ctx.fillRect(0, 0, cW, cH);
     }
 
     /* v3.0 _drawLadderV2 (2선 초록사다리) 주석처리 보존
@@ -381,34 +402,56 @@ const LadderGame = (() => {
     }
     */
 
-    /** v4.0: 나무 사다리 그리기 */
+    /* v4.0 나무 사다리 그리기 (주석처리 보존)
+    function _drawLadder_v40() {
+        const ty = _ty(), by = _by(); ctx.save();
+        for (let i = 0; i < LANES; i++) {
+            const x = _laneX(i);
+            const poleGrad = ctx.createLinearGradient(x - 5, 0, x + 5, 0);
+            poleGrad.addColorStop(0, '#8B6914'); poleGrad.addColorStop(0.5, '#D4AA3C');
+            poleGrad.addColorStop(1, '#8B6914');
+            ctx.fillStyle = poleGrad; ctx.fillRect(x - 4, ty - 5, 8, by - ty + 10);
+        }
+        // ... 나무 판자 가로선 ...
+    }
+    */
+
+    /** v5.0: 네온 사이버펑크 사다리 그리기 */
     function _drawLadder() {
         const ty = _ty(), by = _by();
+        SCALE = cW / 480;
+        const poleW = Math.max(2, Math.round(3 * SCALE));
 
         ctx.save();
 
-        // 4개 세로줄 (나무 기둥)
+        // 4개 세로줄 (시안 네온 글로잉 라인)
         for (let i = 0; i < LANES; i++) {
             const x = _laneX(i);
 
-            // 나무 기둥 그라디언트
-            const poleGrad = ctx.createLinearGradient(x - 5, 0, x + 5, 0);
-            poleGrad.addColorStop(0, '#8B6914');
-            poleGrad.addColorStop(0.3, '#C49A2C');
-            poleGrad.addColorStop(0.5, '#D4AA3C');
-            poleGrad.addColorStop(0.7, '#C49A2C');
-            poleGrad.addColorStop(1, '#8B6914');
+            // 외부 글로우
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = 'rgba(0, 255, 245, 0.5)';
+            ctx.strokeStyle = 'rgba(0, 255, 245, 0.3)';
+            ctx.lineWidth = poleW + 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(x, ty); ctx.lineTo(x, by); ctx.stroke();
 
-            ctx.fillStyle = poleGrad;
-            ctx.fillRect(x - 4, ty - 5, 8, by - ty + 10);
+            // 코어 라인
+            ctx.shadowBlur = 6;
+            ctx.strokeStyle = '#00fff5';
+            ctx.lineWidth = poleW;
+            ctx.beginPath(); ctx.moveTo(x, ty); ctx.lineTo(x, by); ctx.stroke();
 
-            // 기둥 아웃라인
-            ctx.strokeStyle = '#6B4F0E';
+            // 화이트 코어
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.lineWidth = 1;
-            ctx.strokeRect(x - 4, ty - 5, 8, by - ty + 10);
+            ctx.beginPath(); ctx.moveTo(x, ty); ctx.lineTo(x, by); ctx.stroke();
         }
 
-        // 가로선 (나무 판자) - 공개된 것만
+        ctx.shadowBlur = 0;
+
+        // 가로선 - 공개된 것만 (핑크/마젠타 네온 라인)
         if (currentRungs.length > 0) {
             for (const rung of currentRungs) {
                 const row = rung.row;
@@ -416,36 +459,40 @@ const LadderGame = (() => {
 
                 const lx = _laneX(rung.leftLane);
                 const rx = _laneX(rung.rightLane);
+                const rungH = Math.max(3, Math.round(3 * SCALE));
 
                 if (isRevealed) {
-                    // 공개된 가로선: 나무 판자 + 등장 글로우
+                    // 공개된 가로선: 핑크 네온 + 등장 글로우
                     const revealAge = Date.now() - (rungRevealTime[row] || 0);
-                    const glowIntensity = Math.max(0, 1 - revealAge / 600); // 600ms 페이드
+                    const glowIntensity = Math.max(0, 1 - revealAge / 600);
 
                     ctx.save();
-                    if (glowIntensity > 0) {
-                        // 등장 글로우: 골드빛 발광
-                        ctx.shadowBlur = 18 * glowIntensity;
-                        ctx.shadowColor = `rgba(255, 215, 0, ${glowIntensity})`;
-                    }
+                    ctx.lineCap = 'round';
 
-                    const rungGrad = ctx.createLinearGradient(0, rung.y - 4, 0, rung.y + 4);
-                    rungGrad.addColorStop(0, '#D4AA3C');
-                    rungGrad.addColorStop(0.5, '#E8C050');
-                    rungGrad.addColorStop(1, '#C49A2C');
+                    // 등장 글로우: 시안빛 발광
+                    ctx.shadowBlur = 15 + 10 * glowIntensity;
+                    ctx.shadowColor = `rgba(255, 45, 149, ${0.4 + glowIntensity * 0.6})`;
 
-                    ctx.fillStyle = rungGrad;
-                    _roundRect(lx - 2, rung.y - 4, rx - lx + 4, 8, 3);
-                    ctx.fill();
+                    // 외부 글로우
+                    ctx.strokeStyle = 'rgba(255, 45, 149, 0.3)';
+                    ctx.lineWidth = rungH + 4;
+                    ctx.beginPath(); ctx.moveTo(lx, rung.y); ctx.lineTo(rx, rung.y); ctx.stroke();
 
-                    ctx.strokeStyle = '#8B6914';
+                    // 코어 라인
+                    ctx.shadowBlur = 8;
+                    ctx.strokeStyle = '#ff2d95';
+                    ctx.lineWidth = rungH;
+                    ctx.beginPath(); ctx.moveTo(lx, rung.y); ctx.lineTo(rx, rung.y); ctx.stroke();
+
+                    // 화이트 코어
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
                     ctx.lineWidth = 1;
-                    _roundRect(lx - 2, rung.y - 4, rx - lx + 4, 8, 3);
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(lx, rung.y); ctx.lineTo(rx, rung.y); ctx.stroke();
+
                     ctx.restore();
                 } else {
                     // 숨겨진 가로선: 완전 숨김 (아무것도 그리지 않음)
-                    // v4.0 안개/구름 방식 제거 - 안개가 위치를 스포일러함
                     /* v4.0 안개 방식 (주석처리 보존)
                     const fogA = fogAlpha[row] !== undefined ? fogAlpha[row] : 1;
                     if (fogA > 0) {
@@ -466,38 +513,40 @@ const LadderGame = (() => {
 
         ctx.restore();
 
-        // 도착지 (상단) - 원형 배지 + 아이콘
+        // v5.0: 도착지 (상단) - 글래스모피즘 원형 배지 + 네온 글로우
+        // SCALE은 이미 위에서 선언됨 (line 421)
+        const badgeR = Math.round(16 * SCALE);
         for (let i = 0; i < LANES; i++) {
             const x = _laneX(i);
             const y = ty - 20;
             const dest = DESTINATIONS[i];
 
-            // 배경 원
+            // 네온 글로우 배경
             ctx.save();
-            ctx.shadowBlur = 8;
+            ctx.shadowBlur = 12;
             ctx.shadowColor = dest.color;
-            ctx.fillStyle = dest.color;
+            ctx.fillStyle = 'rgba(5, 5, 16, 0.7)';
             ctx.beginPath();
-            ctx.arc(x, y, 16, 0, Math.PI * 2);
+            ctx.arc(x, y, badgeR, 0, Math.PI * 2);
             ctx.fill();
 
-            // 흰 테두리
-            ctx.strokeStyle = '#fff';
+            // 네온 테두리
+            ctx.strokeStyle = dest.color;
             ctx.lineWidth = 2;
             ctx.stroke();
             ctx.restore();
 
             // 아이콘
-            ctx.font = `${Math.max(14, cW * 0.035)}px sans-serif`;
+            ctx.font = `${Math.max(14, Math.round(cW * 0.035))}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(dest.icon, x, y);
 
             // 번호 라벨
-            ctx.font = `bold ${Math.max(10, cW * 0.025)}px 'DungGeunMo', sans-serif`;
-            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${Math.max(10, Math.round(cW * 0.025))}px 'Inter', sans-serif`;
+            ctx.fillStyle = 'rgba(0, 255, 245, 0.7)';
             ctx.textBaseline = 'top';
-            ctx.fillText(dest.label, x, y + 19);
+            ctx.fillText(dest.label, x, y + badgeR + 3);
         }
     }
 

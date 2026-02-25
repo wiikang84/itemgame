@@ -517,3 +517,22 @@ python -m http.server 8888
   - 공개 직후 `shadowBlur 18` + 골드 `shadowColor` → 시간 경과에 따라 자연 소멸
 - **v4.0 안개 렌더링 코드 주석처리 보존**
 - 변경 파일: js/games/ladder.js, CLAUDE.md
+
+### 2026-02-25 | 네온 사이버펑크 프리미엄 리디자인 (전체 5게임 + 로비)
+
+- **디자인 시스템 전면 교체** (골드 카지노 → 네온 사이버펑크)
+  - 컬러: 딥 다크(#050510) + 시안(#00fff5) + 핑크(#ff2d95) + 그린(#00ff41) + 퍼플(#b300ff)
+  - 효과: 글래스모피즘, 네온 글로우, 스캔라인, 글리치 텍스트, 사이버 그리드 배경
+  - 폰트: Orbitron (미래적 타이틀)
+- **common.css**: CSS 변수 전면 교체, body 사이버 그리드 + 스캔라인 오버레이
+- **index.html 로비**: Orbitron 글리치 타이틀, 글래스모피즘 게임 카드, 네온 보더 애니메이션
+- **slot.css**: 스포트라이트/LED/JACKPOT/스핀버튼 골드→시안+핑크
+- **blackjack.css**: 테이블 보더/타이틀/카드뒷면 골드→시안
+- **roulette.css**: 테이블 외곽/SPIN 버튼 골드→시안+핑크
+- **sea-story.css**: --casino-gold→시안, LED 시안+핑크
+- **ladder.css**: 전면 교체 (Orbitron, 글래스모피즘, 시안 네온)
+- **js/core/neon-particles.js** (신규): Canvas 기반 30개 네온 파티클 시스템 (4색)
+- **js/core/coin-shower.js**: 골드 코인 → 시안/핑크/퍼플/그린 네온 코인
+- **js/games/ladder.js**: Canvas 배경 사이버 그리드, 시안 글로잉 기둥, 핑크 네온 가로선, 모바일 SCALE 동적 계산
+- **5개 HTML 파일**: neon-particles.js 스크립트 + NeonParticles.init() 추가
+- 변경 파일: css/common.css, css/slot.css, css/blackjack.css, css/roulette.css, css/sea-story.css, css/ladder.css, index.html, slot.html, blackjack.html, roulette.html, sea-story.html, ladder.html, js/core/neon-particles.js(신규), js/core/coin-shower.js, js/games/ladder.js, CLAUDE.md

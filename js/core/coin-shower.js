@@ -13,10 +13,19 @@ const CoinShower = (() => {
     let animationId = null;
     let isActive = false;
 
+    /* v2.0 골드 코인 (주석처리 보존)
     const COIN_COLORS = [
         { face: '#ffd700', edge: '#b8960f', highlight: '#fff5b0' },
         { face: '#ffaa00', edge: '#996600', highlight: '#ffdd66' },
         { face: '#ff8800', edge: '#885500', highlight: '#ffbb44' },
+    ];
+    */
+    // v3.0: 네온 사이버펑크 코인 (시안/핑크/퍼플/그린)
+    const COIN_COLORS = [
+        { face: '#00fff5', edge: '#00b8b0', highlight: '#aafff9' },
+        { face: '#ff2d95', edge: '#cc2477', highlight: '#ff88c4' },
+        { face: '#b300ff', edge: '#8800cc', highlight: '#d466ff' },
+        { face: '#00ff41', edge: '#00cc33', highlight: '#88ffa8' },
     ];
 
     /**
