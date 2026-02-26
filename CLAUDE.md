@@ -35,26 +35,36 @@ itemgame/
 ├── roulette.html           # 룰렛
 ├── sea-story.html          # 바다이야기 슬롯
 ├── ladder.html             # 사다리 게임 "NEON LADDER"
+├── baccarat.html           # 바카라
+├── poker.html              # 세븐포커
+├── gostop.html             # 맞고 (고스톱)
 ├── css/
 │   ├── common.css          # 공통 다크 카지노 테마 + 레벨/XP UI
 │   ├── slot.css            # 슬롯 전용 (v5.1 프리미엄 비주얼)
 │   ├── blackjack.css       # 블랙잭 전용
 │   ├── roulette.css        # 룰렛 전용
 │   ├── sea-story.css       # 바다이야기 전용
-│   └── ladder.css          # 사다리 전용
+│   ├── ladder.css          # 사다리 전용
+│   ├── baccarat.css        # 바카라 전용
+│   ├── poker.css           # 세븐포커 전용
+│   └── gostop.css          # 맞고 전용
 ├── js/
 │   ├── core/
 │   │   ├── firebase-config.js  # Firebase 설정 + Firestore 헬퍼
 │   │   ├── chip-manager.js     # 칩 잔액 관리 (Firestore 동기화)
 │   │   ├── sound-manager.js    # Web Audio API 사운드 매니저
 │   │   ├── coin-shower.js      # Canvas 코인 파티클 (3D 회전)
-│   │   └── level-manager.js    # XP/레벨 시스템
+│   │   ├── level-manager.js    # XP/레벨 시스템
+│   │   └── neon-particles.js   # Canvas 네온 파티클 시스템
 │   └── games/
 │       ├── slot-machine.js     # 슬롯머신 로직 v3.0
 │       ├── blackjack.js        # 블랙잭 로직
 │       ├── roulette.js         # 룰렛 로직
-│       ├── sea-story.js       # 바다이야기 로직
-│       └── ladder.js         # 사다리 게임 로직
+│       ├── sea-story.js        # 바다이야기 로직
+│       ├── ladder.js           # 사다리 게임 로직
+│       ├── baccarat.js         # 바카라 로직
+│       ├── poker.js            # 세븐포커 로직
+│       └── gostop.js           # 맞고 로직
 ├── firestore.rules         # Firestore 보안 규칙
 ├── CLAUDE.md
 └── .gitignore
@@ -536,3 +546,23 @@ python -m http.server 8888
 - **js/games/ladder.js**: Canvas 배경 사이버 그리드, 시안 글로잉 기둥, 핑크 네온 가로선, 모바일 SCALE 동적 계산
 - **5개 HTML 파일**: neon-particles.js 스크립트 + NeonParticles.init() 추가
 - 변경 파일: css/common.css, css/slot.css, css/blackjack.css, css/roulette.css, css/sea-story.css, css/ladder.css, index.html, slot.html, blackjack.html, roulette.html, sea-story.html, ladder.html, js/core/neon-particles.js(신규), js/core/coin-shower.js, js/games/ladder.js, CLAUDE.md
+
+### 2026-02-26 | 바카라 + 세븐포커 + 맞고(고스톱) 3종 게임 신규 추가
+
+- **바카라 v1.0 신규 추가** (3개 파일)
+  - `baccarat.html` - 바카라 게임 페이지
+  - `css/baccarat.css` - 바카라 테이블 스타일
+  - `js/games/baccarat.js` - 바카라 게임 엔진 (플레이어/뱅커/타이, 3rd카드 룰, 사이드벳, 로드맵)
+  - API 수정: removeChips→deductChips, playBet→playChipPlace
+- **세븐포커 v1.0 신규 추가** (3개 파일)
+  - `poker.html` - 세븐포커 게임 페이지
+  - `css/poker.css` - 타원형 포커 테이블, 4인석 배치
+  - `js/games/poker.js` - 7카드 스터드 엔진 (AI 3명 대전, 핸드 평가 C(7,5)=21조합, 베팅 라운드)
+  - 핸드 평가 수정: _evaluatePartial() 함수로 5장 미만 카드 정확 평가
+- **맞고(고스톱) v1.0 신규 추가** (3개 파일)
+  - `gostop.html` - 맞고 게임 페이지
+  - `css/gostop.css` - 화투패 스타일, 진한 녹색 보드
+  - `js/games/gostop.js` - 맞고 엔진 (48장 화투, AI 1명 대전, 광/띠/열끗/피 점수, 고/스톱 시스템)
+- **로비(index.html)**: 게임 카드 3종 추가, 7 GAMES → 8 GAMES
+- **파일 구조 업데이트**: CLAUDE.md에 신규 9개 파일 반영
+- 변경 파일: baccarat.html(신규), css/baccarat.css(신규), js/games/baccarat.js(신규), poker.html(신규), css/poker.css(신규), js/games/poker.js(신규), gostop.html(신규), css/gostop.css(신규), js/games/gostop.js(신규), index.html, CLAUDE.md

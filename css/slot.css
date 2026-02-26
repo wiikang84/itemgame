@@ -1,39 +1,42 @@
 /* ============================================
-   LUCKY JACKPOT SLOT MACHINE v6.0
-   "Neon Cyberpunk" 테마 (v5.1 → v6.0)
-   골드/레드 → 시안/핑크 네온 전환
+   LUCKY JACKPOT SLOT MACHINE v7.0
+   "Premium Gold Casino" 테마 (v6.0 → v7.0)
+   네온 사이버펑크 → 프리미엄 골드 카지노 전환
    ============================================ */
 
-/* ═══ 카지노 색상 변수 (v6.0 네온 사이버펑크 업그레이드) ═══ */
+/* ═══ 카지노 색상 변수 (v7.0 프리미엄 골드 카지노) ═══ */
+/* v6.0 네온 사이버펑크 원본:
+   --casino-black: #050510; --casino-dark: #111118; --casino-panel: #1a1a1a;
+   --casino-gold: #00fff5; --casino-gold-light: #66fffa; --casino-gold-dim: #00b8b0;
+   --casino-green: #00ff41; --casino-green-dim: #00cc33;
+   --casino-led-amber: #00fff5; --casino-text: #f0f0e6; --casino-text-muted: #888;
+   --casino-separator: rgba(255,255,255,0.08);
+   --chrome-gradient: 다크 메탈릭 사이버펑크; --gold-gradient: 시안; --glow-gold: 시안 글로우;
+   --glow-green: 네온 그린 글로우; */
 :root {
-    /* v4.0 원본: --casino-black: #0a0a0a; → v5.0: 더 깊은 블랙 */
-    --casino-black: #050510;
-    --casino-dark: #111118;
-    --casino-panel: #1a1a1a;
-    /* v4.0 원본: --casino-gold: #d4af37; → v5.0: #ffd700 → v6.0: 시안 네온 */ /* v2.0→v3.0: gold→cyan */
-    --casino-gold: #00fff5;
-    --casino-gold-light: #66fffa;
-    --casino-gold-dim: #00b8b0;
+    --casino-black: #08080f;
+    --casino-dark: #0e0e18;
+    --casino-panel: #141422;
+    --casino-gold: #d4a843;
+    --casino-gold-light: #f0d078;
+    --casino-gold-dim: #a07830;
     --casino-red: #dc2626;
     --casino-red-dark: #991b1b;
     --casino-red-bright: #ef4444;
-    --casino-green: #00ff41;
-    --casino-green-dim: #00cc33;
-    /* v4.0 원본: --casino-chrome-light: #e0e0e0; → v5.0: 더 밝은 크롬 */
+    --casino-green: #28b84e;
+    --casino-green-dim: #1a8a3a;
     --casino-chrome-light: #f0f0f0;
     --casino-chrome-mid: #999;
-    /* v4.0 원본: --casino-chrome-dark: #555; → v5.0: 더 어두운 대비 */
     --casino-chrome-dark: #222;
-    --casino-led-amber: #00fff5; /* v2.0→v3.0: gold→cyan */
-    --casino-text: #f0f0e6;
-    --casino-text-muted: #888;
-    --casino-separator: rgba(255,255,255,0.08);
-    /* v5.0 원본: 밝은 크롬 → v6.0: 다크 메탈릭 사이버펑크 */ /* v2.0→v3.0: gold→cyan */
-    --chrome-gradient: linear-gradient(180deg, #1a1a2e 0%, #16213e 10%, #1a1a2e 30%, #0f3460 50%, #1a1a2e 70%, #16213e 90%, #1a1a2e 100%);
-    --gold-gradient: linear-gradient(180deg, #66fffa 0%, #00fff5 40%, #00b8b0 100%); /* v2.0→v3.0: gold→cyan */
-    --glow-gold: 0 0 10px rgba(0,255,245,0.5), 0 0 20px rgba(0,255,245,0.3); /* v2.0→v3.0: gold→cyan */
+    --casino-led-amber: #f0d078;
+    --casino-text: #e8e0d0;
+    --casino-text-muted: #9a9080;
+    --casino-separator: rgba(212,168,67,0.08);
+    --chrome-gradient: linear-gradient(180deg, #e8e0d0 0%, #c0b8a8 10%, #a09888 30%, #d4c8b0 50%, #a09888 70%, #c0b8a8 90%, #e8e0d0 100%);
+    --gold-gradient: linear-gradient(180deg, #f0d078 0%, #d4a843 40%, #a07830 100%);
+    --glow-gold: 0 0 10px rgba(212,168,67,0.5), 0 0 20px rgba(212,168,67,0.3);
     --glow-red: 0 0 15px rgba(220,38,38,0.5), 0 0 30px rgba(220,38,38,0.25);
-    --glow-green: 0 0 7px rgba(0,255,65,0.5), 0 0 15px rgba(0,255,65,0.2);
+    --glow-green: 0 0 7px rgba(40,184,78,0.5), 0 0 15px rgba(40,184,78,0.2);
 }
 
 /* ═══ 페이지 배경 (v6.0: 시안+핑크 스포트라이트) ═══ */

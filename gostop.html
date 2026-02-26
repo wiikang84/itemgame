@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맞고 (고스톱) - ItemGame</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/gostop.css">
+</head>
+<body class="gostop-page">
+    <!-- 헤더 -->
+    <header class="header">
+        <a href="index.html" class="header-logo">ITEM<span>GAME</span></a>
+        <div class="header-center">
+            <div class="header-chips">
+                <div class="chip-icon">$</div>
+                <div class="chip-balance" id="headerChips">0</div>
+            </div>
+            <div class="level-badge">
+                <span class="level-text" id="levelDisplay">Lv.1</span>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+                <span class="xp-text" id="xpText">0/500</span>
+            </div>
+        </div>
+        <nav class="header-nav">
+            <a href="index.html" class="nav-btn">로비</a>
+            <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container gostop-container">
+        <!-- 베팅 & 컨트롤 -->
+        <div class="gs-controls">
+            <button class="gs-bet-btn active" data-value="100" onclick="GoStopGame.setBet(100)">100</button>
+            <button class="gs-bet-btn" data-value="200" onclick="GoStopGame.setBet(200)">200</button>
+            <button class="gs-bet-btn" data-value="500" onclick="GoStopGame.setBet(500)">500</button>
+            <button class="gs-bet-btn" data-value="1000" onclick="GoStopGame.setBet(1000)">1,000</button>
+            <button class="gs-new-game-btn" id="gostopNewGameBtn" onclick="GoStopGame.newGame()">NEW GAME</button>
+        </div>
+
+        <!-- 통계 -->
+        <div class="gs-stats">
+            <div class="gs-stat-item"><span class="gs-stat-value" id="gsStat1">0</span><span class="gs-stat-label">게임</span></div>
+            <div class="gs-stat-item"><span class="gs-stat-value" id="gsStat2">0</span><span class="gs-stat-label">승리</span></div>
+            <div class="gs-stat-item"><span class="gs-stat-value" id="gsStat3">-</span><span class="gs-stat-label">승률</span></div>
+        </div>
+
+        <!-- 게임 보드 -->
+        <div class="gostop-board">
+            <!-- 상태 바 -->
+            <div class="gs-status-bar">
+                <span class="gs-turn" id="turnIndicator"></span>
+                <div class="gs-scores-bar">
+                    <div class="gs-score-item">나: <span class="score-val" id="playerScore">0점</span><span class="score-detail" id="playerDetail"></span></div>
+                    <div class="gs-score-item">AI: <span class="score-val" id="aiScore">0점</span><span class="score-detail" id="aiDetail"></span></div>
+                </div>
+                <span class="gs-draw-count">남은패: <span id="drawCount">0</span></span>
+            </div>
+
+            <!-- 결과 -->
+            <div class="gostop-result" id="gostopResult"></div>
+
+            <!-- AI 패 -->
+            <div class="gs-ai-area">
+                <div class="gs-area-label">AI 패</div>
+                <div id="aiHand"></div>
+            </div>
+
+            <!-- 바닥패 -->
+            <div class="gs-field-area">
+                <div class="gs-area-label">바닥패</div>
+                <div id="fieldCards"></div>
+            </div>
+
+            <!-- 내 패 -->
+            <div class="gs-player-area">
+                <div class="gs-area-label">내 패</div>
+                <div id="playerHand"></div>
+            </div>
+
+            <!-- 고/스톱 패널 -->
+            <div class="gs-go-panel" id="goStopPanel">
+                <button class="gs-go-btn go" id="goBtn" onclick="GoStopGame.goDecision('go')">고 (GO)</button>
+                <button class="gs-go-btn stop" id="stopBtn" onclick="GoStopGame.goDecision('stop')">스톱 (STOP)</button>
+            </div>
+
+            <!-- 먹은 패 -->
+            <div class="gs-captures">
+                <!-- 내가 먹은 패 -->
+                <div class="gs-capture-section">
+                    <div class="gs-capture-label">내 먹은패</div>
+                    <div class="gs-capture-row" id="playerGwang"></div>
+                    <div class="gs-capture-row" id="playerTti"></div>
+                    <div class="gs-capture-row" id="playerYeol"></div>
+                    <div class="gs-capture-row" id="playerPi"></div>
+                </div>
+                <!-- AI 먹은 패 -->
+                <div class="gs-capture-section">
+                    <div class="gs-capture-label">AI 먹은패</div>
+                    <div class="gs-capture-row" id="aiGwang"></div>
+                    <div class="gs-capture-row" id="aiTti"></div>
+                    <div class="gs-capture-row" id="aiYeol"></div>
+                    <div class="gs-capture-row" id="aiPi"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 규칙 -->
+        <div class="gs-rules">
+            <h3>게임 규칙 (맞고)</h3>
+            <ul>
+                <li><strong>플레이어 2명</strong> (나 vs AI)으로 진행</li>
+                <li>48장 화투패를 사용, 각 7장씩 받고 바닥에 6장 깔기</li>
+                <li>같은 월의 패를 내서 <strong>바닥패와 매칭</strong>하여 가져오기</li>
+                <li>매칭 후 <strong>뒷패에서 1장</strong> 뒤집어 추가 매칭</li>
+                <li><strong>광</strong> 3장=3점, 4장=4점, 5장=15점 (비광 포함 시 2점)</li>
+                <li><strong>홍단/청단/초단</strong> 각 3장 모으면 3점</li>
+                <li><strong>열끗</strong> 5장부터 1점씩, <strong>피</strong> 10장부터 1점씩</li>
+                <li>3점 이상 달성 시 <strong>고(GO)</strong> 또는 <strong>스톱(STOP)</strong> 선택</li>
+                <li>고를 외치면 <strong>배당 x2, x3...</strong> 올라감 (리스크 증가)</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 코인 샤워 캔버스 -->
+    <canvas id="coinShowerCanvas"></canvas>
+
+    <!-- 토스트 컨테이너 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 레벨업 오버레이 -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title" id="levelupTitle">LEVEL UP!</div>
+            <div class="levelup-bonus" id="levelupBonus">+0 칩</div>
+        </div>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="index.html" class="bottom-nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">홈</span>
+            </a>
+            <a href="gostop.html" class="bottom-nav-item active">
+                <span class="nav-icon">🎴</span>
+                <span class="nav-label">맞고</span>
+            </a>
+            <button class="bottom-nav-item" onclick="SoundManager.toggleMute()">
+                <span class="nav-icon">🔊</span>
+                <span class="nav-label">사운드</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Core -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script src="js/core/sound-manager.js"></script>
+    <script src="js/core/coin-shower.js"></script>
+    <script src="js/core/level-manager.js"></script>
+    <script src="js/core/neon-particles.js"></script>
+
+    <!-- Game -->
+    <script src="js/games/gostop.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ChipManager.init();
+            SoundManager.init();
+            CoinShower.init();
+            LevelManager.init();
+            NeonParticles.init();
+            GoStopGame.init();
+
+            document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            ChipManager.onBalanceChange(() => {
+                document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            });
+
+            LevelManager.onEvent((event) => {
+                if (event.type === 'levelup') {
+                    document.getElementById('levelupTitle').textContent = `LEVEL ${event.level}!`;
+                    document.getElementById('levelupBonus').textContent = `+${event.bonus.toLocaleString()} 보너스 칩`;
+                    document.getElementById('levelupOverlay').classList.add('active');
+                    CoinShower.start(2000, 'mega');
+                    setTimeout(() => document.getElementById('levelupOverlay').classList.remove('active'), 3000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

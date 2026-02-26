@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════
-   LadderGame v5.0 - 네온 사이버펑크 CSS
-   v4.0 귀여운 컬러풀 → v5.0 네온 사이버펑크 전면 교체
+   LadderGame v6.0 - 프리미엄 다크 카지노 CSS
+   v5.0 네온 사이버펑크 → v6.0 프리미엄 다크 카지노 전면 교체
    ═══════════════════════════════════ */
 
 /* === Google Fonts === */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Cinzel:wght@700;800;900&display=swap');
 
 /* v4.0 귀여운 자연 폰트 (주석처리 보존)
 @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
@@ -19,8 +19,8 @@
 /* === 배경: 딥 다크 + 스캔라인 === */
 /* v4.0 원본: background: linear-gradient(180deg, #87CEAB 0%, #5DAA3A 30%, #4A8E2D 100%); */
 body.ladder-page {
-    background: #050510;
-    font-family: 'Orbitron', 'Inter', sans-serif;
+    background: #08080f;
+    font-family: 'Inter', sans-serif;
 }
 
 /* 스캔라인 오버레이 */
@@ -33,8 +33,8 @@ body.ladder-page::after {
         0deg,
         transparent 0px,
         transparent 2px,
-        rgba(0, 255, 245, 0.015) 2px,
-        rgba(0, 255, 245, 0.015) 4px
+        rgba(212, 168, 67, 0.008) 2px,
+        rgba(212, 168, 67, 0.008) 4px
     );
     pointer-events: none;
     z-index: 9999;
@@ -47,14 +47,14 @@ body.ladder-page::before {
     top: 0; left: 0;
     width: 100%; height: 100%;
     background:
-        radial-gradient(ellipse at 30% 20%, rgba(0, 255, 245, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 80%, rgba(255, 45, 149, 0.05) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(179, 0, 255, 0.04) 0%, transparent 60%);
+        radial-gradient(ellipse at 30% 20%, rgba(212, 168, 67, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(196, 30, 58, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(112, 64, 176, 0.03) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
 }
 
-/* === 게임 타이틀: Orbitron + 시안 글로우 === */
+/* === 게임 타이틀: Cinzel + 골드 글로우 === */
 .ladder-title {
     text-align: center;
     padding: 12px 0 4px;
@@ -62,12 +62,12 @@ body.ladder-page::before {
 
 /* v4.0 원본: font-family: 'Jua', color: #FFD700, text-shadow: 2px 2px 0 #C49A2C */
 .ladder-title h1 {
-    font-family: 'Orbitron', sans-serif;
+    font-family: var(--font-display, 'Cinzel', serif);
     font-size: 2.2rem;
     font-weight: 900;
     letter-spacing: 8px;
-    color: #00fff5;
-    text-shadow: 0 0 15px rgba(0, 255, 245, 0.6), 0 0 30px rgba(0, 255, 245, 0.3);
+    color: #d4a843;
+    text-shadow: 0 0 15px rgba(212, 168, 67, 0.6), 0 0 30px rgba(212, 168, 67, 0.3);
     margin: 0;
 }
 
@@ -75,16 +75,16 @@ body.ladder-page::before {
 .ladder-title .subtitle {
     font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
-    color: rgba(0, 255, 245, 0.6);
+    color: rgba(212, 168, 67, 0.6);
     letter-spacing: 2px;
     margin-top: 4px;
-    text-shadow: 0 0 8px rgba(0, 255, 245, 0.2);
+    text-shadow: 0 0 8px rgba(212, 168, 67, 0.2);
 }
 
 .ladder-title .round-info {
     font-family: 'Inter', sans-serif;
     font-size: 0.75rem;
-    color: rgba(255, 45, 149, 0.6);
+    color: rgba(196, 30, 58, 0.5);
     margin-top: 2px;
 }
 
@@ -114,11 +114,11 @@ body.ladder-page::before {
     color: #fff;
     flex-shrink: 0;
     text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(0, 255, 245, 0.2);
-    background: rgba(0, 255, 245, 0.05);
+    border: 1px solid rgba(212, 168, 67, 0.2);
+    background: rgba(212, 168, 67, 0.05);
 }
 
-/* === 캔버스 컨테이너: 시안 네온 테두리 === */
+/* === 캔버스 컨테이너: 골드 테두리 === */
 .ladder-canvas-wrap {
     display: flex;
     justify-content: center;
@@ -126,18 +126,18 @@ body.ladder-page::before {
     margin-bottom: 8px;
 }
 
-/* v4.0 원본: border: 3px solid #8B6914 → 시안 네온 */
+/* v4.0 원본: border: 3px solid #8B6914 → 골드 */
 .ladder-canvas-wrap canvas {
     border-radius: 12px;
-    border: 2px solid rgba(0, 255, 245, 0.4);
-    box-shadow: 0 0 20px rgba(0, 255, 245, 0.1), 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(212, 168, 67, 0.25);
+    box-shadow: 0 0 20px rgba(212, 168, 67, 0.08), 0 4px 20px rgba(0, 0, 0, 0.3);
     max-width: 100%;
 }
 
 /* === 결과 === */
 .ladder-result {
     text-align: center;
-    font-family: 'Orbitron', sans-serif;
+    font-family: var(--font-display, 'Cinzel', serif);
     font-size: 1.6rem;
     font-weight: 800;
     min-height: 44px;
@@ -146,16 +146,16 @@ body.ladder-page::before {
     transition: all 0.3s;
 }
 
-/* v4.0 원본: color: #FFD700 → 시안 */
+/* v4.0 원본: color: #FFD700 → 골드 */
 .result-win {
-    color: #00fff5;
-    text-shadow: 0 0 15px rgba(0, 255, 245, 0.6), 0 0 30px rgba(0, 255, 245, 0.3);
+    color: #d4a843;
+    text-shadow: 0 0 15px rgba(212, 168, 67, 0.6), 0 0 30px rgba(212, 168, 67, 0.3);
     animation: resultPulse 0.6s ease;
 }
 
 .result-lose {
-    color: #ff2d95;
-    text-shadow: 0 0 10px rgba(255, 45, 149, 0.4);
+    color: #c41e3a;
+    text-shadow: 0 0 10px rgba(196, 30, 58, 0.4);
 }
 
 @keyframes resultPulse {
@@ -170,9 +170,9 @@ body.ladder-page::before {
 }
 
 .section-title {
-    font-family: 'Orbitron', 'Inter', sans-serif;
+    font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.75rem;
-    color: rgba(0, 255, 245, 0.7);
+    color: rgba(212, 168, 67, 0.7);
     margin-bottom: 6px;
     text-align: center;
     letter-spacing: 2px;
@@ -192,16 +192,16 @@ body.ladder-page::before {
     gap: 4px;
     padding: 10px 6px;
     border-radius: 12px;
-    border: 2px solid rgba(0, 255, 245, 0.15);
-    background: rgba(5, 5, 16, 0.6);
+    border: 2px solid rgba(212, 168, 67, 0.15);
+    background: rgba(8, 8, 15, 0.6);
     backdrop-filter: blur(8px);
     cursor: pointer;
     transition: all 0.25s;
 }
 
 .char-btn:hover {
-    background: rgba(0, 255, 245, 0.08);
-    border-color: rgba(0, 255, 245, 0.3);
+    background: rgba(212, 168, 67, 0.08);
+    border-color: rgba(212, 168, 67, 0.3);
     transform: translateY(-2px);
 }
 
@@ -216,36 +216,36 @@ body.ladder-page::before {
 .char-name {
     font-family: 'Inter', sans-serif;
     font-size: 0.7rem;
-    color: rgba(0, 255, 245, 0.7);
+    color: rgba(212, 168, 67, 0.7);
     font-weight: 700;
 }
 
-/* 캐릭터별 선택 색상 (네온) */
+/* 캐릭터별 선택 색상 (프리미엄 다크) */
 .char-cat.active {
-    border-color: #ff2d95;
-    background: rgba(255, 45, 149, 0.15);
-    box-shadow: 0 0 15px rgba(255, 45, 149, 0.3);
+    border-color: #c41e3a;
+    background: rgba(196, 30, 58, 0.15);
+    box-shadow: 0 0 15px rgba(196, 30, 58, 0.3);
     animation: charBounce 0.4s ease;
 }
 
 .char-duck.active {
-    border-color: #00fff5;
-    background: rgba(0, 255, 245, 0.15);
-    box-shadow: 0 0 15px rgba(0, 255, 245, 0.3);
+    border-color: #d4a843;
+    background: rgba(212, 168, 67, 0.15);
+    box-shadow: 0 0 15px rgba(212, 168, 67, 0.3);
     animation: charBounce 0.4s ease;
 }
 
 .char-penguin.active {
-    border-color: #b300ff;
-    background: rgba(179, 0, 255, 0.15);
-    box-shadow: 0 0 15px rgba(179, 0, 255, 0.3);
+    border-color: #7040b0;
+    background: rgba(112, 64, 176, 0.15);
+    box-shadow: 0 0 15px rgba(112, 64, 176, 0.3);
     animation: charBounce 0.4s ease;
 }
 
 .char-sheep.active {
-    border-color: #00ff41;
-    background: rgba(0, 255, 65, 0.15);
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+    border-color: #28b84e;
+    background: rgba(40, 184, 78, 0.15);
+    box-shadow: 0 0 15px rgba(40, 184, 78, 0.3);
     animation: charBounce 0.4s ease;
 }
 
@@ -268,10 +268,10 @@ body.ladder-page::before {
     width: 52px;
     height: 34px;
     border-radius: 8px;
-    border: 1px solid rgba(0, 255, 245, 0.3);
-    background: rgba(0, 255, 245, 0.05);
-    color: #00fff5;
-    font-family: 'Orbitron', sans-serif;
+    border: 1px solid rgba(212, 168, 67, 0.3);
+    background: rgba(212, 168, 67, 0.05);
+    color: #d4a843;
+    font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.65rem;
     font-weight: 700;
     cursor: pointer;
@@ -279,16 +279,16 @@ body.ladder-page::before {
 }
 
 .chip-select-btn:hover {
-    border-color: rgba(0, 255, 245, 0.6);
-    background: rgba(0, 255, 245, 0.1);
+    border-color: rgba(212, 168, 67, 0.6);
+    background: rgba(212, 168, 67, 0.1);
 }
 
 /* v4.0 원본: background: linear-gradient(135deg, #FFD700, #E6B800) */
 .chip-select-btn.active {
-    background: rgba(0, 255, 245, 0.2);
-    color: #00fff5;
-    border-color: #00fff5;
-    box-shadow: 0 0 12px rgba(0, 255, 245, 0.3);
+    background: rgba(212, 168, 67, 0.2);
+    color: #d4a843;
+    border-color: #d4a843;
+    box-shadow: 0 0 12px rgba(212, 168, 67, 0.3);
     transform: scale(1.08);
 }
 
@@ -304,7 +304,7 @@ body.ladder-page::before {
 .bet-section-title {
     font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
-    color: rgba(0, 255, 245, 0.7);
+    color: rgba(212, 168, 67, 0.7);
     margin-bottom: 6px;
     text-align: center;
     display: flex;
@@ -314,13 +314,13 @@ body.ladder-page::before {
 }
 
 .payout-badge {
-    background: rgba(0, 255, 245, 0.1);
-    color: #00fff5;
+    background: rgba(212, 168, 67, 0.1);
+    color: #d4a843;
     padding: 2px 8px;
     border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 700;
-    border: 1px solid rgba(0, 255, 245, 0.3);
+    border: 1px solid rgba(212, 168, 67, 0.3);
 }
 
 .dest-row {
@@ -337,16 +337,16 @@ body.ladder-page::before {
     gap: 3px;
     padding: 10px 4px;
     border-radius: 10px;
-    border: 1px solid rgba(0, 255, 245, 0.15);
-    background: rgba(5, 5, 16, 0.6);
+    border: 1px solid rgba(212, 168, 67, 0.15);
+    background: rgba(8, 8, 15, 0.6);
     backdrop-filter: blur(4px);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .dest-btn:hover {
-    background: rgba(0, 255, 245, 0.08);
-    border-color: rgba(0, 255, 245, 0.3);
+    background: rgba(212, 168, 67, 0.08);
+    border-color: rgba(212, 168, 67, 0.3);
     transform: translateY(-2px);
 }
 
@@ -365,49 +365,49 @@ body.ladder-page::before {
     font-weight: 700;
 }
 
-/* 도착지별 색상 (네온) */
+/* 도착지별 색상 (프리미엄 다크) */
 .dest-0 {
-    border-color: rgba(255, 45, 149, 0.3);
-    background: rgba(255, 45, 149, 0.08);
+    border-color: rgba(196, 30, 58, 0.3);
+    background: rgba(196, 30, 58, 0.08);
 }
 .dest-0:hover {
-    border-color: rgba(255, 45, 149, 0.6);
-    box-shadow: 0 0 12px rgba(255, 45, 149, 0.2);
+    border-color: rgba(196, 30, 58, 0.6);
+    box-shadow: 0 0 12px rgba(196, 30, 58, 0.2);
 }
 
 .dest-1 {
-    border-color: rgba(0, 255, 245, 0.3);
-    background: rgba(0, 255, 245, 0.08);
+    border-color: rgba(212, 168, 67, 0.3);
+    background: rgba(212, 168, 67, 0.08);
 }
 .dest-1:hover {
-    border-color: rgba(0, 255, 245, 0.6);
-    box-shadow: 0 0 12px rgba(0, 255, 245, 0.2);
+    border-color: rgba(212, 168, 67, 0.6);
+    box-shadow: 0 0 12px rgba(212, 168, 67, 0.2);
 }
 
 .dest-2 {
-    border-color: rgba(179, 0, 255, 0.3);
-    background: rgba(179, 0, 255, 0.08);
+    border-color: rgba(112, 64, 176, 0.3);
+    background: rgba(112, 64, 176, 0.08);
 }
 .dest-2:hover {
-    border-color: rgba(179, 0, 255, 0.6);
-    box-shadow: 0 0 12px rgba(179, 0, 255, 0.2);
+    border-color: rgba(112, 64, 176, 0.6);
+    box-shadow: 0 0 12px rgba(112, 64, 176, 0.2);
 }
 
 .dest-3 {
-    border-color: rgba(0, 255, 65, 0.3);
-    background: rgba(0, 255, 65, 0.08);
+    border-color: rgba(40, 184, 78, 0.3);
+    background: rgba(40, 184, 78, 0.08);
 }
 .dest-3:hover {
-    border-color: rgba(0, 255, 65, 0.6);
-    box-shadow: 0 0 12px rgba(0, 255, 65, 0.2);
+    border-color: rgba(40, 184, 78, 0.6);
+    box-shadow: 0 0 12px rgba(40, 184, 78, 0.2);
 }
 
 /* 베팅 금액 표시 */
 .bet-amount {
     display: block;
-    font-family: 'Orbitron', sans-serif;
+    font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.6rem;
-    color: #00fff5;
+    color: #d4a843;
     min-height: 14px;
     font-weight: 700;
 }
@@ -426,10 +426,10 @@ body.ladder-page::before {
 }
 
 .total-bet-bar span {
-    color: #00fff5;
+    color: #d4a843;
     font-weight: 700;
     font-size: 1rem;
-    text-shadow: 0 0 8px rgba(0, 255, 245, 0.3);
+    text-shadow: 0 0 8px rgba(212, 168, 67, 0.3);
 }
 
 .ctrl-buttons {
@@ -442,7 +442,7 @@ body.ladder-page::before {
     padding: 12px 8px;
     border-radius: 10px;
     border: 2px solid;
-    font-family: 'Orbitron', 'Inter', sans-serif;
+    font-family: var(--font-display, 'Cinzel', serif);
     font-weight: 700;
     font-size: 0.8rem;
     cursor: pointer;
@@ -468,60 +468,60 @@ body.ladder-page::before {
     border-color: rgba(255, 255, 255, 0.4);
 }
 
-/* START 버튼: 시안 네온 */
+/* START 버튼: 골드 */
 /* v4.0 원본: background: linear-gradient(180deg, #FF8C00, #CC6600), border-color: #FFD700 */
 .btn-start {
     background: transparent;
-    border-color: #00fff5;
-    color: #00fff5;
+    border-color: #d4a843;
+    color: #d4a843;
     font-size: 1rem;
     letter-spacing: 3px;
-    box-shadow: 0 0 15px rgba(0, 255, 245, 0.2), inset 0 0 15px rgba(0, 255, 245, 0.05);
+    box-shadow: 0 0 15px rgba(212, 168, 67, 0.2), inset 0 0 15px rgba(212, 168, 67, 0.05);
     animation: startPulse 2s ease-in-out infinite;
 }
 
 .btn-start:hover {
-    box-shadow: 0 0 25px rgba(0, 255, 245, 0.4), inset 0 0 20px rgba(0, 255, 245, 0.1);
-    background: rgba(0, 255, 245, 0.1);
+    box-shadow: 0 0 25px rgba(212, 168, 67, 0.4), inset 0 0 20px rgba(212, 168, 67, 0.1);
+    background: rgba(212, 168, 67, 0.1);
 }
 
 @keyframes startPulse {
-    0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 245, 0.2), inset 0 0 15px rgba(0, 255, 245, 0.05); }
-    50% { box-shadow: 0 0 25px rgba(0, 255, 245, 0.4), inset 0 0 20px rgba(0, 255, 245, 0.1); }
+    0%, 100% { box-shadow: 0 0 15px rgba(212, 168, 67, 0.2), inset 0 0 15px rgba(212, 168, 67, 0.05); }
+    50% { box-shadow: 0 0 25px rgba(212, 168, 67, 0.4), inset 0 0 20px rgba(212, 168, 67, 0.1); }
 }
 
 .btn-auto {
-    background: rgba(179, 0, 255, 0.08);
-    border-color: rgba(179, 0, 255, 0.4);
-    color: #b300ff;
+    background: rgba(112, 64, 176, 0.08);
+    border-color: rgba(112, 64, 176, 0.4);
+    color: #7040b0;
 }
 
 .btn-auto:hover {
-    border-color: rgba(179, 0, 255, 0.7);
-    box-shadow: 0 0 12px rgba(179, 0, 255, 0.3);
+    border-color: rgba(112, 64, 176, 0.7);
+    box-shadow: 0 0 12px rgba(112, 64, 176, 0.3);
 }
 
 .btn-auto.active {
-    background: rgba(255, 45, 149, 0.15);
-    border-color: #ff2d95;
-    color: #ff2d95;
+    background: rgba(196, 30, 58, 0.15);
+    border-color: #c41e3a;
+    color: #c41e3a;
     animation: autoPulse 1s ease-in-out infinite;
 }
 
 @keyframes autoPulse {
-    0%, 100% { box-shadow: 0 0 8px rgba(255, 45, 149, 0.3); }
-    50% { box-shadow: 0 0 20px rgba(255, 45, 149, 0.6); }
+    0%, 100% { box-shadow: 0 0 8px rgba(196, 30, 58, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(196, 30, 58, 0.6); }
 }
 
 .btn-rebet {
-    background: rgba(0, 255, 65, 0.08);
-    border-color: rgba(0, 255, 65, 0.3);
-    color: #00ff41;
+    background: rgba(40, 184, 78, 0.08);
+    border-color: rgba(40, 184, 78, 0.3);
+    color: #28b84e;
 }
 
 .btn-rebet:hover {
-    border-color: rgba(0, 255, 65, 0.6);
-    box-shadow: 0 0 12px rgba(0, 255, 65, 0.3);
+    border-color: rgba(40, 184, 78, 0.6);
+    box-shadow: 0 0 12px rgba(40, 184, 78, 0.3);
 }
 
 /* === 속도 컨트롤 === */
@@ -535,24 +535,24 @@ body.ladder-page::before {
 .speed-btn {
     padding: 5px 14px;
     border-radius: 8px;
-    border: 1px solid rgba(0, 255, 245, 0.2);
-    background: rgba(0, 255, 245, 0.03);
-    color: rgba(0, 255, 245, 0.4);
-    font-family: 'Orbitron', sans-serif;
+    border: 1px solid rgba(212, 168, 67, 0.2);
+    background: rgba(212, 168, 67, 0.03);
+    color: rgba(212, 168, 67, 0.4);
+    font-family: var(--font-display, 'Cinzel', serif);
     font-size: 0.65rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .speed-btn:hover {
-    border-color: rgba(0, 255, 245, 0.5);
+    border-color: rgba(212, 168, 67, 0.5);
 }
 
 .speed-btn.active {
-    background: rgba(0, 255, 245, 0.1);
-    border-color: #00fff5;
-    color: #00fff5;
-    box-shadow: 0 0 8px rgba(0, 255, 245, 0.2);
+    background: rgba(212, 168, 67, 0.1);
+    border-color: #d4a843;
+    color: #d4a843;
+    box-shadow: 0 0 8px rgba(212, 168, 67, 0.2);
 }
 
 /* === 통계 === */
@@ -564,7 +564,7 @@ body.ladder-page::before {
     padding: 8px 12px 16px;
     font-family: 'Inter', sans-serif;
     font-size: 0.72rem;
-    color: rgba(0, 255, 245, 0.5);
+    color: rgba(212, 168, 67, 0.5);
 }
 
 .stat-item {
@@ -576,18 +576,18 @@ body.ladder-page::before {
 
 /* === 규칙 카드 === */
 .rules-card {
-    background: rgba(5, 5, 16, 0.6);
+    background: rgba(8, 8, 15, 0.6);
     backdrop-filter: blur(4px);
     border-radius: 10px;
     padding: 12px;
-    border: 1px solid rgba(0, 255, 245, 0.1);
+    border: 1px solid rgba(212, 168, 67, 0.1);
 }
 
 .rules-card summary {
-    color: rgba(0, 255, 245, 0.6);
+    color: rgba(212, 168, 67, 0.6);
     font-size: 0.8rem;
     cursor: pointer;
-    font-family: 'Orbitron', sans-serif;
+    font-family: var(--font-display, 'Cinzel', serif);
     letter-spacing: 1px;
 }
 
@@ -600,7 +600,7 @@ body.ladder-page::before {
 }
 
 .rules-content strong {
-    color: #00fff5;
+    color: #d4a843;
 }
 
 /* === 반응형 === */

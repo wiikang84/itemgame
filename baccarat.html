@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>바카라 - ItemGame</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/baccarat.css">
+</head>
+<body class="baccarat-page">
+    <!-- 헤더 -->
+    <header class="header">
+        <a href="index.html" class="header-logo">ITEM<span>GAME</span></a>
+        <div class="header-center">
+            <div class="header-chips">
+                <div class="chip-icon">$</div>
+                <div class="chip-balance" id="headerChips">0</div>
+            </div>
+            <div class="level-badge">
+                <span class="level-text" id="levelDisplay">Lv.1</span>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+                <span class="xp-text" id="xpText">0/500</span>
+            </div>
+        </div>
+        <nav class="header-nav">
+            <a href="index.html" class="nav-btn">로비</a>
+            <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container baccarat-container">
+        <!-- 카지노 테이블 -->
+        <div class="bac-table">
+            <h1 class="bac-title">Baccarat</h1>
+
+            <!-- 핸드 영역 -->
+            <div class="bac-hands">
+                <!-- 플레이어 -->
+                <div class="bac-hand">
+                    <div class="bac-hand-label player-label">Player</div>
+                    <div class="bac-cards" id="playerCards"></div>
+                    <div class="bac-score player-score" id="playerScore">-</div>
+                </div>
+
+                <!-- VS -->
+                <div class="bac-vs">VS</div>
+
+                <!-- 뱅커 -->
+                <div class="bac-hand">
+                    <div class="bac-hand-label banker-label">Banker</div>
+                    <div class="bac-cards" id="bankerCards"></div>
+                    <div class="bac-score banker-score" id="bankerScore">-</div>
+                </div>
+            </div>
+
+            <!-- 결과 -->
+            <div class="bac-result" id="bacResult"></div>
+        </div>
+
+        <!-- 베팅 영역 -->
+        <div class="bac-bet-area">
+            <!-- 칩 선택 -->
+            <div class="bac-chip-selector">
+                <button class="bac-chip-btn c50" data-value="50" onclick="BaccaratGame.selectChip(50)">50</button>
+                <button class="bac-chip-btn c100 active" data-value="100" onclick="BaccaratGame.selectChip(100)">100</button>
+                <button class="bac-chip-btn c500" data-value="500" onclick="BaccaratGame.selectChip(500)">500</button>
+                <button class="bac-chip-btn c1000" data-value="1000" onclick="BaccaratGame.selectChip(1000)">1K</button>
+                <button class="bac-chip-btn c5000" data-value="5000" onclick="BaccaratGame.selectChip(5000)">5K</button>
+            </div>
+
+            <!-- 메인 베팅 -->
+            <div class="bac-main-bets">
+                <button class="bac-bet-btn bet-player" data-bet="player" onclick="BaccaratGame.placeBet('player')">
+                    <div class="bac-bet-label">Player</div>
+                    <div class="bac-bet-payout">1:1</div>
+                    <div class="bac-bet-amount" id="playerBetAmount"></div>
+                </button>
+                <button class="bac-bet-btn bet-tie" data-bet="tie" onclick="BaccaratGame.placeBet('tie')">
+                    <div class="bac-bet-label">Tie</div>
+                    <div class="bac-bet-payout">8:1</div>
+                    <div class="bac-bet-amount" id="tieBetAmount"></div>
+                </button>
+                <button class="bac-bet-btn bet-banker" data-bet="banker" onclick="BaccaratGame.placeBet('banker')">
+                    <div class="bac-bet-label">Banker</div>
+                    <div class="bac-bet-payout">0.95:1</div>
+                    <div class="bac-bet-amount" id="bankerBetAmount"></div>
+                </button>
+            </div>
+
+            <!-- 사이드 베팅 (페어) -->
+            <div class="bac-side-bets">
+                <div class="bac-side-toggle" id="ppPairToggle" onclick="BaccaratGame.togglePairBet('pp')">
+                    <div class="bac-side-indicator"></div>
+                    <span>P.Pair (11:1)</span>
+                </div>
+                <div class="bac-side-toggle" id="bpPairToggle" onclick="BaccaratGame.togglePairBet('bp')">
+                    <div class="bac-side-indicator"></div>
+                    <span>B.Pair (11:1)</span>
+                </div>
+            </div>
+
+            <!-- 액션 버튼 -->
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button class="bac-rebet-btn" id="bacRebetBtn" onclick="BaccaratGame.rebet()" disabled>REBET</button>
+                <button class="bac-deal-btn" id="bacDealBtn" onclick="BaccaratGame.deal()" disabled>DEAL</button>
+            </div>
+        </div>
+
+        <!-- 로드맵 (빅로드) -->
+        <div class="bac-roadmap">
+            <div class="roadmap-title">Road Map</div>
+            <div class="roadmap-grid" id="roadmapGrid"></div>
+            <div class="roadmap-stats">
+                <div class="roadmap-stat"><div class="dot p-dot"></div><span class="count" id="roadmapPlayerCount">0</span></div>
+                <div class="roadmap-stat"><div class="dot b-dot"></div><span class="count" id="roadmapBankerCount">0</span></div>
+                <div class="roadmap-stat"><div class="dot t-dot"></div><span class="count" id="roadmapTieCount">0</span></div>
+            </div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="bac-stats">
+            <div class="bac-stat-item"><span class="bac-stat-value" id="statTotal">0</span><span class="bac-stat-label">총 게임</span></div>
+            <div class="bac-stat-item"><span class="bac-stat-value" style="color:#3890e0" id="statPlayerWins">0</span><span class="bac-stat-label">플레이어</span></div>
+            <div class="bac-stat-item"><span class="bac-stat-value" style="color:#c41e3a" id="statBankerWins">0</span><span class="bac-stat-label">뱅커</span></div>
+            <div class="bac-stat-item"><span class="bac-stat-value" style="color:#28b84e" id="statTies">0</span><span class="bac-stat-label">타이</span></div>
+        </div>
+
+        <!-- 규칙 -->
+        <div class="bac-rules">
+            <h3>게임 규칙</h3>
+            <ul>
+                <li><strong>플레이어</strong>와 <strong>뱅커</strong> 중 9에 더 가까운 쪽이 승리</li>
+                <li>카드 값: A=1, 2~9=액면가, 10/J/Q/K=0</li>
+                <li>합이 10 이상이면 1의 자리만 사용 (예: 15 → 5)</li>
+                <li><strong>내추럴</strong>: 처음 2장 합이 8 또는 9 → 즉시 승부</li>
+                <li>플레이어 0~5 → 3장째 드로, 6~7 → 스탠드</li>
+                <li>뱅커 드로는 플레이어 3장째에 따라 결정 (자동 진행)</li>
+                <li><strong>배당</strong>: 플레이어 1:1 / 뱅커 0.95:1 (5% 커미션) / 타이 8:1</li>
+                <li><strong>페어</strong>: 첫 2장 같은 숫자 → 11:1</li>
+                <li>타이 시 플레이어/뱅커 베팅은 환불됩니다</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 코인 샤워 캔버스 -->
+    <canvas id="coinShowerCanvas"></canvas>
+
+    <!-- 토스트 컨테이너 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 레벨업 오버레이 -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title" id="levelupTitle">LEVEL UP!</div>
+            <div class="levelup-bonus" id="levelupBonus">+0 칩</div>
+        </div>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="index.html" class="bottom-nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">홈</span>
+            </a>
+            <a href="baccarat.html" class="bottom-nav-item active">
+                <span class="nav-icon">🎴</span>
+                <span class="nav-label">바카라</span>
+            </a>
+            <button class="bottom-nav-item" onclick="SoundManager.toggleMute()">
+                <span class="nav-icon">🔊</span>
+                <span class="nav-label">사운드</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Core -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script src="js/core/sound-manager.js"></script>
+    <script src="js/core/coin-shower.js"></script>
+    <script src="js/core/level-manager.js"></script>
+    <script src="js/core/neon-particles.js"></script>
+
+    <!-- Game -->
+    <script src="js/games/baccarat.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ChipManager.init();
+            SoundManager.init();
+            CoinShower.init();
+            LevelManager.init();
+            NeonParticles.init();
+            BaccaratGame.init();
+
+            // 칩 잔액 표시
+            document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            ChipManager.onBalanceChange(() => {
+                document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            });
+
+            // 레벨업
+            LevelManager.onEvent((event) => {
+                if (event.type === 'levelup') {
+                    document.getElementById('levelupTitle').textContent = `LEVEL ${event.level}!`;
+                    document.getElementById('levelupBonus').textContent = `+${event.bonus.toLocaleString()} 보너스 칩`;
+                    document.getElementById('levelupOverlay').classList.add('active');
+                    CoinShower.start(2000, 'mega');
+                    setTimeout(() => document.getElementById('levelupOverlay').classList.remove('active'), 3000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

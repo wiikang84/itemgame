@@ -1,38 +1,38 @@
 /* ============================================
-   바다이야기 SEA STORY v1.0
-   해양 어드벤처 수중 테마
-   Ocean / Underwater Adventure Theme
+   바다이야기 SEA STORY v3.0
+   프리미엄 오션 골드 카지노 해양 테마
+   Premium Ocean Gold Casino Theme
    ============================================ */
 
-/* ═══ 해양 테마 색상 변수 (Sea Story v2.0 사이버펑크) ═══ */
+/* ═══ 해양 테마 색상 변수 (Sea Story v3.0 프리미엄 오션) ═══ */
 :root {
     --casino-black: #020818;
-    --casino-dark: #0a0a1e;
+    --casino-dark: #0a1420;
     --casino-panel: #0d1a2e;
-    /* v1.0 원본: --casino-gold: #00d4ff → v2.0: 더 밝은 시안 */
-    --casino-gold: #00fff5;
-    --casino-gold-light: #66fffa;
-    --casino-gold-dim: #00b8b0;
-    /* v1.0 원본: --casino-red → v2.0: 핑크 */
-    --casino-red: #ff2d95;
-    --casino-red-dark: #cc2477;
-    --casino-red-bright: #ff66b2;
-    --casino-green: #00ff88;
-    --casino-green-dim: #00cc66;
-    /* v1.0 원본: 오션 크롬 → v2.0: 다크 사이버펑크 메탈릭 */
-    --casino-chrome-light: #2a2a4e;
-    --casino-chrome-mid: #1a1a3e;
-    --casino-chrome-dark: #0a0a1e;
-    --casino-led-amber: #00fff5;
+    /* v2.0 사이버펑크: #00fff5 → v3.0: 깊은 바다 틸 */
+    --casino-gold: #00b8d4;
+    --casino-gold-light: #4dd0e1;
+    --casino-gold-dim: #0097a7;
+    /* v2.0 사이버펑크: #ff2d95 핑크 → v3.0: 코랄 레드 */
+    --casino-red: #ff6b6b;
+    --casino-red-dark: #cc5555;
+    --casino-red-bright: #ff8888;
+    --casino-green: #00e676;
+    --casino-green-dim: #00c853;
+    /* v2.0 사이버펑크: 다크 퍼플 → v3.0: 딥오션 네이비 크롬 */
+    --casino-chrome-light: #2a3a4e;
+    --casino-chrome-mid: #1a2a3e;
+    --casino-chrome-dark: #0a1a2e;
+    --casino-led-amber: #4dd0e1;
     --casino-text: #d0e8f0;
     --casino-text-muted: #5088a0;
-    --casino-separator: rgba(0,255,245,0.08);
-    /* v1.0 원본: 오션 크롬 → v2.0: 다크 사이버펑크 톤 */
-    --chrome-gradient: linear-gradient(180deg, #0a0a1e 0%, #1a1a3e 10%, #0f0f2e 30%, #1a2a4e 50%, #0f0f2e 70%, #1a1a3e 90%, #0a0a1e 100%);
-    --gold-gradient: linear-gradient(180deg, #66fffa 0%, #00fff5 40%, #00b8b0 100%);
-    --glow-gold: 0 0 10px rgba(0,255,245,0.5), 0 0 20px rgba(0,255,245,0.3);
-    --glow-red: 0 0 15px rgba(255,45,149,0.5), 0 0 30px rgba(255,45,149,0.25);
-    --glow-green: 0 0 7px rgba(0,255,136,0.5), 0 0 15px rgba(0,255,136,0.2);
+    --casino-separator: rgba(0,184,212,0.08);
+    /* v2.0 사이버펑크: 다크 퍼플 톤 → v3.0: 딥오션 네이비 톤 */
+    --chrome-gradient: linear-gradient(180deg, #0a1a2e 0%, #1a2a3e 10%, #0f1f2e 30%, #1a3040 50%, #0f1f2e 70%, #1a2a3e 90%, #0a1a2e 100%);
+    --gold-gradient: linear-gradient(180deg, #4dd0e1 0%, #00b8d4 40%, #0097a7 100%);
+    --glow-gold: 0 0 10px rgba(0,184,212,0.5), 0 0 20px rgba(0,184,212,0.3);
+    --glow-red: 0 0 15px rgba(255,107,107,0.5), 0 0 30px rgba(255,107,107,0.25);
+    --glow-green: 0 0 7px rgba(0,230,118,0.5), 0 0 15px rgba(0,230,118,0.2);
 }
 
 /* ═══ 페이지 배경 (해양 테마: 수중 스포트라이트 + 틸 언더글로우) ═══ */

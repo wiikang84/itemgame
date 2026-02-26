@@ -1,19 +1,19 @@
 /* ============================================
-   블랙잭 v2.0 - 프리미엄 카지노 테마
+   블랙잭 v2.0 - 프리미엄 골드 카지노 테마
    세미서클 펠트 테이블 + 골드 림 + 스포트라이트
    3D 칩 + 향상된 카드 + 인슈어런스/서렌더
    ============================================ */
 
-/* === 페이지 분위기 (네온 사이버펑크) === */
+/* === 페이지 분위기 (프리미엄 골드 카지노) === */
 .blackjack-page {
     background:
-        /* 상단 시안 글로우 */
-        radial-gradient(ellipse at 50% 0%, rgba(0,255,245,0.08) 0%, transparent 40%),
-        /* 하단 시안 반사 */
-        radial-gradient(ellipse at 50% 100%, rgba(0,255,245,0.05) 0%, transparent 30%),
+        /* 상단 골드 글로우 */
+        radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.04) 0%, transparent 40%),
+        /* 하단 골드 반사 */
+        radial-gradient(ellipse at 50% 100%, rgba(212,168,67,0.03) 0%, transparent 30%),
         /* 페이지 비네팅 */
         radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.3) 100%),
-        #050510 !important;
+        #08080f !important;
 }
 
 .bj-container {
@@ -33,17 +33,17 @@
         radial-gradient(ellipse at 50% 10%, rgba(200,255,200,0.08) 0%, transparent 50%),
         /* 베이스 펠트 그린 (깊은 카지노 그린) */
         linear-gradient(180deg, #0d6b30 0%, #0a5525 15%, #085020 30%, #074a1e 50%, #063d18 70%, #053414 85%, #042d10 100%);
-    /* 시안 네온 보더 */
-    border: 4px solid rgba(0,255,245,0.4);
+    /* 골드 보더 */
+    border: 4px solid rgba(212,168,67,0.25);
     /* 세미서클 하단 (카지노 테이블 형태) */
     border-radius: 20px 20px 160px 160px;
     padding: 28px 24px 44px;
     margin-bottom: 24px;
-    /* 6레이어 박스 섀도우: 시안 글로우 + 깊이감 */
+    /* 6레이어 박스 섀도우: 골드 글로우 + 깊이감 */
     box-shadow:
-        0 0 25px rgba(0,255,245,0.30),
-        0 0 50px rgba(0,255,245,0.15),
-        0 0 80px rgba(0,255,245,0.08),
+        0 0 25px rgba(212,168,67,0.30),
+        0 0 50px rgba(212,168,67,0.15),
+        0 0 80px rgba(212,168,67,0.08),
         inset 0 0 60px rgba(0,0,0,0.35),
         0 15px 40px rgba(0,0,0,0.6),
         0 5px 15px rgba(0,0,0,0.4);
@@ -87,19 +87,19 @@
     z-index: 1;
 }
 
-/* === 타이틀 (시안 네온 BLACKJACK) === */
+/* === 타이틀 (골드 BLACKJACK) === */
 .bj-title {
     text-align: center;
     font-size: 2.2rem;
     font-weight: 900;
     font-family: var(--font-title);
-    /* 시안 그라데이션 텍스트 */
-    background: linear-gradient(180deg, #66fffa 0%, #00fff5 30%, #00bbff 60%, #0088aa 100%);
+    /* 골드 그라데이션 텍스트 */
+    background: linear-gradient(180deg, #f0d078 0%, #d4a843 30%, #b08838 60%, #a07830 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    /* 네온 글로우 (filter로 텍스트 뒤에 빛) */
-    filter: drop-shadow(0 0 8px rgba(0,255,245,0.6)) drop-shadow(0 0 20px rgba(0,255,245,0.3));
+    /* 골드 글로우 (filter로 텍스트 뒤에 빛) */
+    filter: drop-shadow(0 0 8px rgba(212,168,67,0.6)) drop-shadow(0 0 20px rgba(212,168,67,0.3));
     margin-bottom: 20px;
     letter-spacing: 5px;
     text-transform: uppercase;
@@ -160,15 +160,15 @@
 .hand-label .score {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #00fff5;
+    color: #d4a843;
     background: rgba(0,0,0,0.4);
     padding: 4px 14px;
     border-radius: 12px;
     min-width: 50px;
     text-align: center;
     transition: all 0.3s;
-    border: 1px solid rgba(0,255,245,0.15);
-    text-shadow: 0 0 8px rgba(0,255,245,0.3);
+    border: 1px solid rgba(212,168,67,0.15);
+    text-shadow: 0 0 8px rgba(212,168,67,0.3);
 }
 
 /* Soft/Hard 점수 타입 표시 */
@@ -181,9 +181,9 @@
 }
 
 .hand-label .score.blackjack {
-    color: #00fff5;
-    text-shadow: 0 0 10px rgba(0,255,245,0.8), 0 0 20px rgba(0,255,245,0.4);
-    border: 1px solid rgba(0,255,245,0.5);
+    color: #f0d078;
+    text-shadow: 0 0 10px rgba(240,208,120,0.8), 0 0 20px rgba(240,208,120,0.4);
+    border: 1px solid rgba(240,208,120,0.5);
     animation: pulse 1s ease infinite;
 }
 
@@ -318,10 +318,10 @@
     color: #111;
 }
 
-/* 카드 뒷면 (다크 퍼플 + 시안 액센트) */
+/* 카드 뒷면 (다크 퍼플 + 골드 액센트) */
 .card-item.face-down {
-    background: linear-gradient(135deg, #1a0033, #0d001a);
-    border: 1.5px solid #b300ff;
+    background: linear-gradient(135deg, #1a1428, #0d0a14);
+    border: 1.5px solid #7040b0;
     box-shadow:
         0 3px 10px rgba(0,0,0,0.4),
         0 1px 3px rgba(0,0,0,0.3),
@@ -388,10 +388,10 @@
 .insurance-line {
     text-align: center;
     padding: 6px;
-    border-top: 2px dashed rgba(0,255,245,0.25);
-    border-bottom: 2px dashed rgba(0,255,245,0.25);
+    border-top: 2px dashed rgba(212,168,67,0.25);
+    border-bottom: 2px dashed rgba(212,168,67,0.25);
     margin: 14px 0;
-    color: rgba(0,255,245,0.5);
+    color: rgba(212,168,67,0.5);
     font-size: 0.7rem;
     letter-spacing: 4px;
     text-transform: uppercase;
@@ -711,10 +711,10 @@
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-/* 5000 칩 - 시안 */
+/* 5000 칩 - 골드 */
 .chip-btn.chip-5000 {
-    background: linear-gradient(145deg, #00fff5, #00b8b0);
-    border-color: #66fffa;
+    background: linear-gradient(145deg, #d4a843, #a07830);
+    border-color: #f0d078;
     color: #1a1a1a;
     text-shadow: 0 1px 0 rgba(255,255,255,0.3);
 }
@@ -1005,12 +1005,12 @@
 
 .bj-table.bj-glow {
     box-shadow:
-        0 0 50px rgba(0,255,245,0.50),
-        0 0 100px rgba(0,255,245,0.25),
-        0 0 25px rgba(0,255,245,0.30),
+        0 0 50px rgba(212,168,67,0.50),
+        0 0 100px rgba(212,168,67,0.25),
+        0 0 25px rgba(212,168,67,0.30),
         inset 0 0 60px rgba(0,0,0,0.35),
         0 15px 40px rgba(0,0,0,0.6);
-    border-color: #00fff5;
+    border-color: #d4a843;
 }
 
 /* === 규칙 카드 === */
@@ -1023,7 +1023,7 @@
 }
 
 .rules-card h3 {
-    color: #00fff5;
+    color: #d4a843;
     margin-bottom: 10px;
     font-size: 1rem;
 }

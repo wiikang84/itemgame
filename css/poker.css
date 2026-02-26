@@ -1,0 +1,515 @@
+/* ============================================
+   세븐포커 CSS v1.0
+   프리미엄 다크 카지노 포커 테이블
+   ============================================ */
+
+/* === 테이블 레이아웃 === */
+.poker-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.poker-table-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    min-height: 380px;
+    max-height: 500px;
+    margin-bottom: 16px;
+}
+
+.poker-table {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 70%;
+    background: radial-gradient(ellipse at center, #1a5c2a 0%, #0e3d1a 60%, #092810 100%);
+    border-radius: 50%;
+    border: 6px solid #8b6914;
+    box-shadow:
+        0 0 0 3px #5a4510,
+        0 0 0 8px #2a200a,
+        0 0 30px rgba(139, 105, 20, 0.3),
+        inset 0 0 60px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* 팟 표시 */
+.poker-pot {
+    text-align: center;
+    color: #d4a843;
+    font-family: var(--font-title, 'Cinzel', serif);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.poker-pot .pot-amount {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f0d078;
+    text-shadow: 0 0 10px rgba(212, 168, 67, 0.5);
+}
+
+/* 결과 표시 */
+.poker-result {
+    min-height: 28px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 4px 16px;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.poker-result.win {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.15);
+    text-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+}
+
+.poker-result.lose {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.15);
+}
+
+/* === 좌석 배치 === */
+.poker-seat {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: opacity 0.3s;
+    z-index: 2;
+}
+
+.poker-seat.folded {
+    opacity: 0.35;
+}
+
+.poker-seat.active-turn .seat-avatar {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4);
+    animation: turnPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes turnPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+    50% { box-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.5); }
+}
+
+/* 좌석 위치 */
+#seat-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+#seat-left { left: 0; top: 50%; transform: translateY(-50%); }
+#seat-top { top: 0; left: 50%; transform: translateX(-50%); }
+#seat-right { right: 0; top: 50%; transform: translateY(-50%); }
+
+/* 아바타 */
+.seat-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 3px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    transition: all 0.3s;
+}
+
+.seat-name {
+    font-size: 0.75rem;
+    color: #ccc;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.seat-stack {
+    font-size: 0.7rem;
+    color: #d4a843;
+    font-weight: 600;
+}
+
+.seat-bet {
+    font-size: 0.75rem;
+    color: #4ade80;
+    font-weight: 700;
+    min-height: 18px;
+}
+
+/* 액션 텍스트 */
+.seat-action {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: #f0d078;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.seat-action.show {
+    opacity: 1;
+}
+
+/* === 카드 === */
+.seat-cards {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+}
+
+.poker-card {
+    width: 40px;
+    height: 56px;
+    border-radius: 5px;
+    font-size: 0.65rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+}
+
+.poker-card.face-up {
+    background: linear-gradient(135deg, #fff 0%, #f0ede8 100%);
+    border: 1px solid #bbb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.poker-card.face-up.black { color: #1a1a1a; }
+.poker-card.face-up.red { color: #cc0000; }
+
+.poker-card.face-down {
+    background: linear-gradient(135deg, #1a3a6e 0%, #0d2444 50%, #1a3a6e 100%);
+    border: 1px solid #2a5a9e;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.poker-card.face-down::after {
+    content: '♠';
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 1.2rem;
+}
+
+.pc-rank {
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.pc-suit {
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+/* === 내 핸드 정보 === */
+.my-hand-info {
+    text-align: center;
+    padding: 8px;
+    background: rgba(212, 168, 67, 0.1);
+    border: 1px solid rgba(212, 168, 67, 0.2);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.my-hand-label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.my-hand-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #d4a843;
+    font-family: var(--font-title, 'Cinzel', serif);
+}
+
+/* === 액션 버튼 === */
+.poker-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.poker-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: var(--font-title, 'Cinzel', serif);
+}
+
+.poker-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.poker-btn.btn-fold {
+    background: linear-gradient(135deg, #555 0%, #333 100%);
+    color: #ccc;
+}
+
+.poker-btn.btn-fold:not(:disabled):hover {
+    background: linear-gradient(135deg, #666 0%, #444 100%);
+}
+
+.poker-btn.btn-check {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+}
+
+.poker-btn.btn-check:not(:disabled):hover {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.poker-btn.btn-call {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+}
+
+.poker-btn.btn-call:not(:disabled):hover {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.poker-btn.btn-raise {
+    background: linear-gradient(135deg, #c41e3a 0%, #9a1530 100%);
+    color: #fff;
+}
+
+.poker-btn.btn-raise:not(:disabled):hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.poker-btn.btn-new-game {
+    background: linear-gradient(135deg, #d4a843 0%, #b8922e 100%);
+    color: #1a1a1a;
+    padding: 12px 32px;
+    font-size: 1rem;
+}
+
+.poker-btn.btn-new-game:not(:disabled):hover {
+    background: linear-gradient(135deg, #f0d078 0%, #d4a843 100%);
+    transform: translateY(-1px);
+}
+
+/* 레이즈 금액 선택 */
+.raise-selector {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.raise-chip {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 3px solid #555;
+    background: radial-gradient(circle at 30% 30%, #444, #222);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.raise-chip.active {
+    border-color: #d4a843;
+    box-shadow: 0 0 12px rgba(212, 168, 67, 0.6);
+    transform: scale(1.1);
+}
+
+.raise-chip:hover {
+    transform: scale(1.05);
+}
+
+.raise-chip.rc-50 { background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b); }
+.raise-chip.rc-100 { background: radial-gradient(circle at 30% 30%, #3b82f6, #1d4ed8); }
+.raise-chip.rc-200 { background: radial-gradient(circle at 30% 30%, #22c55e, #15803d); }
+.raise-chip.rc-500 { background: radial-gradient(circle at 30% 30%, #d4a843, #8b6914); }
+
+/* === 통계 === */
+.poker-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.poker-stat-item {
+    text-align: center;
+}
+
+.poker-stat-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #d4a843;
+}
+
+.poker-stat-label {
+    display: block;
+    font-size: 0.65rem;
+    color: #777;
+    margin-top: 2px;
+}
+
+/* === 규칙 === */
+.poker-rules {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 80px;
+}
+
+.poker-rules h3 {
+    color: #d4a843;
+    font-family: var(--font-title, 'Cinzel', serif);
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.poker-rules ul {
+    list-style: none;
+    padding: 0;
+}
+
+.poker-rules li {
+    color: #999;
+    font-size: 0.8rem;
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+}
+
+.poker-rules li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #d4a843;
+}
+
+.poker-rules strong {
+    color: #ccc;
+}
+
+/* === 반응형 === */
+@media (max-width: 768px) {
+    .poker-table-wrap {
+        aspect-ratio: 4 / 3;
+        min-height: 320px;
+    }
+
+    .poker-table {
+        width: 85%;
+        height: 65%;
+    }
+
+    .seat-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+
+    .poker-card {
+        width: 32px;
+        height: 44px;
+        font-size: 0.55rem;
+    }
+
+    .pc-rank { font-size: 0.65rem; }
+    .pc-suit { font-size: 0.7rem; }
+
+    .poker-btn {
+        padding: 8px 14px;
+        font-size: 0.75rem;
+    }
+
+    .raise-chip {
+        width: 36px;
+        height: 36px;
+        font-size: 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .poker-container {
+        padding: 8px;
+    }
+
+    .poker-table-wrap {
+        min-height: 280px;
+    }
+
+    .poker-table {
+        width: 88%;
+        height: 60%;
+    }
+
+    .seat-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+        border-width: 2px;
+    }
+
+    .seat-name { font-size: 0.65rem; }
+    .seat-stack { font-size: 0.6rem; }
+
+    .poker-card {
+        width: 26px;
+        height: 36px;
+    }
+
+    .pc-rank { font-size: 0.55rem; }
+    .pc-suit { font-size: 0.6rem; }
+
+    .poker-actions {
+        gap: 4px;
+    }
+
+    .poker-btn {
+        padding: 8px 10px;
+        font-size: 0.7rem;
+        letter-spacing: 0;
+    }
+
+    .poker-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

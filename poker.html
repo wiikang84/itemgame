@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세븐포커 - ItemGame</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/poker.css">
+</head>
+<body class="poker-page">
+    <!-- 헤더 -->
+    <header class="header">
+        <a href="index.html" class="header-logo">ITEM<span>GAME</span></a>
+        <div class="header-center">
+            <div class="header-chips">
+                <div class="chip-icon">$</div>
+                <div class="chip-balance" id="headerChips">0</div>
+            </div>
+            <div class="level-badge">
+                <span class="level-text" id="levelDisplay">Lv.1</span>
+                <div class="xp-bar"><div class="xp-bar-fill" id="xpBarFill"></div></div>
+                <span class="xp-text" id="xpText">0/500</span>
+            </div>
+        </div>
+        <nav class="header-nav">
+            <a href="index.html" class="nav-btn">로비</a>
+            <button class="sound-toggle" id="soundToggleBtn" onclick="SoundManager.toggleMute()" title="소리 끄기">🔊</button>
+        </nav>
+    </header>
+
+    <!-- 메인 -->
+    <main class="container poker-container">
+        <!-- 포커 테이블 -->
+        <div class="poker-table-wrap">
+            <div class="poker-table">
+                <div class="poker-pot">
+                    POT <span class="pot-amount" id="potAmount">0</span>
+                </div>
+                <div class="poker-result" id="pokerResult"></div>
+            </div>
+
+            <!-- 좌석: 하단(나) -->
+            <div class="poker-seat" id="seat-bottom">
+                <div class="seat-action"></div>
+                <div class="seat-cards"></div>
+                <div class="seat-avatar" style="border-color: #d4a843">😎</div>
+                <div class="seat-name">나</div>
+                <div class="seat-stack">0</div>
+                <div class="seat-bet"></div>
+            </div>
+
+            <!-- 좌석: 왼쪽(미나) -->
+            <div class="poker-seat" id="seat-left">
+                <div class="seat-action"></div>
+                <div class="seat-avatar" style="border-color: #ff6b9d">👩</div>
+                <div class="seat-name">미나</div>
+                <div class="seat-cards"></div>
+                <div class="seat-stack">5,000</div>
+                <div class="seat-bet"></div>
+            </div>
+
+            <!-- 좌석: 상단(재훈) -->
+            <div class="poker-seat" id="seat-top">
+                <div class="seat-action"></div>
+                <div class="seat-cards"></div>
+                <div class="seat-avatar" style="border-color: #4ecdc4">🧑</div>
+                <div class="seat-name">재훈</div>
+                <div class="seat-stack">5,000</div>
+                <div class="seat-bet"></div>
+            </div>
+
+            <!-- 좌석: 오른쪽(소영) -->
+            <div class="poker-seat" id="seat-right">
+                <div class="seat-action"></div>
+                <div class="seat-avatar" style="border-color: #ffe66d">👧</div>
+                <div class="seat-name">소영</div>
+                <div class="seat-cards"></div>
+                <div class="seat-stack">5,000</div>
+                <div class="seat-bet"></div>
+            </div>
+        </div>
+
+        <!-- 내 핸드 정보 -->
+        <div class="my-hand-info">
+            <div class="my-hand-label">My Hand</div>
+            <div class="my-hand-name" id="myHandName">-</div>
+        </div>
+
+        <!-- 레이즈 금액 선택 -->
+        <div class="raise-selector" id="raiseAmountBtns">
+            <button class="raise-chip rc-50 active" data-value="50" onclick="PokerGame.selectRaise(50)">50</button>
+            <button class="raise-chip rc-100" data-value="100" onclick="PokerGame.selectRaise(100)">100</button>
+            <button class="raise-chip rc-200" data-value="200" onclick="PokerGame.selectRaise(200)">200</button>
+            <button class="raise-chip rc-500" data-value="500" onclick="PokerGame.selectRaise(500)">500</button>
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="poker-actions">
+            <button class="poker-btn btn-fold" id="pokerFoldBtn" onclick="PokerGame.fold()" disabled>폴드</button>
+            <button class="poker-btn btn-check" id="pokerCheckBtn" onclick="PokerGame.check()" disabled>체크</button>
+            <button class="poker-btn btn-call" id="pokerCallBtn" onclick="PokerGame.call()" disabled style="display:none">콜</button>
+            <button class="poker-btn btn-raise" id="pokerRaiseBtn" onclick="PokerGame.raise()" disabled>레이즈 (+50)</button>
+            <button class="poker-btn btn-new-game" id="pokerNewGameBtn" onclick="PokerGame.newGame()">NEW GAME</button>
+        </div>
+
+        <!-- 통계 -->
+        <div class="poker-stats">
+            <div class="poker-stat-item"><span class="poker-stat-value" id="statPlayed">0</span><span class="poker-stat-label">게임</span></div>
+            <div class="poker-stat-item"><span class="poker-stat-value" id="statWon">0</span><span class="poker-stat-label">승리</span></div>
+            <div class="poker-stat-item"><span class="poker-stat-value" id="statWinRate">-</span><span class="poker-stat-label">승률</span></div>
+            <div class="poker-stat-item"><span class="poker-stat-value" id="statBestHand">-</span><span class="poker-stat-label">최고 핸드</span></div>
+        </div>
+
+        <!-- 규칙 -->
+        <div class="poker-rules">
+            <h3>게임 규칙 (세븐 포커)</h3>
+            <ul>
+                <li><strong>플레이어 4명</strong> (나 + AI 3명)으로 진행</li>
+                <li>앤티 50칩으로 시작, 카드 7장을 순서대로 받음</li>
+                <li>처음 2장은 <strong>히든</strong>, 3~6번째는 <strong>오픈</strong>, 7번째는 <strong>히든</strong></li>
+                <li>매 카드마다 <strong>베팅 라운드</strong> 진행 (체크/콜/레이즈/폴드)</li>
+                <li>7장 중 <strong>최고 5장 조합</strong>으로 승부</li>
+                <li><strong>핸드 순위</strong>: 로열플러시 > 스트레이트플러시 > 포카드 > 풀하우스 > 플러시 > 스트레이트 > 트리플 > 투페어 > 원페어 > 하이카드</li>
+                <li>모든 베팅이 <strong>팟</strong>에 쌓이며, 최종 승자가 팟을 획득</li>
+                <li>라운드당 최대 3회 레이즈 가능</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- 코인 샤워 캔버스 -->
+    <canvas id="coinShowerCanvas"></canvas>
+
+    <!-- 토스트 컨테이너 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 레벨업 오버레이 -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-title" id="levelupTitle">LEVEL UP!</div>
+            <div class="levelup-bonus" id="levelupBonus">+0 칩</div>
+        </div>
+    </div>
+
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+            <a href="index.html" class="bottom-nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">홈</span>
+            </a>
+            <a href="poker.html" class="bottom-nav-item active">
+                <span class="nav-icon">🃏</span>
+                <span class="nav-label">포커</span>
+            </a>
+            <button class="bottom-nav-item" onclick="SoundManager.toggleMute()">
+                <span class="nav-icon">🔊</span>
+                <span class="nav-label">사운드</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Core -->
+    <script src="js/core/firebase-config.js"></script>
+    <script src="js/core/chip-manager.js"></script>
+    <script src="js/core/sound-manager.js"></script>
+    <script src="js/core/coin-shower.js"></script>
+    <script src="js/core/level-manager.js"></script>
+    <script src="js/core/neon-particles.js"></script>
+
+    <!-- Game -->
+    <script src="js/games/poker.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ChipManager.init();
+            SoundManager.init();
+            CoinShower.init();
+            LevelManager.init();
+            NeonParticles.init();
+            PokerGame.init();
+
+            document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            ChipManager.onBalanceChange(() => {
+                document.getElementById('headerChips').textContent = ChipManager.formatBalance();
+            });
+
+            LevelManager.onEvent((event) => {
+                if (event.type === 'levelup') {
+                    document.getElementById('levelupTitle').textContent = `LEVEL ${event.level}!`;
+                    document.getElementById('levelupBonus').textContent = `+${event.bonus.toLocaleString()} 보너스 칩`;
+                    document.getElementById('levelupOverlay').classList.add('active');
+                    CoinShower.start(2000, 'mega');
+                    setTimeout(() => document.getElementById('levelupOverlay').classList.remove('active'), 3000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
