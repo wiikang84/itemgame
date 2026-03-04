@@ -158,8 +158,10 @@ const ChipManager = (() => {
      * 칩 추가 (보너스, 승리 등)
      */
     function addChips(amount) {
-        if (amount <= 0) return false;
-        _chips += amount;
+        if (amount <= 0 || !Number.isFinite(amount)) return false;
+        const MAX_CHIPS = 9999999;
+        // _chips = Math.min(_chips + amount, MAX_CHIPS);
+        _chips = Math.min(_chips + Math.floor(amount), MAX_CHIPS);
         _saveChips();
         _notifyListeners();
         return true;
@@ -181,7 +183,9 @@ const ChipManager = (() => {
      * 칩 설정 (직접 지정)
      */
     function setChips(amount) {
-        _chips = Math.max(0, amount);
+        if (!Number.isFinite(amount)) return;
+        const MAX_CHIPS = 9999999;
+        _chips = Math.max(0, Math.min(Math.floor(amount), MAX_CHIPS));
         _saveChips();
         _notifyListeners();
     }

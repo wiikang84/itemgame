@@ -141,6 +141,7 @@ const GoStopGame = (() => {
 
         currentTurn = 'player';
         gamePhase = 'playing';
+        _playSfx('deal');
         _renderAll();
         _updateUI();
     }
@@ -159,7 +160,7 @@ const GoStopGame = (() => {
             // 바닥에 놓기
             playerHand.splice(cardIdx, 1);
             field.push(card);
-            _playSound();
+            _playSfx('place');
             _afterPlay('player');
         } else if (matching.length === 1) {
             // 1장 매치 → 자동 가져가기
@@ -167,7 +168,7 @@ const GoStopGame = (() => {
             const matched = matching[0];
             field.splice(field.indexOf(matched), 1);
             playerCaptures.push(card, matched);
-            _playSound();
+            _playSfx('match');
             _afterPlay('player');
         } else {
             // 2장 이상 매치 → 선택 필요
@@ -194,7 +195,7 @@ const GoStopGame = (() => {
         selectedCard = null;
         matchingFieldCards = [];
         gamePhase = 'playing';
-        _playSound();
+        _playSfx('match');
         _afterPlay('player');
     }
 
@@ -205,6 +206,7 @@ const GoStopGame = (() => {
 
         // 뒷패에서 1장 뒤집기
         if (drawPile.length > 0) {
+            _playSfx('flip');
             const drawn = drawPile.pop();
             const matching = field.filter(f => f.month === drawn.month);
             const captures = who === 'player' ? playerCaptures : aiCaptures;
@@ -296,6 +298,7 @@ const GoStopGame = (() => {
 
         if (choice === 'go') {
             goCount.player++;
+            _playSfx('go');
             _showToast('고! 🔥 배당 ' + (goCount.player + 1) + '배', 'success');
             gamePhase = 'playing';
             currentTurn = 'ai';
@@ -303,6 +306,7 @@ const GoStopGame = (() => {
             _updateUI();
             setTimeout(() => _aiTurn(), 600);
         } else {
+            _playSfx('stop');
             _endGame('player');
         }
     }
@@ -349,15 +353,16 @@ const GoStopGame = (() => {
         if (matching.length === 0) {
             aiHand.splice(cardIdx, 1);
             field.push(bestCard);
+            _playSfx('place');
         } else {
             aiHand.splice(cardIdx, 1);
             // 가장 가치 높은 매칭 카드 선택
             const bestMatch = matching.reduce((best, m) => (!best || (typeScore[m.type] || 0) > (typeScore[best.type] || 0)) ? m : best, null);
             field.splice(field.indexOf(bestMatch), 1);
             aiCaptures.push(bestCard, bestMatch);
+            _playSfx('match');
         }
 
-        _playSound();
         _afterPlay('ai');
     }
 
@@ -462,7 +467,7 @@ const GoStopGame = (() => {
         container.innerHTML = '';
 
         playerHand.forEach(card => {
-            const el = _createCardElement(card, true);
+            const el = _createCardElement(card);
             if (gamePhase === 'playing' && currentTurn === 'player') {
                 el.classList.add('playable');
                 el.onclick = () => playCard(card.id);
@@ -479,10 +484,11 @@ const GoStopGame = (() => {
         if (!container) return;
         container.innerHTML = '';
 
+        const backImg = HwatuRenderer.renderBack();
         aiHand.forEach(() => {
             const el = document.createElement('div');
             el.className = 'hwatu-card face-down';
-            el.innerHTML = '<span class="hwatu-back">花</span>';
+            el.innerHTML = `<img src="${backImg}" alt="뒷면" draggable="false">`;
             container.appendChild(el);
         });
     }
@@ -493,7 +499,7 @@ const GoStopGame = (() => {
         container.innerHTML = '';
 
         field.forEach(card => {
-            const el = _createCardElement(card, true);
+            const el = _createCardElement(card);
             if (gamePhase === 'selecting' && matchingFieldCards.some(m => m.id === card.id)) {
                 el.classList.add('selectable');
                 el.onclick = () => selectFieldCard(card.id);
@@ -564,32 +570,23 @@ const GoStopGame = (() => {
         }
     }
 
-    function _createCardElement(card, faceUp) {
+    function _createCardElement(card) {
         const el = document.createElement('div');
-        const typeClass = card.type.replace('-', '');
-        el.className = `hwatu-card ${typeClass} month-${card.month}`;
+        el.className = `hwatu-card`;
         el.dataset.id = card.id;
 
-        const monthColor = MONTH_COLORS[card.month] || '#888';
-        const typeLabel = card.type === 'gwang' ? '光' : card.type === 'yeol' ? '열' :
-            card.type === 'tti-hong' ? '홍' : card.type === 'tti-cheong' ? '청' :
-            card.type === 'tti-cho' ? '초' : card.type === 'ssang-pi' ? '쌍' : '';
-
-        el.innerHTML = `
-            <div class="hwatu-inner" style="border-color: ${monthColor}">
-                <span class="hwatu-month">${card.month}월</span>
-                <span class="hwatu-emoji">${card.emoji}</span>
-                ${typeLabel ? `<span class="hwatu-type">${typeLabel}</span>` : ''}
-            </div>
-        `;
+        const imgSrc = HwatuRenderer.render(card);
+        el.innerHTML = `<img src="${imgSrc}" alt="${card.name}" draggable="false">`;
         return el;
     }
 
     function _createMiniCard(card) {
         const el = document.createElement('div');
-        el.className = `hwatu-mini ${card.type.replace('-', '')}`;
-        el.textContent = card.emoji;
+        el.className = 'hwatu-mini';
         el.title = card.name;
+
+        const imgSrc = HwatuRenderer.renderMini(card);
+        el.innerHTML = `<img src="${imgSrc}" alt="${card.name}" draggable="false">`;
         return el;
     }
 
@@ -627,10 +624,20 @@ const GoStopGame = (() => {
     // === 유틸 ===
     function _delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-    function _playSound() {
-        if (typeof SoundManager !== 'undefined') {
-            try { SoundManager.playCardDeal(); } catch (e) { /* ignore */ }
-        }
+    // === 사운드 ===
+    function _playSfx(type) {
+        if (typeof SoundManager === 'undefined') return;
+        try {
+            switch (type) {
+                case 'deal': SoundManager.playGostopDeal(); break;
+                case 'place': SoundManager.playGostopPlace(); break;
+                case 'match': SoundManager.playGostopMatch(); break;
+                case 'flip': SoundManager.playGostopFlip(); break;
+                case 'go': SoundManager.playGostopGo(); break;
+                case 'stop': SoundManager.playGostopStop(); break;
+                default: SoundManager.playCardDeal(); break;
+            }
+        } catch (e) { /* ignore */ }
     }
 
     function _showToast(msg, type) {

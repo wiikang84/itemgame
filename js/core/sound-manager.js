@@ -24,6 +24,7 @@ const SoundManager = (() => {
     let _bgmNodes = [];
     let _bgmInterval = null;
     let _bgmPlaying = false;
+    let _lastBGMType = 'main'; // 마지막 BGM 타입 기억 (뮤트 해제 시 복원용)
     let _coinInterval = null;
     const MUTE_KEY = 'itemgame_muted';
     const BGM_VOL = 0.06;
@@ -87,6 +88,10 @@ const SoundManager = (() => {
             stopBGM();
         } else {
             playClick();
+            // 뮤트 해제 시 이전 BGM 재시작
+            if (_lastBGMType) {
+                setTimeout(() => startBGM(_lastBGMType), 100);
+            }
         }
     }
 
@@ -113,6 +118,10 @@ const SoundManager = (() => {
 
             osc.start(ctx.currentTime);
             osc.stop(ctx.currentTime + duration + 0.05);
+            // 종료 후 자동 disconnect (메모리 누수 방지)
+            osc.onended = () => {
+                try { osc.disconnect(); gain.disconnect(); } catch (e) { }
+            };
             return osc;
         } catch (e) { return null; }
     }
@@ -136,6 +145,9 @@ const SoundManager = (() => {
 
             osc.start(startTime);
             osc.stop(startTime + duration + 0.05);
+            osc.onended = () => {
+                try { osc.disconnect(); gain.disconnect(); } catch (e) { }
+            };
             return osc;
         } catch (e) { return null; }
     }
@@ -167,6 +179,9 @@ const SoundManager = (() => {
             filter.connect(gain);
             gain.connect(dest || _sfxGain || ctx.destination);
             source.start(ctx.currentTime);
+            source.onended = () => {
+                try { source.disconnect(); filter.disconnect(); gain.disconnect(); } catch (e) { }
+            };
         } catch (e) { }
     }
 
@@ -181,6 +196,7 @@ const SoundManager = (() => {
     function startBGM(type = 'main') {
         if (_muted) return;
         stopBGM();
+        _lastBGMType = type;
         _getCtx();
 
         if (type === 'freespin') {
@@ -322,6 +338,7 @@ const SoundManager = (() => {
     function stopBGM() {
         _bgmNodes.forEach(node => {
             try { node.stop(); } catch (e) { }
+            try { node.disconnect(); } catch (e) { }
         });
         _bgmNodes = [];
         if (_bgmInterval) {
@@ -822,6 +839,83 @@ const SoundManager = (() => {
         }
     }
 
+    // ─── 맞고 (고스톱) 전용 사운드 ───
+
+    /** 맞고: 패 돌리기 (딜링) - 탁탁탁 연속 소리 */
+    function playGostopDeal() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        for (let i = 0; i < 7; i++) {
+            _playToneAt(800 + (i % 3) * 100, 0.06, 'sine', 0.08, now + i * 0.08);
+            setTimeout(() => _playNoise(0.03, 0.06), i * 80);
+        }
+    }
+
+    /** 맞고: 패 내려놓기 (바닥에 놓기) - 탁 소리 */
+    function playGostopPlace() {
+        if (_muted) return;
+        _playTone(400, 0.1, 'sine', 0.1);
+        _playNoise(0.06, 0.1);
+        _playTone(200, 0.08, 'triangle', 0.05);
+    }
+
+    /** 맞고: 패 가져가기 (쓸) - 싹 하는 느낌 */
+    function playGostopMatch() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 쓸어가는 효과음
+        _playToneAt(600, 0.12, 'sine', 0.1, now);
+        _playToneAt(900, 0.1, 'sine', 0.08, now + 0.05);
+        _playToneAt(1200, 0.08, 'sine', 0.06, now + 0.1);
+        _playNoise(0.1, 0.08);
+        // 코인 느낌 (가져가는 쾌감)
+        _playToneAt(1800, 0.04, 'sine', 0.04, now + 0.15);
+    }
+
+    /** 맞고: 뒷패 뒤집기 - 찰깍 */
+    function playGostopFlip() {
+        if (_muted) return;
+        _playNoise(0.04, 0.1);
+        _playTone(1200, 0.05, 'sine', 0.06);
+        setTimeout(() => _playTone(800, 0.04, 'triangle', 0.04), 30);
+    }
+
+    /** 맞고: 고! - 극적이고 강렬한 외침 느낌 */
+    function playGostopGo() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 드라마틱 상승
+        _playToneAt(300, 0.15, 'sine', 0.1, now);
+        _playToneAt(500, 0.15, 'sine', 0.12, now + 0.08);
+        _playToneAt(800, 0.2, 'sine', 0.14, now + 0.16);
+        _playToneAt(1200, 0.3, 'sine', 0.12, now + 0.24);
+        // 임팩트
+        _playNoise(0.15, 0.12);
+        // 에코
+        setTimeout(() => {
+            _playTone(1200, 0.4, 'triangle', 0.06);
+            _playTone(600, 0.3, 'triangle', 0.04);
+        }, 350);
+    }
+
+    /** 맞고: 스톱! - 결단 느낌의 무거운 소리 */
+    function playGostopStop() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 묵직한 착지
+        _playToneAt(200, 0.3, 'sine', 0.12, now);
+        _playToneAt(150, 0.4, 'sine', 0.1, now + 0.05);
+        _playNoise(0.1, 0.1);
+        // 결정 팡파레
+        _playToneAt(523, 0.15, 'sine', 0.08, now + 0.15);
+        _playToneAt(659, 0.15, 'sine', 0.08, now + 0.25);
+        _playToneAt(784, 0.25, 'sine', 0.1, now + 0.35);
+    }
+
     // ─── 블랙잭/룰렛용 (기존 유지) ───
 
     function playCardDeal() {
@@ -907,6 +1001,13 @@ const SoundManager = (() => {
         playLadderDrumroll,
         playLadderEmpty,
         playLadderBigWin,
+        // 맞고 (고스톱)
+        playGostopDeal,
+        playGostopPlace,
+        playGostopMatch,
+        playGostopFlip,
+        playGostopGo,
+        playGostopStop,
         // 레거시
         playWin,
         playCardDeal,

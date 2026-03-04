@@ -479,10 +479,12 @@ const PokerGame = (() => {
         let action = 'check';
         let amount = 0;
 
-        // 폴드 임계값
-        const foldThreshold = style === 'tight' ? 1 : style === 'balanced' ? 0.5 : 0;
+        // 폴드 임계값 (aggressive도 약한 패에서 간혹 폴드)
+        // const foldThreshold = style === 'tight' ? 1 : style === 'balanced' ? 0.5 : 0;
+        const foldThreshold = style === 'tight' ? 1 : style === 'balanced' ? 0.5 : 0.3;
         // 레이즈 임계값
-        const raiseThreshold = style === 'tight' ? 3 : style === 'balanced' ? 2 : 1;
+        // const raiseThreshold = style === 'tight' ? 3 : style === 'balanced' ? 2 : 1;
+        const raiseThreshold = style === 'tight' ? 3 : style === 'balanced' ? 2 : 1.5;
 
         // 베팅할 금액이 있는 경우
         if (callAmount > 0) {
@@ -509,8 +511,9 @@ const PokerGame = (() => {
             }
         }
 
-        // 어그레시브 AI 추가 블러프
-        if (style === 'aggressive' && action === 'check' && Math.random() < 0.25 && raiseCount < 3) {
+        // 어그레시브 AI 추가 블러프 (25% → 15%로 하향)
+        // if (style === 'aggressive' && action === 'check' && Math.random() < 0.25 && raiseCount < 3) {
+        if (style === 'aggressive' && action === 'check' && Math.random() < 0.15 && raiseCount < 3) {
             action = 'raise';
             amount = BET_AMOUNTS[0];
         }

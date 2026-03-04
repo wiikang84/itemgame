@@ -83,6 +83,7 @@ const LevelManager = (() => {
      * @returns {Object|null} 레벨업 시 { newLevel, bonus }
      */
     function addXP(betAmount) {
+        if (!Number.isFinite(betAmount) || betAmount <= 0) return null;
         const gained = Math.max(1, Math.floor(betAmount * XP_RATE));
         _xp += gained;
 

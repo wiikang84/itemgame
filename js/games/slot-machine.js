@@ -213,6 +213,9 @@ const SlotMachine = (() => {
             if (!ChipManager.deductChips(currentBet)) {
                 _showResult('칩이 부족합니다!', 'lose');
                 stopAutoSpin();
+                // 스핀 버튼 비활성화
+                const spinBtn = document.getElementById('spinButton');
+                if (spinBtn) spinBtn.disabled = true;
                 return;
             }
             // XP 획득 (베팅 금액의 10%)
@@ -288,11 +291,16 @@ const SlotMachine = (() => {
                     await _showWinCelebration(totalWin, ratio);
                 }
 
-                // 프리스핀 중 멀티플라이어 증가
+                // 프리스핀 중 멀티플라이어 증가 (2승마다 +1, 최대 x5)
                 if (isFreeSpinMode) {
-                    freeSpinMultiplier = Math.min(freeSpinMultiplier + 1, 10);
+                    // freeSpinMultiplier = Math.min(freeSpinMultiplier + 1, 10);
+                    if (typeof _freeSpinWinStreak === 'undefined') _freeSpinWinStreak = 0;
+                    _freeSpinWinStreak++;
+                    if (_freeSpinWinStreak % 2 === 0) {
+                        freeSpinMultiplier = Math.min(freeSpinMultiplier + 1, 5);
+                        if (typeof SoundManager !== 'undefined') SoundManager.playMultiplierUp();
+                    }
                     _updateMultiplierUI();
-                    if (typeof SoundManager !== 'undefined') SoundManager.playMultiplierUp();
                 }
 
                 // 갬블 옵션 (프리스핀/자동스핀 아닐 때만)

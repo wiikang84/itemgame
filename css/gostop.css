@@ -1,9 +1,9 @@
 /* ============================================
-   맞고 (고스톱) CSS v1.0
-   한국 전통 화투 게임 스타일
+   맞고 (고스톱) CSS v2.0
+   실제 화투패 디자인 + 확대 레이아웃
    ============================================ */
 
-.gostop-container { max-width: 900px; margin: 0 auto; padding: 16px; }
+.gostop-container { max-width: 960px; margin: 0 auto; padding: 16px; }
 
 /* === 게임 영역 === */
 .gostop-board {
@@ -18,128 +18,116 @@
 /* 턴/상태 표시 */
 .gs-status-bar {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 12px; margin-bottom: 12px;
+    padding: 8px 14px; margin-bottom: 14px;
     background: rgba(0,0,0,0.3); border-radius: 8px;
 }
-.gs-turn { color: #f0d078; font-weight: 700; font-size: 0.85rem; }
-.gs-draw-count { color: #aaa; font-size: 0.75rem; }
+.gs-turn { color: #f0d078; font-weight: 700; font-size: 0.9rem; }
+.gs-draw-count { color: #aaa; font-size: 0.8rem; }
 .gs-scores-bar { display: flex; gap: 16px; }
-.gs-score-item { font-size: 0.75rem; color: #ccc; }
-.gs-score-item .score-val { color: #d4a843; font-weight: 700; font-size: 0.9rem; }
-.gs-score-item .score-detail { color: #777; font-size: 0.6rem; margin-left: 4px; }
+.gs-score-item { font-size: 0.8rem; color: #ccc; }
+.gs-score-item .score-val { color: #d4a843; font-weight: 700; font-size: 0.95rem; }
+.gs-score-item .score-detail { color: #777; font-size: 0.65rem; margin-left: 4px; }
 
 /* === 결과 === */
 .gostop-result {
-    text-align: center; padding: 8px; margin: 8px 0;
-    font-weight: 700; font-size: 1rem; border-radius: 8px; min-height: 24px;
+    text-align: center; padding: 10px; margin: 10px 0;
+    font-weight: 700; font-size: 1.1rem; border-radius: 8px; min-height: 28px;
 }
 .gostop-result.win { color: #4ade80; background: rgba(74,222,128,0.15); }
 .gostop-result.lose { color: #f87171; background: rgba(248,113,113,0.15); }
 
-/* === AI 패 === */
-.gs-ai-area { text-align: center; margin-bottom: 12px; }
-.gs-area-label { font-size: 0.7rem; color: #999; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-
-#aiHand {
-    display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;
+/* === 카드 영역 공통 === */
+.gs-ai-area { text-align: center; margin-bottom: 14px; }
+.gs-field-area { margin: 16px 0; text-align: center; }
+.gs-player-area { text-align: center; }
+.gs-area-label {
+    font-size: 0.72rem; color: #999; margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 1px;
 }
 
-/* === 바닥패 === */
-.gs-field-area { margin: 16px 0; text-align: center; }
+#aiHand, #fieldCards, #playerHand {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+}
+
 #fieldCards {
-    display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;
-    min-height: 70px; padding: 10px;
-    background: rgba(0,0,0,0.2); border-radius: 10px;
+    min-height: 120px; padding: 12px;
+    background: rgba(0,0,0,0.2); border-radius: 12px;
     border: 1px dashed rgba(212,168,67,0.2);
 }
 
-/* === 내 패 === */
-.gs-player-area { text-align: center; }
-#playerHand {
-    display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;
-}
-
-/* === 화투 카드 === */
+/* === 화투 카드 (Canvas 렌더링) === */
 .hwatu-card {
-    width: 48px; height: 68px; border-radius: 6px; cursor: default;
-    transition: transform 0.2s, box-shadow 0.2s; flex-shrink: 0; position: relative;
+    width: 80px; height: 116px; border-radius: 6px;
+    cursor: default; transition: transform 0.2s, box-shadow 0.2s;
+    flex-shrink: 0; position: relative;
+    overflow: hidden;
 }
 
+.hwatu-card img {
+    width: 100%; height: 100%; display: block;
+    border-radius: 5px;
+    image-rendering: auto;
+}
+
+/* 뒷면 */
 .hwatu-card.face-down {
-    background: linear-gradient(135deg, #8b0000 0%, #5a0000 50%, #8b0000 100%);
-    border: 2px solid #a52a2a; display: flex; align-items: center; justify-content: center;
+    /* 뒷면은 img로 렌더링 */
 }
-.hwatu-back { color: rgba(255,255,255,0.3); font-size: 1.2rem; font-weight: 700; }
-
-.hwatu-inner {
-    width: 100%; height: 100%; border-radius: 5px;
-    background: linear-gradient(135deg, #fffff0 0%, #f5f0dc 100%);
-    border: 2px solid #ccc;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 1px; position: relative; overflow: hidden;
-}
-.hwatu-month { font-size: 0.5rem; color: #666; font-weight: 600; }
-.hwatu-emoji { font-size: 1.3rem; line-height: 1; }
-.hwatu-type {
-    font-size: 0.55rem; font-weight: 900; padding: 1px 4px; border-radius: 3px;
-    position: absolute; bottom: 2px; right: 2px;
-}
-
-/* 타입별 색상 */
-.hwatu-card.gwang .hwatu-type { background: #d4a843; color: #fff; }
-.hwatu-card.gwang .hwatu-inner { border-color: #d4a843; box-shadow: inset 0 0 8px rgba(212,168,67,0.3); }
-.hwatu-card.ttihong .hwatu-type { background: #c41e3a; color: #fff; }
-.hwatu-card.ttihong .hwatu-inner { border-color: #c41e3a; }
-.hwatu-card.tticheong .hwatu-type { background: #2563eb; color: #fff; }
-.hwatu-card.tticheong .hwatu-inner { border-color: #2563eb; }
-.hwatu-card.tticho .hwatu-type { background: #16a34a; color: #fff; }
-.hwatu-card.tticho .hwatu-inner { border-color: #16a34a; }
-.hwatu-card.yeol .hwatu-type { background: #7c3aed; color: #fff; }
-.hwatu-card.yeol .hwatu-inner { border-color: #7c3aed; }
-.hwatu-card.ssangpi .hwatu-inner { border-color: #999; background: linear-gradient(135deg, #f5f0dc, #e8e0c8); }
-.hwatu-card.pi .hwatu-inner { border-color: #bbb; }
 
 /* 플레이 가능한 카드 */
 .hwatu-card.playable { cursor: pointer; }
-.hwatu-card.playable:hover { transform: translateY(-8px); box-shadow: 0 6px 16px rgba(212,168,67,0.4); }
+.hwatu-card.playable:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 20px rgba(212,168,67,0.5);
+}
+.hwatu-card.playable:active {
+    transform: translateY(-5px);
+}
 .hwatu-card.dimmed { opacity: 0.3; pointer-events: none; }
 
 /* 선택 가능한 바닥 카드 */
 .hwatu-card.selectable {
     cursor: pointer; animation: selectPulse 0.8s ease-in-out infinite;
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.6);
 }
 @keyframes selectPulse {
-    0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.4); }
-    50% { box-shadow: 0 0 18px rgba(255,215,0,0.8); }
+    0%, 100% { box-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    50% { box-shadow: 0 0 22px rgba(255,215,0,0.9); }
 }
 
 /* === 먹은 패 영역 === */
 .gs-captures {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-    margin-top: 12px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-top: 14px;
 }
 .gs-capture-section {
-    background: rgba(0,0,0,0.2); border-radius: 8px; padding: 8px;
+    background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px;
 }
 .gs-capture-label {
-    font-size: 0.65rem; color: #888; text-transform: uppercase;
-    letter-spacing: 1px; margin-bottom: 4px; text-align: center;
+    font-size: 0.68rem; color: #888; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 6px; text-align: center;
 }
-.gs-capture-row { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; min-height: 24px; }
+.gs-capture-row {
+    display: flex; gap: 3px; flex-wrap: wrap; justify-content: center;
+    min-height: 36px; margin-bottom: 3px;
+}
 
+/* 미니 카드 (먹은 패) */
 .hwatu-mini {
-    width: 22px; height: 22px; border-radius: 4px;
-    background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.1);
+    width: 36px; height: 52px; border-radius: 4px;
+    overflow: hidden; flex-shrink: 0;
+}
+.hwatu-mini img {
+    width: 100%; height: 100%; display: block;
+    border-radius: 3px;
 }
 
 /* === 고/스톱 패널 === */
 .gs-go-panel {
-    display: none; justify-content: center; gap: 12px;
-    padding: 12px; margin: 8px 0;
+    display: none; justify-content: center; gap: 14px;
+    padding: 14px; margin: 10px 0;
     background: rgba(212,168,67,0.1); border: 2px solid rgba(212,168,67,0.3);
-    border-radius: 10px; animation: goFlash 0.6s ease-in-out infinite alternate;
+    border-radius: 12px; animation: goFlash 0.6s ease-in-out infinite alternate;
 }
 @keyframes goFlash {
     from { border-color: rgba(212,168,67,0.3); }
@@ -147,10 +135,11 @@
 }
 
 .gs-go-btn {
-    padding: 10px 28px; border: none; border-radius: 8px;
-    font-size: 1rem; font-weight: 700; cursor: pointer;
+    padding: 12px 32px; border: none; border-radius: 10px;
+    font-size: 1.05rem; font-weight: 700; cursor: pointer;
     font-family: var(--font-title, 'Cinzel', serif);
     text-transform: uppercase; letter-spacing: 2px;
+    transition: transform 0.15s;
 }
 .gs-go-btn.go {
     background: linear-gradient(135deg, #c41e3a, #9a1530); color: #fff;
@@ -158,23 +147,23 @@
 .gs-go-btn.stop {
     background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
 }
-.gs-go-btn:hover { transform: scale(1.05); }
+.gs-go-btn:hover { transform: scale(1.08); }
 
 /* === 컨트롤 === */
 .gs-controls {
     display: flex; gap: 8px; align-items: center; justify-content: center;
-    flex-wrap: wrap; margin-bottom: 12px;
+    flex-wrap: wrap; margin-bottom: 14px;
 }
 .gs-bet-btn {
-    padding: 6px 14px; border: 2px solid #555; border-radius: 20px;
-    background: rgba(0,0,0,0.4); color: #ccc; font-size: 0.75rem;
+    padding: 7px 16px; border: 2px solid #555; border-radius: 20px;
+    background: rgba(0,0,0,0.4); color: #ccc; font-size: 0.8rem;
     font-weight: 600; cursor: pointer; transition: all 0.2s;
 }
 .gs-bet-btn.active { border-color: #d4a843; color: #d4a843; }
 .gs-new-game-btn {
-    padding: 10px 28px; border: none; border-radius: 8px;
+    padding: 11px 30px; border: none; border-radius: 10px;
     background: linear-gradient(135deg, #d4a843, #b8922e); color: #1a1a1a;
-    font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    font-weight: 700; font-size: 0.95rem; cursor: pointer;
     font-family: var(--font-title, 'Cinzel', serif);
 }
 .gs-new-game-btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -185,11 +174,11 @@
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
     padding: 12px; background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 .gs-stat-item { text-align: center; }
-.gs-stat-value { display: block; font-size: 1.1rem; font-weight: 700; color: #d4a843; }
-.gs-stat-label { display: block; font-size: 0.65rem; color: #777; }
+.gs-stat-value { display: block; font-size: 1.15rem; font-weight: 700; color: #d4a843; }
+.gs-stat-label { display: block; font-size: 0.68rem; color: #777; }
 
 /* === 규칙 === */
 .gs-rules {
@@ -204,15 +193,19 @@
 
 /* === 반응형 === */
 @media (max-width: 768px) {
-    .hwatu-card { width: 42px; height: 60px; }
-    .hwatu-emoji { font-size: 1.1rem; }
-    .hwatu-month { font-size: 0.45rem; }
+    .hwatu-card { width: 64px; height: 93px; }
+    .hwatu-mini { width: 30px; height: 43px; }
+    .gostop-container { padding: 10px; }
+    #fieldCards { min-height: 95px; }
 }
 @media (max-width: 480px) {
-    .gostop-container { padding: 8px; }
+    .gostop-container { padding: 6px; }
     .gostop-board { padding: 10px; }
-    .hwatu-card { width: 36px; height: 52px; }
-    .hwatu-emoji { font-size: 0.9rem; }
-    #fieldCards, #playerHand, #aiHand { gap: 3px; }
-    .gs-go-btn { padding: 8px 20px; font-size: 0.85rem; }
+    .hwatu-card { width: 52px; height: 75px; }
+    .hwatu-mini { width: 26px; height: 38px; }
+    #fieldCards, #playerHand, #aiHand { gap: 4px; }
+    #fieldCards { min-height: 78px; padding: 8px; }
+    .gs-go-btn { padding: 9px 22px; font-size: 0.9rem; }
+    .gs-captures { gap: 6px; }
+    .gs-capture-row { min-height: 28px; }
 }
