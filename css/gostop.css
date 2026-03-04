@@ -372,6 +372,7 @@
 /* === 추가 뱃지 === */
 .gs-badge.nagari { background: rgba(240,208,120,0.2); color: #f0d078; border: 1px solid rgba(240,208,120,0.4); }
 .gs-badge.ppuk-badge { background: rgba(255,111,0,0.2); color: #ff6f00; border: 1px solid rgba(255,111,0,0.4); }
+.gs-badge.bomb-empty { background: rgba(156,163,175,0.2); color: #9ca3af; border: 1px solid rgba(156,163,175,0.4); }
 
 /* === 반응형 === */
 @media (max-width: 768px) {

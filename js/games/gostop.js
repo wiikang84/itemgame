@@ -3,7 +3,7 @@
    한국 전통 화투 게임 (AI 1명 대전)
    48장 화투패, 광/띠/피/열끗 점수 체계
 
-   v3.0 추가 기능:
+   v3.0~3.2 추가 기능:
    - 폭탄, 흔들기, 뻑, 쪽, 쓸, 따닥
    - 피박/광박/멍박 배수, 고도리 점수
    - 뻑 정식 구현 (뒤집기 뻑), 삼뻑 자동패배, 자뻑
@@ -11,6 +11,8 @@
    - 나가리 (무승부 → 다음 판 배수)
    - 매칭 가능 카드 하이라이트
    - 상세 결과 내역 (점수 분석, 점당 칩)
+   - v3.1: 실시간 정보 패널 (카운트/족보/박)
+   - v3.2: 폭탄 빈 턴 + 흔들기 횟수 표시
    ============================================ */
 
 const GoStopGame = (() => {
@@ -91,6 +93,7 @@ const GoStopGame = (() => {
 
     // v3.0 상태
     let nagariMultiplier = 1;
+    let bombEmptyTurns = { player: 0, ai: 0 };
 
     // === 초기화 ===
     function init() {
@@ -141,6 +144,7 @@ const GoStopGame = (() => {
         matchingFieldCards = [];
         pendingActions = [];
         lastEvent = '';
+        bombEmptyTurns = { player: 0, ai: 0 };
 
         // 딜: 7장, 7장, 바닥 6장
         for (let i = 0; i < 7; i++) playerHand.push(deck.pop());
@@ -260,6 +264,7 @@ const GoStopGame = (() => {
 
         captures.push(...handCards, ...fieldCards);
         bombUsed[who] = true;
+        bombEmptyTurns[who] += handCards.length - 1; // 3장 냈으니 2턴 빈 턴
         _playSfx('bomb');
         _showEvent('폭탄!', 'bomb');
         _screenShake();
@@ -464,8 +469,10 @@ const GoStopGame = (() => {
             }
         }
 
-        // 패 소진 체크
-        if (playerHand.length === 0 && aiHand.length === 0) {
+        // 패 소진 체크 (빈 턴 남아있으면 아직 끝이 아님)
+        const playerDone = playerHand.length === 0 && bombEmptyTurns.player === 0;
+        const aiDone = aiHand.length === 0 && bombEmptyTurns.ai === 0;
+        if (playerDone && aiDone) {
             const pScore = _calcScore(playerCaptures);
             const aScore = _calcScore(aiCaptures);
 
@@ -502,6 +509,15 @@ const GoStopGame = (() => {
             _renderAll();
             _updateUI();
             setTimeout(() => {
+                // AI 폭탄 빈 턴: 뒷패만 뒤집기
+                if (bombEmptyTurns.ai > 0) {
+                    bombEmptyTurns.ai--;
+                    _showEvent('AI 빈 턴', 'bomb');
+                    _renderAll();
+                    _updateUI();
+                    setTimeout(() => _doDrawPhase('ai', null), 600);
+                    return;
+                }
                 _checkPreTurnActions('ai');
                 if (gamePhase === 'playing') _aiTurn();
             }, 600);
@@ -509,6 +525,16 @@ const GoStopGame = (() => {
             currentTurn = 'player';
             _renderAll();
             _updateUI();
+            // 플레이어 폭탄 빈 턴: 손패 안 내고 뒷패만 뒤집기
+            if (bombEmptyTurns.player > 0) {
+                bombEmptyTurns.player--;
+                _showEvent('빈 턴', 'bomb');
+                _showToast(`폭탄 빈 턴 (남은: ${bombEmptyTurns.player}회)`, 'info');
+                _renderAll();
+                _updateUI();
+                setTimeout(() => _doDrawPhase('player', null), 800);
+                return;
+            }
             _checkPreTurnActions('player');
         }
     }
@@ -527,6 +553,15 @@ const GoStopGame = (() => {
             _renderAll();
             _updateUI();
             setTimeout(() => {
+                // AI 폭탄 빈 턴 체크
+                if (bombEmptyTurns.ai > 0) {
+                    bombEmptyTurns.ai--;
+                    _showEvent('AI 빈 턴', 'bomb');
+                    _renderAll();
+                    _updateUI();
+                    setTimeout(() => _doDrawPhase('ai', null), 600);
+                    return;
+                }
                 _checkPreTurnActions('ai');
                 if (gamePhase === 'playing') _aiTurn();
             }, 600);
@@ -1047,13 +1082,16 @@ const GoStopGame = (() => {
 
         const turnEl = document.getElementById('turnIndicator');
         if (turnEl) {
-            const labels = {
-                'go-decision': '고? 스톱?',
-                'action-choice': '특수 액션!',
-                'playing': currentTurn === 'player' ? '내 턴' : 'AI 턴',
-                'selecting': '바닥패 선택'
-            };
-            turnEl.textContent = labels[gamePhase] || '';
+            let turnLabel = '';
+            if (gamePhase === 'go-decision') turnLabel = '고? 스톱?';
+            else if (gamePhase === 'action-choice') turnLabel = '특수 액션!';
+            else if (gamePhase === 'selecting') turnLabel = '바닥패 선택';
+            else if (gamePhase === 'playing') {
+                if (currentTurn === 'player' && bombEmptyTurns.player > 0) turnLabel = '빈 턴 (폭탄)';
+                else if (currentTurn === 'ai' && bombEmptyTurns.ai > 0) turnLabel = 'AI 빈 턴';
+                else turnLabel = currentTurn === 'player' ? '내 턴' : 'AI 턴';
+            }
+            turnEl.textContent = turnLabel;
         }
     }
 
@@ -1126,13 +1164,15 @@ const GoStopGame = (() => {
         container.innerHTML = '';
 
         if (nagariMultiplier > 1) _addBadge(container, `나가리 x${nagariMultiplier}`, 'nagari');
-        if (shakeCount.player > 0) _addBadge(container, `흔들기 x${Math.pow(2, shakeCount.player)}`, 'shake');
+        if (shakeCount.player > 0) _addBadge(container, `흔들기 ${shakeCount.player}회 (x${Math.pow(2, shakeCount.player)})`, 'shake');
         if (bombUsed.player) _addBadge(container, '폭탄 x2', 'bomb');
         if (goCount.player > 0) _addBadge(container, `${goCount.player}고`, 'go');
         if (ppukCount.player > 0) _addBadge(container, `뻑 ${ppukCount.player}회`, 'ppuk-badge');
-        if (shakeCount.ai > 0) _addBadge(container, 'AI 흔들기', 'shake-ai');
+        if (bombEmptyTurns.player > 0) _addBadge(container, `빈 턴 ${bombEmptyTurns.player}회 남음`, 'bomb-empty');
+        if (shakeCount.ai > 0) _addBadge(container, `AI 흔들기 ${shakeCount.ai}회 (x${Math.pow(2, shakeCount.ai)})`, 'shake-ai');
         if (bombUsed.ai) _addBadge(container, 'AI 폭탄', 'bomb-ai');
         if (ppukCount.ai > 0) _addBadge(container, `AI 뻑 ${ppukCount.ai}회`, 'ppuk-badge');
+        if (bombEmptyTurns.ai > 0) _addBadge(container, `AI 빈 턴 ${bombEmptyTurns.ai}회 남음`, 'bomb-empty');
     }
 
     function _addBadge(container, text, cls) {

@@ -651,3 +651,17 @@ python -m http.server 8888
 - **HTML**: playerInfoPanel, aiInfoPanel div 추가 (gostop.html)
 - **CSS**: gs-row-count, gs-info-panel, gs-jokbo-*, gs-bak-* 스타일 + 480px 반응형
 - 변경 파일: js/games/gostop.js, css/gostop.css, gostop.html, CLAUDE.md
+
+### 2026-03-04 | 맞고 v3.2 폭탄 빈 턴 + 흔들기 횟수 표시
+
+- **폭탄 빈 턴 시스템** (bombEmptyTurns 상태 추가)
+  - 폭탄 시 3장을 한번에 내므로 이후 2턴은 손패 없이 뒷패만 뒤집기
+  - _afterResolve, goDecision에서 빈 턴 체크 로직 추가
+  - 패 소진 체크: 빈 턴 남아있으면 게임 종료하지 않음
+  - 턴 표시기: "빈 턴 (폭탄)" / "AI 빈 턴" 표시
+  - 빈 턴 남은 횟수 뱃지 표시
+- **흔들기 횟수 표시 개선**
+  - "흔들기 x4" → "흔들기 2회 (x4)" 로 횟수+배수 동시 표시
+  - AI 흔들기도 동일하게 횟수 표시
+- **CSS**: .gs-badge.bomb-empty 스타일 추가
+- 변경 파일: js/games/gostop.js, css/gostop.css, CLAUDE.md
