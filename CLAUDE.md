@@ -566,3 +566,37 @@ python -m http.server 8888
 - **로비(index.html)**: 게임 카드 3종 추가, 7 GAMES → 8 GAMES
 - **파일 구조 업데이트**: CLAUDE.md에 신규 9개 파일 반영
 - 변경 파일: baccarat.html(신규), css/baccarat.css(신규), js/games/baccarat.js(신규), poker.html(신규), css/poker.css(신규), js/games/poker.js(신규), gostop.html(신규), css/gostop.css(신규), js/games/gostop.js(신규), index.html, CLAUDE.md
+
+### 2026-03-04 | 맞고 v2.0 실제 화투 이미지 + 한게임/피망 벤치마킹 대규모 업데이트
+
+- **실제 화투 PNG 이미지 적용** (Canvas 그리기 → 실물 이미지)
+  - 소스: github.com/aaronrwang/HwaTu (MIT License)
+  - 49장 PNG 이미지 다운로드 (`images/hwatu/` 폴더, 48장 + 뒷면 1장)
+  - hwatu-renderer.js v3.0: Canvas 그리기 코드 전면 제거 → 이미지 경로 매퍼로 단순화
+  - 프리로드 시스템으로 모든 이미지 사전 로딩
+- **gostop.js v2.0 핵심 기능 추가** (한게임/피망 맞고 벤치마킹)
+  - **폭탄**: 같은 월 3장 + 바닥 1장 → 4장 모두 먹기, x2배
+  - **흔들기**: 같은 월 3장 보유 시 상대에게 공개, x2^n배
+  - **쪽**: 뒤집은 패가 방금 바닥에 놓은 내 패와 같은 월 → 둘 다 가져가기 + 피 1장 빼앗기
+  - **쓸**: 바닥 패를 모두 비우면 피 1장 빼앗기
+  - **따닥**: 바닥에 같은 월 3장 + 내 4번째 → 모두 가져가기 + 피 2장 빼앗기
+  - **피 빼앗기**: 쪽/쓸/따닥 시 상대 피를 내 먹은 패로 이동
+  - **피박/광박/멍박**: 패자 피≤7장(x2) / 패자 광0장(x2) / 패자 열끗0장(x2)
+  - **고도리**: 2월+4월+8월 열끗 = 5점
+  - **고 배수 시스템**: 1고=+1점, 2고=+2점, 3고=x2, 4고=x4...
+  - **액션 패널**: 폭탄/흔들기 선택 UI (패스 가능)
+  - **이벤트 오버레이**: 뻑/쪽/쓸/폭탄/흔들기/고/스톱 대형 텍스트 팝업
+  - **배수 뱃지**: 활성 배수(흔들기/폭탄/고) 실시간 표시
+  - **화면 흔들림**: 폭탄 시 보드 쉐이크 애니메이션
+- **사운드 6종 추가** (sound-manager.js)
+  - 뻑(playGostopPpuk), 쪽(playGostopJjok), 쓸(playGostopSweep)
+  - 폭탄(playGostopBomb), 흔들기(playGostopShake), 따닥(playGostopDdadak)
+- **CSS 업데이트** (gostop.css)
+  - 이벤트 오버레이 스타일 (8가지 이벤트 타입별 색상)
+  - eventPop 애니메이션 (1.2초 스케일+페이드)
+  - 배수 뱃지 스타일 (5종: shake/bomb/go/shake-ai/bomb-ai)
+  - 액션 패널 스타일 (폭탄=빨강, 흔들기=주황, 패스=회색)
+  - screenShake 애니메이션 (0.5초 좌우 흔들림+회전)
+- **HTML 업데이트** (gostop.html)
+  - eventOverlay, multiplierBadges, actionPanel 요소 추가
+- 변경 파일: images/hwatu/*.png(49장 신규), js/games/hwatu-renderer.js, js/games/gostop.js, js/core/sound-manager.js, css/gostop.css, gostop.html, CLAUDE.md

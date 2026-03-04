@@ -58,6 +58,12 @@
                 <span class="gs-draw-count">남은패: <span id="drawCount">0</span></span>
             </div>
 
+            <!-- 이벤트 오버레이 (뻑/쪽/쓸/폭탄/흔들기/고) -->
+            <div class="gs-event-overlay" id="eventOverlay"></div>
+
+            <!-- 배수 뱃지 -->
+            <div class="gs-multiplier-badges" id="multiplierBadges"></div>
+
             <!-- 결과 -->
             <div class="gostop-result" id="gostopResult"></div>
 
@@ -78,6 +84,9 @@
                 <div class="gs-area-label">내 패</div>
                 <div id="playerHand"></div>
             </div>
+
+            <!-- 액션 패널 (흔들기/폭탄) -->
+            <div class="gs-action-panel" id="actionPanel" style="display:none;"></div>
 
             <!-- 고/스톱 패널 -->
             <div class="gs-go-panel" id="goStopPanel">

@@ -906,14 +906,79 @@ const SoundManager = (() => {
         if (_muted) return;
         const ctx = _getCtx();
         const now = ctx.currentTime;
-        // 묵직한 착지
         _playToneAt(200, 0.3, 'sine', 0.12, now);
         _playToneAt(150, 0.4, 'sine', 0.1, now + 0.05);
         _playNoise(0.1, 0.1);
-        // 결정 팡파레
         _playToneAt(523, 0.15, 'sine', 0.08, now + 0.15);
         _playToneAt(659, 0.15, 'sine', 0.08, now + 0.25);
         _playToneAt(784, 0.25, 'sine', 0.1, now + 0.35);
+    }
+
+    // ─── 맞고 특수 이벤트 사운드 ───
+
+    function playGostopPpuk() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 뻑! - 짧고 임팩트 있는 타격음
+        _playToneAt(120, 0.3, 'sawtooth', 0.2, now);
+        _playNoise(0.15, 0.25);
+        _playToneAt(80, 0.4, 'square', 0.15, now + 0.05);
+    }
+
+    function playGostopJjok() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 쪽! - 날카로운 스냅
+        _playToneAt(800, 0.08, 'sine', 0.1, now);
+        _playToneAt(1200, 0.05, 'sine', 0.08, now + 0.03);
+        _playNoise(0.04, 0.12);
+    }
+
+    function playGostopSweep() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 쓸! - 쓸어가는 스위프 사운드
+        for (let i = 0; i < 5; i++) {
+            _playToneAt(300 + i * 100, 0.05, 'sine', 0.06, now + i * 0.04);
+        }
+        _playNoise(0.08, 0.15);
+    }
+
+    function playGostopBomb() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 폭탄! - 폭발음
+        _playToneAt(60, 0.5, 'sawtooth', 0.3, now);
+        _playNoise(0.25, 0.35);
+        _playToneAt(100, 0.4, 'square', 0.2, now + 0.05);
+        _playToneAt(200, 0.2, 'sine', 0.15, now + 0.1);
+        _playToneAt(80, 0.3, 'sawtooth', 0.1, now + 0.15);
+    }
+
+    function playGostopShake() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 흔들기! - 딸랑딸랑 소리
+        for (let i = 0; i < 6; i++) {
+            _playToneAt(1000 + (i % 2) * 300, 0.04, 'sine', 0.06, now + i * 0.06);
+        }
+        _playToneAt(600, 0.15, 'triangle', 0.08, now + 0.4);
+    }
+
+    function playGostopDdadak() {
+        if (_muted) return;
+        const ctx = _getCtx();
+        const now = ctx.currentTime;
+        // 따닥! - 빠른 연타
+        _playToneAt(500, 0.06, 'square', 0.1, now);
+        _playToneAt(700, 0.06, 'square', 0.1, now + 0.08);
+        _playNoise(0.08, 0.15);
+        _playToneAt(900, 0.1, 'sine', 0.12, now + 0.16);
     }
 
     // ─── 블랙잭/룰렛용 (기존 유지) ───
@@ -1008,6 +1073,12 @@ const SoundManager = (() => {
         playGostopFlip,
         playGostopGo,
         playGostopStop,
+        playGostopPpuk,
+        playGostopJjok,
+        playGostopSweep,
+        playGostopBomb,
+        playGostopShake,
+        playGostopDdadak,
         // 레거시
         playWin,
         playCardDeal,
