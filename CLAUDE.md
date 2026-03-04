@@ -630,3 +630,24 @@ python -m http.server 8888
   - .gs-result-title/scores/calc/mult: 상세 결과 레이아웃
   - .gs-badge.nagari/.ppuk-badge: 나가리/뻑 뱃지 스타일
 - 변경 파일: js/games/gostop.js, css/gostop.css, CLAUDE.md
+
+### 2026-03-04 | 맞고 v3.1 실시간 정보 패널 (카운트/족보/박)
+
+- **먹은패 카운트 라벨** (양쪽 모두)
+  - 각 캡처 행에 "광2/3", "띠3/5", "열4/5", "피8/10" 형식 라벨 표시
+  - 색상 코딩: 기본(회색), 가까움(노랑, target-1), 달성(녹색)
+  - CSS absolute positioning으로 행 좌측에 배치
+- **족보 진행도 표시** (양쪽 모두)
+  - 홍단(1,2,3월)/청단(6,9,10월)/초단(4,5,7월)/고도리(2,4,8월) 4종
+  - ●/○ 도트로 수집 현황 시각화
+  - 완성 시 녹색 하이라이트, 부분 수집 시 밝은 색상
+  - _getJokboProgress() 함수 추가
+- **박 위험/확정 양방향 표시**
+  - 위험(받을 박): ⚠피박위험, ⚠광박위험, ⚠멍박위험 (빨간색)
+  - 유리(줄 박): ✓상대피박, ✓상대광박, ✓상대멍박 (녹색)
+  - _getBakStatus() 함수 추가 (양방향 박 계산)
+  - 캡처 없을 때 노출 안 함 (게임 시작 직후 노이즈 방지)
+- **_renderInfoPanels()** 함수 추가, _renderAll()에서 호출
+- **HTML**: playerInfoPanel, aiInfoPanel div 추가 (gostop.html)
+- **CSS**: gs-row-count, gs-info-panel, gs-jokbo-*, gs-bak-* 스타일 + 480px 반응형
+- 변경 파일: js/games/gostop.js, css/gostop.css, gostop.html, CLAUDE.md

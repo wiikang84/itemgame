@@ -826,6 +826,7 @@ const GoStopGame = (() => {
         _renderField();
         _renderCaptures('player', playerCaptures);
         _renderCaptures('ai', aiCaptures);
+        _renderInfoPanels();
         _renderScores();
     }
 
@@ -901,12 +902,135 @@ const GoStopGame = (() => {
             yeol: captures.filter(c => c.type === 'yeol'),
             pi: captures.filter(c => c.type === 'pi' || c.type === 'ssang-pi')
         };
-        for (const [key, cards] of Object.entries(sets)) {
+        let piCount = 0;
+        captures.forEach(c => {
+            if (c.type === 'pi') piCount++;
+            if (c.type === 'ssang-pi') piCount += 2;
+        });
+        const rowInfo = [
+            { key: 'gwang', label: '광', count: sets.gwang.length, target: 3 },
+            { key: 'tti', label: '띠', count: sets.tti.length, target: 5 },
+            { key: 'yeol', label: '열', count: sets.yeol.length, target: 5 },
+            { key: 'pi', label: '피', count: piCount, target: 10 }
+        ];
+        rowInfo.forEach(({ key, label, count, target }) => {
             const el = document.getElementById(ids[key]);
-            if (!el) continue;
+            if (!el) return;
             el.innerHTML = '';
-            cards.forEach(c => el.appendChild(_createMiniEl(c)));
+            const badge = document.createElement('span');
+            badge.className = 'gs-row-count';
+            if (count >= target) badge.classList.add('scoring');
+            else if (count >= target - 1) badge.classList.add('close');
+            badge.textContent = `${label}${count}/${target}`;
+            el.appendChild(badge);
+            sets[key].forEach(c => el.appendChild(_createMiniEl(c)));
+        });
+    }
+
+    // === 족보 진행도 계산 ===
+    function _getJokboProgress(captures) {
+        const jokbo = [
+            { name: '홍단', cards: [
+                { month: 1, type: 'tti-hong' },
+                { month: 2, type: 'tti-hong' },
+                { month: 3, type: 'tti-hong' }
+            ]},
+            { name: '청단', cards: [
+                { month: 6, type: 'tti-cheong' },
+                { month: 9, type: 'tti-cheong' },
+                { month: 10, type: 'tti-cheong' }
+            ]},
+            { name: '초단', cards: [
+                { month: 4, type: 'tti-cho' },
+                { month: 5, type: 'tti-cho' },
+                { month: 7, type: 'tti-cho' }
+            ]},
+            { name: '고도리', cards: [
+                { month: 2, type: 'yeol' },
+                { month: 4, type: 'yeol' },
+                { month: 8, type: 'yeol' }
+            ]}
+        ];
+        return jokbo.map(j => {
+            const collected = j.cards.filter(req =>
+                captures.some(c => c.month === req.month && c.type === req.type)
+            ).length;
+            return { name: j.name, collected, total: j.cards.length, complete: collected >= j.cards.length };
+        });
+    }
+
+    // === 박 상태 계산 (양방향) ===
+    function _getBakStatus(myCaps, oppCaps) {
+        const status = [];
+        if (myCaps.length === 0 && oppCaps.length === 0) return status;
+
+        const myB = _getScoreBreakdown(myCaps);
+        const oppB = _getScoreBreakdown(oppCaps);
+
+        // 내가 받을 박 위험
+        if (myCaps.length > 0 && myB.pi <= 7) {
+            status.push({ text: '⚠ 피박위험', danger: true });
         }
+        if (oppB.gwang >= 2 && myB.gwang === 0) {
+            status.push({ text: '⚠ 광박위험', danger: true });
+        }
+        if (oppB.yeol >= 3 && myB.yeol === 0) {
+            status.push({ text: '⚠ 멍박위험', danger: true });
+        }
+        // 상대에게 줄 박
+        if (oppCaps.length > 0 && oppB.pi <= 7) {
+            status.push({ text: '✓ 상대피박', danger: false });
+        }
+        if (myB.gwang >= 3 && oppB.gwang === 0) {
+            status.push({ text: '✓ 상대광박', danger: false });
+        }
+        if (myB.yeol >= 5 && oppB.yeol === 0) {
+            status.push({ text: '✓ 상대멍박', danger: false });
+        }
+        return status;
+    }
+
+    // === 정보 패널 렌더링 (족보 + 박) ===
+    function _renderInfoPanels() {
+        _renderInfoPanel('player', playerCaptures, aiCaptures);
+        _renderInfoPanel('ai', aiCaptures, playerCaptures);
+    }
+
+    function _renderInfoPanel(who, myCaps, oppCaps) {
+        const panel = document.getElementById(`${who}InfoPanel`);
+        if (!panel) return;
+        if (gamePhase === 'waiting') { panel.innerHTML = ''; return; }
+
+        let html = '';
+
+        // 족보 진행도
+        const jokbo = _getJokboProgress(myCaps);
+        html += '<div class="gs-jokbo-row">';
+        jokbo.forEach(j => {
+            const cls = j.complete ? 'complete' : (j.collected > 0 ? 'partial' : '');
+            html += `<span class="gs-jokbo-item ${cls}">`;
+            html += `<span class="gs-jokbo-name">${j.name}</span>`;
+            for (let i = 0; i < j.total; i++) {
+                html += i < j.collected
+                    ? '<span class="gs-dot filled">●</span>'
+                    : '<span class="gs-dot empty">○</span>';
+            }
+            html += '</span>';
+        });
+        html += '</div>';
+
+        // 박 상태
+        const bakStatus = _getBakStatus(myCaps, oppCaps);
+        if (bakStatus.length > 0) {
+            html += '<div class="gs-bak-row">';
+            bakStatus.forEach(b => {
+                const cls = b.danger ? 'danger' : 'advantage';
+                html += `<span class="gs-bak-item ${cls}">${b.text}</span>`;
+            });
+            html += '</div>';
+        }
+
+        panel.innerHTML = html;
     }
 
     function _renderScores() {

@@ -319,6 +319,56 @@
     font-size: 0.8rem; margin-top: 3px; color: #ddd;
 }
 
+/* === 행별 카운트 라벨 === */
+.gs-capture-row {
+    position: relative;
+    padding-left: 40px;
+}
+.gs-row-count {
+    position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+    display: inline-flex; align-items: center;
+    padding: 1px 5px; border-radius: 4px;
+    font-size: 0.6rem; font-weight: 700;
+    background: rgba(255,255,255,0.06);
+    color: #777; white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+.gs-row-count.scoring { color: #4ade80; background: rgba(74,222,128,0.15); }
+.gs-row-count.close { color: #fbbf24; background: rgba(251,191,36,0.12); }
+
+/* === 정보 패널 (족보 + 박) === */
+.gs-info-panel {
+    margin-top: 6px; padding-top: 5px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    min-height: 0;
+}
+.gs-jokbo-row {
+    display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 3px;
+}
+.gs-jokbo-item {
+    display: inline-flex; align-items: center; gap: 1px;
+    font-size: 0.58rem; color: #555;
+    padding: 1px 4px; border-radius: 3px;
+}
+.gs-jokbo-item.partial { color: #999; }
+.gs-jokbo-item.complete { color: #4ade80; background: rgba(74,222,128,0.1); }
+.gs-jokbo-name { font-weight: 700; margin-right: 2px; }
+.gs-dot.filled { color: #d4a843; font-size: 0.55rem; }
+.gs-dot.empty { color: #3a3a3a; font-size: 0.55rem; }
+.gs-jokbo-item.complete .gs-dot.filled { color: #4ade80; }
+
+.gs-bak-row {
+    display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;
+    margin-top: 2px;
+}
+.gs-bak-item {
+    display: inline-block; padding: 1px 6px; border-radius: 4px;
+    font-size: 0.56rem; font-weight: 700;
+}
+.gs-bak-item.danger { color: #f87171; background: rgba(248,113,113,0.12); }
+.gs-bak-item.advantage { color: #4ade80; background: rgba(74,222,128,0.08); }
+
 /* === 추가 뱃지 === */
 .gs-badge.nagari { background: rgba(240,208,120,0.2); color: #f0d078; border: 1px solid rgba(240,208,120,0.4); }
 .gs-badge.ppuk-badge { background: rgba(255,111,0,0.2); color: #ff6f00; border: 1px solid rgba(255,111,0,0.4); }
@@ -339,5 +389,9 @@
     #fieldCards { min-height: 78px; padding: 8px; }
     .gs-go-btn { padding: 9px 22px; font-size: 0.9rem; }
     .gs-captures { gap: 6px; }
-    .gs-capture-row { min-height: 28px; }
+    .gs-capture-row { min-height: 28px; padding-left: 34px; }
+    .gs-row-count { font-size: 0.52rem; padding: 1px 3px; }
+    .gs-jokbo-item { font-size: 0.5rem; }
+    .gs-dot { font-size: 0.48rem !important; }
+    .gs-bak-item { font-size: 0.5rem; padding: 1px 4px; }
 }
