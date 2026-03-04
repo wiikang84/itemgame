@@ -600,3 +600,33 @@ python -m http.server 8888
 - **HTML 업데이트** (gostop.html)
   - eventOverlay, multiplierBadges, actionPanel 요소 추가
 - 변경 파일: images/hwatu/*.png(49장 신규), js/games/hwatu-renderer.js, js/games/gostop.js, js/core/sound-manager.js, css/gostop.css, gostop.html, CLAUDE.md
+
+### 2026-03-04 | 맞고 v3.0 추가 규칙 + 상세 결과 + 매칭 하이라이트
+
+- **상세 결과 내역 표시** (_endGame 전면 재작성)
+  - 점수 상세 뱃지: 각 득점 항목별 "초단: 3점", "피 12장: 3점" 등 표시
+  - 계산식: "3점 × 100칩 × 2배 = +600칩" 형식으로 계산 과정 표시
+  - 배수 이유: "피박 x2 · 나가리 x4" 등 모든 배수 사유 나열
+  - _getScoreDetails() 함수 추가: 득점 항목별 점수 내역 배열 생성
+- **매칭 가능 카드 하이라이트**
+  - 내 손패에서 바닥에 매칭 카드가 있으면 하단 금색 보더 표시 (.has-match)
+  - 손패 카드에 마우스 올리면 해당 월의 바닥패가 노란 글로우로 빛남 (.match-hint)
+  - _highlightFieldCards(), _clearFieldHighlights() 함수 추가
+- **뻑 정식 구현** (뒤집기 단계)
+  - 드로우 카드가 바닥 같은 월 2장과 매칭 시 뻑 (3장 바닥에 쌓임)
+  - 자뻑: 내가 낸 카드와 같은 월에서 뻑 발생 시 피 1장 빼앗김
+  - 삼뻑: 한 플레이어가 3번 뻑 → 자동 패배
+  - 뻑 횟수 뱃지로 실시간 표시
+- **총통** (같은 월 4장)
+  - newGame() 시 손패에 같은 월 4장 보유 체크
+  - 총통 발동 시 x10 배수 즉시 승리
+- **나가리** (무승부)
+  - 양쪽 모두 3점 미만으로 패 소진 시 무승부 처리
+  - 베팅금 반환, 다음 판 배수 x2 (연속 나가리 시 x4, x8...)
+  - nagariMultiplier 상태 세션 내 유지
+- **CSS 추가** (gostop.css)
+  - .match-hint: 노란 글로우 + 상승 트랜스폼
+  - .has-match: 하단 금색 보더
+  - .gs-result-title/scores/calc/mult: 상세 결과 레이아웃
+  - .gs-badge.nagari/.ppuk-badge: 나가리/뻑 뱃지 스타일
+- 변경 파일: js/games/gostop.js, css/gostop.css, CLAUDE.md

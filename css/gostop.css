@@ -279,6 +279,50 @@
     80% { transform: translateX(2px); }
 }
 
+/* === 매칭 하이라이트 === */
+.hwatu-card.has-match {
+    border-bottom: 3px solid rgba(255, 215, 0, 0.7);
+}
+.hwatu-card.match-hint {
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.8), 0 0 32px rgba(255, 215, 0, 0.4);
+    transform: translateY(-4px);
+    border: 2px solid rgba(255, 215, 0, 0.9);
+}
+
+/* === 상세 결과 === */
+.gs-result-title {
+    font-size: 1.4rem; font-weight: 900; margin-bottom: 6px;
+    font-family: 'Black Han Sans', sans-serif;
+}
+.gs-result-scores {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+.gs-result-score-item {
+    display: inline-block; padding: 2px 8px; border-radius: 8px;
+    font-size: 0.75rem; font-weight: 600;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+}
+.gostop-result.win .gs-result-score-item { color: #a7f3d0; }
+.gostop-result.lose .gs-result-score-item { color: #fca5a5; }
+.gs-result-calc {
+    font-size: 0.9rem; margin-top: 4px; color: #eee;
+}
+.gs-result-calc strong { font-size: 1.1rem; }
+.gostop-result.win .gs-result-calc strong { color: #4ade80; }
+.gostop-result.lose .gs-result-calc strong { color: #f87171; }
+.gs-result-mult {
+    font-size: 0.7rem; color: #f0d078; margin-top: 4px;
+    letter-spacing: 0.5px;
+}
+.gs-result-detail {
+    font-size: 0.8rem; margin-top: 3px; color: #ddd;
+}
+
+/* === 추가 뱃지 === */
+.gs-badge.nagari { background: rgba(240,208,120,0.2); color: #f0d078; border: 1px solid rgba(240,208,120,0.4); }
+.gs-badge.ppuk-badge { background: rgba(255,111,0,0.2); color: #ff6f00; border: 1px solid rgba(255,111,0,0.4); }
+
 /* === 반응형 === */
 @media (max-width: 768px) {
     .hwatu-card { width: 64px; height: 93px; }

@@ -1,14 +1,16 @@
 /* ============================================
-   맞고 (고스톱) v2.0 - Go-Stop Game Module
+   맞고 (고스톱) v3.0 - Go-Stop Game Module
    한국 전통 화투 게임 (AI 1명 대전)
    48장 화투패, 광/띠/피/열끗 점수 체계
 
-   v2.0 추가 기능:
+   v3.0 추가 기능:
    - 폭탄, 흔들기, 뻑, 쪽, 쓸, 따닥
-   - 피박/광박/멍박 배수
-   - 고도리 점수
-   - 이벤트 알림 + 화면 흔들림
-   - 실제 화투 이미지 사용
+   - 피박/광박/멍박 배수, 고도리 점수
+   - 뻑 정식 구현 (뒤집기 뻑), 삼뻑 자동패배, 자뻑
+   - 총통 (같은 월 4장 즉시 승리)
+   - 나가리 (무승부 → 다음 판 배수)
+   - 매칭 가능 카드 하이라이트
+   - 상세 결과 내역 (점수 분석, 점당 칩)
    ============================================ */
 
 const GoStopGame = (() => {
@@ -72,20 +74,23 @@ const GoStopGame = (() => {
     let deck = [], playerHand = [], aiHand = [], field = [], drawPile = [];
     let playerCaptures = [], aiCaptures = [];
     let currentTurn = 'player';
-    let gamePhase = 'waiting'; // waiting, playing, selecting, go-decision, action-choice, finished
+    let gamePhase = 'waiting';
     let selectedCard = null;
     let betAmount = 100;
     let goCount = { player: 0, ai: 0 };
     let stats = { played: 0, won: 0 };
     let matchingFieldCards = [];
 
-    // v2.0 새 상태
+    // v2.0 상태
     let shakeCount = { player: 0, ai: 0 };
     let bombUsed = { player: false, ai: false };
     let ppukCount = { player: 0, ai: 0 };
     let sweepCount = { player: 0, ai: 0 };
-    let pendingActions = []; // [{type:'shake', month:N}, {type:'bomb', month:N}]
+    let pendingActions = [];
     let lastEvent = '';
+
+    // v3.0 상태
+    let nagariMultiplier = 1;
 
     // === 초기화 ===
     function init() {
@@ -100,6 +105,19 @@ const GoStopGame = (() => {
             const j = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[j]] = [deck[j], deck[i]];
         }
+    }
+
+    // === 총통 체크 (4장 같은 월) ===
+    function _checkChongtong(hand) {
+        const monthMap = {};
+        hand.forEach(c => {
+            if (!monthMap[c.month]) monthMap[c.month] = 0;
+            monthMap[c.month]++;
+        });
+        for (const [month, count] of Object.entries(monthMap)) {
+            if (count >= 4) return parseInt(month);
+        }
+        return null;
     }
 
     // === 새 게임 ===
@@ -137,14 +155,39 @@ const GoStopGame = (() => {
         gamePhase = 'playing';
         _playSfx('deal');
 
-        // 결과 영역 초기화
         const resultEl = document.getElementById('gostopResult');
-        if (resultEl) { resultEl.className = 'gostop-result'; resultEl.textContent = ''; }
+        if (resultEl) { resultEl.className = 'gostop-result'; resultEl.innerHTML = ''; }
+
+        if (nagariMultiplier > 1) {
+            _showToast(`나가리 ${nagariMultiplier}배 적용 중!`, 'info');
+        }
 
         _renderAll();
         _updateUI();
 
-        // 플레이어 턴 시작 전 액션 체크
+        // 총통 체크
+        const playerCT = _checkChongtong(playerHand);
+        const aiCT = _checkChongtong(aiHand);
+
+        if (playerCT) {
+            setTimeout(() => {
+                _showEvent('총통!', 'bomb');
+                _screenShake();
+                _showToast(`총통! ${playerCT}월 4장!`, 'success');
+                setTimeout(() => _endGame('player', true), 1500);
+            }, 500);
+            return;
+        }
+        if (aiCT) {
+            setTimeout(() => {
+                _showEvent('AI 총통!', 'bomb');
+                _screenShake();
+                _showToast(`AI 총통! ${aiCT}월 4장!`, 'error');
+                setTimeout(() => _endGame('ai', true), 1500);
+            }, 500);
+            return;
+        }
+
         _checkPreTurnActions('player');
     }
 
@@ -171,7 +214,6 @@ const GoStopGame = (() => {
         }
 
         if (who === 'ai') {
-            // AI 자동 처리: 폭탄 우선, 흔들기는 확률적
             const bombAction = pendingActions.find(a => a.type === 'bomb');
             if (bombAction) {
                 _executeBomb('ai', bombAction.month);
@@ -185,7 +227,6 @@ const GoStopGame = (() => {
             return;
         }
 
-        // 플레이어: 액션 패널 표시
         if (pendingActions.length > 0) {
             gamePhase = 'action-choice';
             _renderActionPanel();
@@ -195,8 +236,6 @@ const GoStopGame = (() => {
 
     // === 흔들기 실행 ===
     function _executeShake(who, month) {
-        const hand = who === 'player' ? playerHand : aiHand;
-        const cards = hand.filter(c => c.month === month);
         shakeCount[who]++;
         _playSfx('shake');
         _showEvent('흔든다~!', 'shake');
@@ -210,18 +249,15 @@ const GoStopGame = (() => {
         const handCards = hand.filter(c => c.month === month);
         const fieldCards = field.filter(f => f.month === month);
 
-        // 손에서 3장 제거
         handCards.forEach(c => {
             const idx = hand.indexOf(c);
             if (idx !== -1) hand.splice(idx, 1);
         });
-        // 바닥에서 제거
         fieldCards.forEach(c => {
             const idx = field.indexOf(c);
             if (idx !== -1) field.splice(idx, 1);
         });
 
-        // 모두 먹기
         captures.push(...handCards, ...fieldCards);
         bombUsed[who] = true;
         _playSfx('bomb');
@@ -229,7 +265,6 @@ const GoStopGame = (() => {
         _screenShake();
         _showToast(`${who === 'player' ? '' : 'AI: '}${month}월 폭탄! (x2배)`, 'info');
 
-        // 쓸 체크
         if (field.length === 0) {
             sweepCount[who]++;
             _showEvent('쓸!', 'sweep');
@@ -237,8 +272,6 @@ const GoStopGame = (() => {
         }
 
         _renderAll();
-
-        // 폭탄 후 바로 뒤집기 (드로우)
         setTimeout(() => _doDrawPhase(who), 500);
     }
 
@@ -279,6 +312,7 @@ const GoStopGame = (() => {
 
         const card = playerHand[cardIdx];
         playerHand.splice(cardIdx, 1);
+        _clearFieldHighlights();
         const matching = field.filter(f => f.month === card.month);
 
         if (matching.length === 0) {
@@ -286,7 +320,6 @@ const GoStopGame = (() => {
             _playSfx('place');
             _doDrawPhase('player', card);
         } else if (matching.length === 1) {
-            // 1장 매치 → 가져가지만 뒤집기 후 뻑 체크
             field.splice(field.indexOf(matching[0]), 1);
             playerCaptures.push(card, matching[0]);
             _playSfx('match');
@@ -299,7 +332,7 @@ const GoStopGame = (() => {
             _renderAll();
             _updateUI();
         } else if (matching.length === 3) {
-            // 3장 매치 (뻑 풀기) → 4장 모두 가져가기
+            // 뻑 풀기 → 4장 모두 가져가기 (따닥)
             matching.forEach(m => field.splice(field.indexOf(m), 1));
             playerCaptures.push(card, ...matching);
             _playSfx('match');
@@ -342,24 +375,9 @@ const GoStopGame = (() => {
         const captures = who === 'player' ? playerCaptures : aiCaptures;
         const matching = field.filter(f => f.month === drawn.month);
 
-        // === 뻑 체크: 뒤집은 패 + 바닥 1장 + (이미 가져간 쌍의 같은 월이 남아있으면) ===
-        // 뻑: 바닥에 같은 월 1장만 있을 때, 뒤집은 패가 같은 월 → 2장 바닥에 놓고 뻑
-        if (matching.length === 1) {
-            // 그냥 1매치 → 가져가기
-            field.splice(field.indexOf(matching[0]), 1);
-            captures.push(drawn, matching[0]);
-
-            // 쓸 체크
-            if (field.length === 0) {
-                sweepCount[who]++;
-                _playSfx('sweep');
-                _showEvent('쓸!', 'sweep');
-                _stealPi(who, 1);
-            }
-        } else if (matching.length === 0) {
+        if (matching.length === 0) {
             // 쪽 체크: 뒤집은 패가 방금 낸 패와 같은 월이고, 방금 바닥에 놓은 상태
             if (playedCard && drawn.month === playedCard.month && field.some(f => f.id === playedCard.id)) {
-                // 쪽! - 바닥에 놓은 내 패 + 뒤집은 패 가져가기
                 const onField = field.find(f => f.id === playedCard.id);
                 if (onField) {
                     field.splice(field.indexOf(onField), 1);
@@ -373,12 +391,43 @@ const GoStopGame = (() => {
             } else {
                 field.push(drawn);
             }
-        } else if (matching.length === 2) {
-            // 뒤집은 패로 2장 매칭 → 첫번째와 가져가기
+        } else if (matching.length === 1) {
             field.splice(field.indexOf(matching[0]), 1);
             captures.push(drawn, matching[0]);
+
+            if (field.length === 0) {
+                sweepCount[who]++;
+                _playSfx('sweep');
+                _showEvent('쓸!', 'sweep');
+                _stealPi(who, 1);
+            }
+        } else if (matching.length === 2) {
+            // 뻑! 뒤집은 패 + 바닥 2장 = 3장 같은 월 → 바닥에 놓기
+            field.push(drawn);
+            ppukCount[who]++;
+            _playSfx('ppuk');
+            _showEvent('뻑!', 'ppuk');
+
+            // 자뻑 체크: 방금 내가 낸 카드가 같은 월이면 자뻑
+            if (playedCard && playedCard.month === drawn.month) {
+                _showToast(`${who === 'player' ? '' : 'AI: '}자뻑! 피 1장 빼앗김`, 'error');
+                const fromCaps = who === 'player' ? playerCaptures : aiCaptures;
+                const toCaps = who === 'player' ? aiCaptures : playerCaptures;
+                const piIdx = fromCaps.findIndex(c => c.type === 'pi');
+                if (piIdx !== -1) {
+                    toCaps.push(fromCaps.splice(piIdx, 1)[0]);
+                }
+            }
+
+            // 삼뻑 체크
+            if (ppukCount[who] >= 3) {
+                _showToast(`${who === 'player' ? '' : 'AI: '}삼뻑! 자동 패배!`, 'error');
+                _showEvent('삼뻑!', 'ppuk');
+                setTimeout(() => _endGame(who === 'player' ? 'ai' : 'player'), 1000);
+                return;
+            }
         } else if (matching.length >= 3) {
-            // 4장 모두 가져가기 (뻑 풀기)
+            // 뻑 풀기/따닥
             matching.forEach(m => field.splice(field.indexOf(m), 1));
             captures.push(drawn, ...matching);
             _showEvent('따닥!', 'ddadak');
@@ -390,14 +439,12 @@ const GoStopGame = (() => {
         _afterResolve(who);
     }
 
-    // === 뒤집기 후 처리 (점수/고스톱/턴교대) ===
+    // === 뒤집기 후 처리 ===
     function _afterResolve(who) {
-        // 점수 체크
         const caps = who === 'player' ? playerCaptures : aiCaptures;
         const score = _calcScore(caps);
         const prevGo = goCount[who];
 
-        // 첫 3점 또는 고 이후 점수 증가 시
         const threshold = prevGo > 0 ? 3 + prevGo : 3;
         if (score >= threshold) {
             if (who === 'player') {
@@ -406,7 +453,6 @@ const GoStopGame = (() => {
                 _updateUI();
                 return;
             } else {
-                // AI 고/스톱 결정
                 if (score < 6) {
                     goCount.ai++;
                     _playSfx('go');
@@ -422,6 +468,29 @@ const GoStopGame = (() => {
         if (playerHand.length === 0 && aiHand.length === 0) {
             const pScore = _calcScore(playerCaptures);
             const aScore = _calcScore(aiCaptures);
+
+            // 나가리: 둘 다 3점 미만
+            if (pScore < 3 && aScore < 3) {
+                nagariMultiplier *= 2;
+                gamePhase = 'finished';
+                ChipManager.addChips(betAmount);
+                const resultEl = document.getElementById('gostopResult');
+                if (resultEl) {
+                    resultEl.className = 'gostop-result';
+                    resultEl.style.color = '#f0d078';
+                    resultEl.style.background = 'rgba(240,208,120,0.1)';
+                    resultEl.innerHTML = `<div class="gs-result-title">나가리! (무승부)</div>` +
+                        `<div class="gs-result-detail">양쪽 모두 3점 미만 → 다음 판 ${nagariMultiplier}배</div>` +
+                        `<div class="gs-result-detail">베팅금 ${betAmount.toLocaleString()}칩 반환</div>`;
+                }
+                _showEvent('나가리!', 'ppuk');
+                stats.played++;
+                _saveStats();
+                _renderAll();
+                _updateUI();
+                return;
+            }
+
             if (pScore >= aScore) _endGame('player');
             else _endGame('ai');
             return;
@@ -557,19 +626,16 @@ const GoStopGame = (() => {
             if (c.type === 'ssang-pi') piCount += 2;
         });
 
-        // 광
         if (gwang.length >= 5) score += 15;
         else if (gwang.length === 4) score += 4;
         else if (gwang.length === 3) {
             score += gwang.some(c => c.month === 12) ? 2 : 3;
         }
 
-        // 고도리 (2월+4월+8월 열끗)
         if ([2, 4, 8].every(m => captures.some(c => c.month === m && c.type === 'yeol'))) {
             score += 5;
         }
 
-        // 홍단/청단/초단
         const hongDan = tti.filter(c => c.type === 'tti-hong');
         const cheongDan = tti.filter(c => c.type === 'tti-cheong');
         const choDan = tti.filter(c => c.type === 'tti-cho');
@@ -577,16 +643,48 @@ const GoStopGame = (() => {
         if (cheongDan.length >= 3) score += 3;
         if (choDan.length >= 3) score += 3;
 
-        // 띠 5장+
         if (tti.length >= 5) score += (tti.length - 4);
-
-        // 열끗 5장+
         if (yeol.length >= 5) score += (yeol.length - 4);
-
-        // 피 10장+ (맞고 기준)
         if (piCount >= 10) score += (piCount - 9);
 
         return score;
+    }
+
+    // === 점수 상세 내역 ===
+    function _getScoreDetails(captures) {
+        const details = [];
+        const gwang = captures.filter(c => c.type === 'gwang');
+        const tti = captures.filter(c => c.type.startsWith('tti-'));
+        const yeol = captures.filter(c => c.type === 'yeol');
+        let piCount = 0;
+        captures.forEach(c => {
+            if (c.type === 'pi') piCount++;
+            if (c.type === 'ssang-pi') piCount += 2;
+        });
+
+        if (gwang.length >= 5) details.push({ label: `광 ${gwang.length}장`, score: 15 });
+        else if (gwang.length === 4) details.push({ label: '광 4장', score: 4 });
+        else if (gwang.length === 3) {
+            const has12 = gwang.some(c => c.month === 12);
+            details.push({ label: `광 3장${has12 ? '(비광)' : ''}`, score: has12 ? 2 : 3 });
+        }
+
+        if ([2, 4, 8].every(m => captures.some(c => c.month === m && c.type === 'yeol'))) {
+            details.push({ label: '고도리', score: 5 });
+        }
+
+        const hongDan = tti.filter(c => c.type === 'tti-hong');
+        const cheongDan = tti.filter(c => c.type === 'tti-cheong');
+        const choDan = tti.filter(c => c.type === 'tti-cho');
+        if (hongDan.length >= 3) details.push({ label: '홍단', score: 3 });
+        if (cheongDan.length >= 3) details.push({ label: '청단', score: 3 });
+        if (choDan.length >= 3) details.push({ label: '초단', score: 3 });
+
+        if (tti.length >= 5) details.push({ label: `띠 ${tti.length}장`, score: tti.length - 4 });
+        if (yeol.length >= 5) details.push({ label: `열끗 ${yeol.length}장`, score: yeol.length - 4 });
+        if (piCount >= 10) details.push({ label: `피 ${piCount}장`, score: piCount - 9 });
+
+        return details;
     }
 
     function _getScoreBreakdown(captures) {
@@ -601,88 +699,118 @@ const GoStopGame = (() => {
         return { gwang: gwang.length, tti: tti.length, yeol: yeol.length, pi: piCount };
     }
 
-    // === 게임 종료 + 배수 계산 ===
-    function _endGame(winner) {
+    // === 게임 종료 + 상세 결과 ===
+    function _endGame(winner, isChongtong) {
         gamePhase = 'finished';
         const loser = winner === 'player' ? 'ai' : 'player';
         const wCaps = winner === 'player' ? playerCaptures : aiCaptures;
         const lCaps = loser === 'player' ? playerCaptures : aiCaptures;
-        const baseScore = _calcScore(wCaps);
+        const baseScore = isChongtong ? 10 : _calcScore(wCaps);
 
-        // 배수 계산
         let multiplier = 1;
         const multiplierReasons = [];
 
-        // 고 배수
-        const goCnt = goCount[winner];
-        if (goCnt === 1) { /* +1점은 baseScore에 반영 안 됨, 별도 보너스 */ }
-        if (goCnt === 2) { /* +2점 */ }
-        if (goCnt >= 3) {
-            const goMul = Math.pow(2, goCnt - 2);
-            multiplier *= goMul;
-            multiplierReasons.push(`${goCnt}고 x${goMul}`);
+        if (nagariMultiplier > 1) {
+            multiplier *= nagariMultiplier;
+            multiplierReasons.push(`나가리 x${nagariMultiplier}`);
         }
 
-        // 피박: 패자 피 7장 이하
-        const loserPi = _getScoreBreakdown(lCaps).pi;
-        if (loserPi <= 7) {
-            multiplier *= 2;
-            multiplierReasons.push('피박 x2');
+        if (isChongtong) {
+            multiplier *= 10;
+            multiplierReasons.push('총통 x10');
+        } else {
+            const goCnt = goCount[winner];
+            if (goCnt >= 3) {
+                const goMul = Math.pow(2, goCnt - 2);
+                multiplier *= goMul;
+                multiplierReasons.push(`${goCnt}고 x${goMul}`);
+            }
+
+            const loserPi = _getScoreBreakdown(lCaps).pi;
+            if (loserPi <= 7) {
+                multiplier *= 2;
+                multiplierReasons.push('피박 x2');
+            }
+
+            const wGwang = wCaps.filter(c => c.type === 'gwang').length;
+            const lGwang = lCaps.filter(c => c.type === 'gwang').length;
+            if (wGwang >= 3 && lGwang === 0) {
+                multiplier *= 2;
+                multiplierReasons.push('광박 x2');
+            }
+
+            const lYeol = lCaps.filter(c => c.type === 'yeol').length;
+            if (lYeol === 0 && _getScoreBreakdown(wCaps).yeol >= 5) {
+                multiplier *= 2;
+                multiplierReasons.push('멍박 x2');
+            }
+
+            if (shakeCount[winner] > 0) {
+                const shakeMul = Math.pow(2, shakeCount[winner]);
+                multiplier *= shakeMul;
+                multiplierReasons.push(`흔들기 x${shakeMul}`);
+            }
+
+            if (bombUsed[winner]) {
+                multiplier *= 2;
+                multiplierReasons.push('폭탄 x2');
+            }
         }
 
-        // 광박: 승자가 광점수 있고 패자가 광 0장
-        const wGwang = wCaps.filter(c => c.type === 'gwang').length;
-        const lGwang = lCaps.filter(c => c.type === 'gwang').length;
-        if (wGwang >= 3 && lGwang === 0) {
-            multiplier *= 2;
-            multiplierReasons.push('광박 x2');
-        }
+        const finalScore = isChongtong ? 10 : (baseScore + Math.min(goCount[winner], 2));
+        const chipPerPoint = betAmount;
+        const winAmount = Math.floor(chipPerPoint * finalScore * multiplier);
 
-        // 멍박: 승자가 열끗점수 있고 패자가 열끗 0장
-        const lYeol = lCaps.filter(c => c.type === 'yeol').length;
-        if (lYeol === 0 && _getScoreBreakdown(wCaps).yeol >= 5) {
-            multiplier *= 2;
-            multiplierReasons.push('멍박 x2');
-        }
-
-        // 흔들기 배수
-        if (shakeCount[winner] > 0) {
-            const shakeMul = Math.pow(2, shakeCount[winner]);
-            multiplier *= shakeMul;
-            multiplierReasons.push(`흔들기 x${shakeMul}`);
-        }
-
-        // 폭탄 배수
-        if (bombUsed[winner]) {
-            multiplier *= 2;
-            multiplierReasons.push('폭탄 x2');
-        }
-
-        const finalScore = baseScore + Math.min(goCnt, 2); // 1고=+1, 2고=+2
-        const winAmount = Math.floor(betAmount * finalScore * multiplier);
+        const scoreDetails = isChongtong ? [{ label: '총통', score: 10 }] : _getScoreDetails(wCaps);
+        const goBonus = isChongtong ? 0 : Math.min(goCount[winner], 2);
 
         const resultEl = document.getElementById('gostopResult');
         if (resultEl) {
             if (winner === 'player') {
                 ChipManager.addChips(winAmount + betAmount);
                 resultEl.className = 'gostop-result win';
-                let text = `승리! ${finalScore}점`;
-                if (multiplier > 1) text += ` x${multiplier}배`;
-                text += ` = +${winAmount.toLocaleString()}칩`;
-                if (multiplierReasons.length > 0) text += `\n(${multiplierReasons.join(', ')})`;
-                resultEl.textContent = text;
+                let html = `<div class="gs-result-title">승리!</div>`;
+                html += `<div class="gs-result-scores">`;
+                scoreDetails.forEach(d => {
+                    html += `<span class="gs-result-score-item">${d.label}: ${d.score}점</span>`;
+                });
+                if (goBonus > 0) html += `<span class="gs-result-score-item">고 보너스: +${goBonus}점</span>`;
+                html += `</div>`;
+                html += `<div class="gs-result-calc">`;
+                html += `${finalScore}점 × ${chipPerPoint.toLocaleString()}칩`;
+                if (multiplier > 1) html += ` × ${multiplier}배`;
+                html += ` = <strong>+${winAmount.toLocaleString()}칩</strong>`;
+                html += `</div>`;
+                if (multiplierReasons.length > 0) {
+                    html += `<div class="gs-result-mult">${multiplierReasons.join(' · ')}</div>`;
+                }
+                resultEl.innerHTML = html;
                 if (typeof SoundManager !== 'undefined') SoundManager.playWin();
                 if (typeof CoinShower !== 'undefined') CoinShower.start(2000, winAmount > 500 ? 'big' : 'normal');
                 stats.won++;
             } else {
                 resultEl.className = 'gostop-result lose';
-                let text = `AI 승리! ${finalScore}점`;
-                if (multiplier > 1) text += ` x${multiplier}배`;
-                resultEl.textContent = text;
+                let html = `<div class="gs-result-title">패배!</div>`;
+                html += `<div class="gs-result-scores">`;
+                scoreDetails.forEach(d => {
+                    html += `<span class="gs-result-score-item">${d.label}: ${d.score}점</span>`;
+                });
+                if (goBonus > 0) html += `<span class="gs-result-score-item">AI 고 보너스: +${goBonus}점</span>`;
+                html += `</div>`;
+                html += `<div class="gs-result-calc">`;
+                html += `AI ${finalScore}점`;
+                if (multiplier > 1) html += ` × ${multiplier}배`;
+                html += ` → -${betAmount.toLocaleString()}칩`;
+                html += `</div>`;
+                if (multiplierReasons.length > 0) {
+                    html += `<div class="gs-result-mult">${multiplierReasons.join(' · ')}</div>`;
+                }
+                resultEl.innerHTML = html;
                 if (typeof SoundManager !== 'undefined') SoundManager.playLose();
             }
         }
 
+        nagariMultiplier = 1;
         stats.played++;
         _saveStats();
         if (typeof LevelManager !== 'undefined') LevelManager.addXP(betAmount);
@@ -709,7 +837,11 @@ const GoStopGame = (() => {
             const el = _createCardEl(card);
             if (gamePhase === 'playing' && currentTurn === 'player') {
                 el.classList.add('playable');
+                const hasMatch = field.some(f => f.month === card.month);
+                if (hasMatch) el.classList.add('has-match');
                 el.onclick = () => playCard(card.id);
+                el.addEventListener('mouseenter', () => _highlightFieldCards(card.month));
+                el.addEventListener('mouseleave', () => _clearFieldHighlights());
             }
             if (gamePhase === 'selecting') el.classList.add('dimmed');
             container.appendChild(el);
@@ -735,12 +867,30 @@ const GoStopGame = (() => {
         container.innerHTML = '';
         field.forEach(card => {
             const el = _createCardEl(card);
+            el.dataset.month = card.month;
             if (gamePhase === 'selecting' && matchingFieldCards.some(m => m.id === card.id)) {
                 el.classList.add('selectable');
                 el.onclick = () => selectFieldCard(card.id);
             }
             container.appendChild(el);
         });
+    }
+
+    // === 매칭 하이라이트 ===
+    function _highlightFieldCards(month) {
+        const container = document.getElementById('fieldCards');
+        if (!container) return;
+        container.querySelectorAll('.hwatu-card').forEach(el => {
+            if (parseInt(el.dataset.month) === month) {
+                el.classList.add('match-hint');
+            }
+        });
+    }
+
+    function _clearFieldHighlights() {
+        const container = document.getElementById('fieldCards');
+        if (!container) return;
+        container.querySelectorAll('.match-hint').forEach(el => el.classList.remove('match-hint'));
     }
 
     function _renderCaptures(who, captures) {
@@ -799,7 +949,7 @@ const GoStopGame = (() => {
         return el;
     }
 
-    // === 액션 패널 (흔들기/폭탄) ===
+    // === 액션 패널 ===
     function _renderActionPanel() {
         const panel = document.getElementById('actionPanel');
         if (!panel) return;
@@ -836,16 +986,13 @@ const GoStopGame = (() => {
         if (newGameBtn) newGameBtn.disabled = (gamePhase !== 'waiting' && gamePhase !== 'finished');
         if (goPanel) goPanel.style.display = gamePhase === 'go-decision' ? 'flex' : 'none';
 
-        // 통계
         _setText('gsStat1', stats.played);
         _setText('gsStat2', stats.won);
         _setText('gsStat3', stats.played > 0 ? Math.round(stats.won / stats.played * 100) + '%' : '-');
 
-        // 헤더 칩
         const hc = document.getElementById('headerChips');
         if (hc) hc.textContent = ChipManager.formatBalance();
 
-        // 배수 표시
         _renderMultiplierBadges();
     }
 
@@ -854,11 +1001,14 @@ const GoStopGame = (() => {
         if (!container) return;
         container.innerHTML = '';
 
+        if (nagariMultiplier > 1) _addBadge(container, `나가리 x${nagariMultiplier}`, 'nagari');
         if (shakeCount.player > 0) _addBadge(container, `흔들기 x${Math.pow(2, shakeCount.player)}`, 'shake');
         if (bombUsed.player) _addBadge(container, '폭탄 x2', 'bomb');
         if (goCount.player > 0) _addBadge(container, `${goCount.player}고`, 'go');
-        if (shakeCount.ai > 0) _addBadge(container, `AI 흔들기`, 'shake-ai');
+        if (ppukCount.player > 0) _addBadge(container, `뻑 ${ppukCount.player}회`, 'ppuk-badge');
+        if (shakeCount.ai > 0) _addBadge(container, 'AI 흔들기', 'shake-ai');
         if (bombUsed.ai) _addBadge(container, 'AI 폭탄', 'bomb-ai');
+        if (ppukCount.ai > 0) _addBadge(container, `AI 뻑 ${ppukCount.ai}회`, 'ppuk-badge');
     }
 
     function _addBadge(container, text, cls) {
@@ -875,7 +1025,7 @@ const GoStopGame = (() => {
         });
     }
 
-    // === 이벤트 알림 (뻑!, 쪽!, 쓸!, 폭탄!, 흔들기!, 고!) ===
+    // === 이벤트 알림 ===
     function _showEvent(text, type) {
         lastEvent = type;
         const overlay = document.getElementById('eventOverlay');
