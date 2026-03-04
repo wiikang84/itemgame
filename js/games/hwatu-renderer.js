@@ -1,1533 +1,57 @@
 /* ============================================
-   화투패 Canvas 렌더러 v1.0
-   전통 한국 화투 디자인 - 12월 48장
-   Canvas API로 실제 화투 느낌 구현
+   화투패 Canvas 렌더러 v2.0
+   전통 한국 화투 디자인 - 빨간 테두리 + 굵은 전통 그래픽
+   참조: 실제 화투패 (빨간 배경, 흰 내부, 굵은 검정/빨강/파랑)
    ============================================ */
 
 const HwatuRenderer = (() => {
     'use strict';
 
     const W = 80, H = 116;
-    const S = 2; // retina scale
-    const CW = W * S, CH = H * S;
-    const MW = 36, MH = 52; // mini card
+    const S = 2; // retina
+    const CW = W * S, CH = H * S; // 160 x 232
+    const MW = 36, MH = 52;
     const cache = new Map();
 
-    // === 월별 테마 색상 ===
-    const THEMES = {
-        1:  { bg: '#e8f0e0', sky: '#d4e6c8', ground: '#3a6b35', name: '松' },
-        2:  { bg: '#f5e6e8', sky: '#f0dde0', ground: '#8b4050', name: '梅' },
-        3:  { bg: '#fce4ec', sky: '#f8d0d8', ground: '#c0607a', name: '桜' },
-        4:  { bg: '#e8dff0', sky: '#ddd0ea', ground: '#7040a0', name: '藤' },
-        5:  { bg: '#e0e8f5', sky: '#d8e0f0', ground: '#4050a0', name: '菖蒲' },
-        6:  { bg: '#f5e0e0', sky: '#f0d5d5', ground: '#b04050', name: '牡丹' },
-        7:  { bg: '#e0f0e8', sky: '#d5ead5', ground: '#408050', name: '萩' },
-        8:  { bg: '#f5f0d0', sky: '#28284a', ground: '#8a7030', name: '芒' },
-        9:  { bg: '#f5f0d8', sky: '#f0ebd0', ground: '#b09030', name: '菊' },
-        10: { bg: '#f5e0d0', sky: '#f0d8c8', ground: '#c06020', name: '楓' },
-        11: { bg: '#e8d8f0', sky: '#e0d0e8', ground: '#6a3090', name: '桐' },
-        12: { bg: '#d8dce0', sky: '#9098a0', ground: '#506068', name: '雨' }
+    // === Colors (전통 화투 팔레트) ===
+    const C = {
+        border: '#E05040',      // 카드 테두리 빨강
+        inner:  '#FEFEFA',      // 흰색 내부
+        black:  '#1A1A1A',
+        red:    '#CC2233',
+        darkRed:'#8B1122',
+        crimson:'#DC143C',
+        blue:   '#2060C0',
+        darkBlue:'#1A4890',
+        yellow: '#E8C830',
+        gold:   '#DAA520',
+        green:  '#2D6830',
+        darkGreen:'#1A4020',
+        brown:  '#5C3A20',
+        darkBrown:'#3A2010',
+        pink:   '#E890A0',
+        lightPink:'#FFB8C8',
+        white:  '#FFFFFF',
+        orange: '#D06020',
+        purple: '#6830A0',
+        gray:   '#888888',
+        lightGray:'#CCCCCC',
+        cream:  '#FFF5E0',
     };
 
-    // === 타입별 리본 색상 ===
-    const RIBBON_COLORS = {
-        'tti-hong': '#c41e3a',
-        'tti-cheong': '#1a5fb4',
-        'tti-cho': '#2d7d46'
-    };
+    // Border inset
+    const BX = 10, BY = 10;
+    const IW = CW - BX * 2;
+    const IH = CH - BY * 2;
 
-    // === 메인 렌더 함수 ===
-    function render(card) {
-        const key = 'card_' + card.id;
-        if (cache.has(key)) return cache.get(key);
-
-        const canvas = document.createElement('canvas');
-        canvas.width = CW;
-        canvas.height = CH;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(S, S);
-
-        _drawCard(ctx, card);
-
-        const url = canvas.toDataURL('image/png');
-        cache.set(key, url);
-        return url;
+    // ===== Canvas Helpers =====
+    function createCanvas(w, h) {
+        const c = document.createElement('canvas');
+        c.width = w || CW; c.height = h || CH;
+        return c;
     }
 
-    function renderBack() {
-        if (cache.has('back')) return cache.get('back');
-
-        const canvas = document.createElement('canvas');
-        canvas.width = CW;
-        canvas.height = CH;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(S, S);
-
-        _drawCardBack(ctx);
-
-        const url = canvas.toDataURL('image/png');
-        cache.set('back', url);
-        return url;
-    }
-
-    function renderMini(card) {
-        const key = 'mini_' + card.id;
-        if (cache.has(key)) return cache.get(key);
-
-        const canvas = document.createElement('canvas');
-        canvas.width = MW * S;
-        canvas.height = MH * S;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(S, S);
-
-        // 축소 버전
-        ctx.save();
-        ctx.scale(MW / W, MH / H);
-        _drawCard(ctx, card);
-        ctx.restore();
-
-        const url = canvas.toDataURL('image/png');
-        cache.set(key, url);
-        return url;
-    }
-
-    // === 카드 그리기 ===
-    function _drawCard(ctx, card) {
-        const theme = THEMES[card.month];
-
-        // 카드 배경 (아이보리)
-        _roundRect(ctx, 0, 0, W, H, 5);
-        ctx.fillStyle = '#FFFEF0';
-        ctx.fill();
-
-        // 내부 테두리
-        _roundRect(ctx, 2, 2, W - 4, H - 4, 3);
-        ctx.fillStyle = theme.bg;
-        ctx.fill();
-
-        // 월별 아트
-        ctx.save();
-        ctx.beginPath();
-        _roundRect(ctx, 3, 3, W - 6, H - 6, 2);
-        ctx.clip();
-        _drawMonthArt(ctx, card);
-        ctx.restore();
-
-        // 외부 테두리
-        _roundRect(ctx, 0.5, 0.5, W - 1, H - 1, 5);
-        ctx.strokeStyle = card.type === 'gwang' ? '#b8860b' : '#5c3a1e';
-        ctx.lineWidth = card.type === 'gwang' ? 2 : 1.2;
-        ctx.stroke();
-
-        // 광 카드: 금색 이중 테두리
-        if (card.type === 'gwang') {
-            _roundRect(ctx, 2, 2, W - 4, H - 4, 3.5);
-            ctx.strokeStyle = 'rgba(184, 134, 11, 0.4)';
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-        }
-
-        // 월 표시
-        _drawMonthLabel(ctx, card);
-
-        // 타입 뱃지
-        _drawTypeBadge(ctx, card);
-    }
-
-    function _drawMonthArt(ctx, card) {
-        switch (card.month) {
-            case 1: _drawMonth1(ctx, card); break;
-            case 2: _drawMonth2(ctx, card); break;
-            case 3: _drawMonth3(ctx, card); break;
-            case 4: _drawMonth4(ctx, card); break;
-            case 5: _drawMonth5(ctx, card); break;
-            case 6: _drawMonth6(ctx, card); break;
-            case 7: _drawMonth7(ctx, card); break;
-            case 8: _drawMonth8(ctx, card); break;
-            case 9: _drawMonth9(ctx, card); break;
-            case 10: _drawMonth10(ctx, card); break;
-            case 11: _drawMonth11(ctx, card); break;
-            case 12: _drawMonth12(ctx, card); break;
-        }
-    }
-
-    // ========================================
-    //  1월 - 소나무 / 학 (Pine / Crane)
-    // ========================================
-    function _drawMonth1(ctx, card) {
-        // 하늘
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#c8dcc0');
-        sky.addColorStop(1, '#a0c090');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 소나무 줄기
-        ctx.fillStyle = '#5a3a20';
-        ctx.fillRect(32, 30, 6, H - 30);
-        ctx.fillRect(28, 28, 4, 50);
-
-        // 소나무 가지 (녹색 뭉치)
-        ctx.fillStyle = '#2a5a20';
-        _drawPineCluster(ctx, 20, 20, 24, 16);
-        _drawPineCluster(ctx, 38, 35, 22, 14);
-        _drawPineCluster(ctx, 15, 48, 20, 12);
-        _drawPineCluster(ctx, 42, 55, 18, 11);
-
-        // 진한 녹색 레이어
-        ctx.fillStyle = '#1a4a15';
-        _drawPineCluster(ctx, 22, 24, 18, 10);
-        _drawPineCluster(ctx, 40, 40, 16, 9);
-
-        if (card.type === 'gwang') {
-            // 태양
-            _drawSun(ctx, 60, 14);
-            // 학 (두루미)
-            _drawCrane(ctx, 25, 65);
-        } else if (card.type === 'tti-hong') {
-            _drawRibbon(ctx, '#c41e3a', '松');
-        }
-        // 피: 소나무만
-    }
-
-    function _drawPineCluster(ctx, x, y, w, h) {
-        ctx.beginPath();
-        ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawCrane(ctx, x, y) {
-        // 몸통 (흰색)
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.ellipse(x + 15, y + 18, 14, 10, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 날개 (검은색/회색)
-        ctx.fillStyle = '#333';
-        ctx.beginPath();
-        ctx.ellipse(x + 8, y + 14, 10, 5, -0.4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 목
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(x + 26, y + 12);
-        ctx.quadraticCurveTo(x + 32, y + 2, x + 28, y - 6);
-        ctx.stroke();
-
-        // 머리
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(x + 28, y - 6, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 정수리 (빨간 점)
-        ctx.fillStyle = '#e00';
-        ctx.beginPath();
-        ctx.arc(x + 28, y - 8, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 부리
-        ctx.fillStyle = '#d4a030';
-        ctx.beginPath();
-        ctx.moveTo(x + 32, y - 7);
-        ctx.lineTo(x + 38, y - 6);
-        ctx.lineTo(x + 32, y - 5);
-        ctx.fill();
-
-        // 다리
-        ctx.strokeStyle = '#666';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x + 12, y + 28);
-        ctx.lineTo(x + 10, y + 40);
-        ctx.moveTo(x + 18, y + 28);
-        ctx.lineTo(x + 20, y + 40);
-        ctx.stroke();
-    }
-
-    // ========================================
-    //  2월 - 매화 / 꾀꼬리 (Plum / Warbler)
-    // ========================================
-    function _drawMonth2(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#f0dde0');
-        sky.addColorStop(1, '#e8c8d0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 매화 가지
-        ctx.strokeStyle = '#4a2a1a';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(-5, H - 20);
-        ctx.quadraticCurveTo(20, H - 40, 35, 50);
-        ctx.quadraticCurveTo(45, 30, 60, 20);
-        ctx.stroke();
-
-        // 얇은 가지
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(35, 50);
-        ctx.quadraticCurveTo(15, 35, 10, 20);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(45, 38);
-        ctx.quadraticCurveTo(60, 45, 70, 40);
-        ctx.stroke();
-
-        // 매화꽃
-        _drawPlumBlossom(ctx, 30, 42, 7);
-        _drawPlumBlossom(ctx, 50, 28, 6);
-        _drawPlumBlossom(ctx, 15, 25, 5);
-        _drawPlumBlossom(ctx, 55, 50, 6);
-        _drawPlumBlossom(ctx, 38, 60, 5);
-        _drawPlumBlossom(ctx, 65, 35, 4);
-
-        if (card.type === 'yeol') {
-            _drawWarbler(ctx, 40, 55);
-        } else if (card.type === 'tti-hong') {
-            _drawRibbon(ctx, '#c41e3a', '梅');
-        }
-    }
-
-    function _drawPlumBlossom(ctx, x, y, r) {
-        // 5장 꽃잎
-        ctx.fillStyle = '#e84060';
-        for (let i = 0; i < 5; i++) {
-            const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
-            ctx.beginPath();
-            ctx.ellipse(
-                x + Math.cos(angle) * r * 0.6,
-                y + Math.sin(angle) * r * 0.6,
-                r * 0.55, r * 0.45, angle, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-        // 꽃술
-        ctx.fillStyle = '#ffe060';
-        ctx.beginPath();
-        ctx.arc(x, y, r * 0.25, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawWarbler(ctx, x, y) {
-        // 몸통 (연두색)
-        ctx.fillStyle = '#7ab030';
-        ctx.beginPath();
-        ctx.ellipse(x, y, 8, 5, 0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 머리
-        ctx.fillStyle = '#8ac040';
-        ctx.beginPath();
-        ctx.arc(x + 8, y - 3, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 눈
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(x + 9.5, y - 3.5, 1, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 부리
-        ctx.fillStyle = '#d4a030';
-        ctx.beginPath();
-        ctx.moveTo(x + 12, y - 3);
-        ctx.lineTo(x + 16, y - 2.5);
-        ctx.lineTo(x + 12, y - 1.5);
-        ctx.fill();
-
-        // 꼬리
-        ctx.fillStyle = '#5a9020';
-        ctx.beginPath();
-        ctx.moveTo(x - 6, y);
-        ctx.lineTo(x - 14, y - 3);
-        ctx.lineTo(x - 12, y + 2);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  3월 - 벚꽃 / 막 (Cherry / Curtain)
-    // ========================================
-    function _drawMonth3(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#fce4ec');
-        sky.addColorStop(1, '#f8bbd0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 벚꽃 나무줄기
-        ctx.fillStyle = '#5a3525';
-        ctx.fillRect(34, 20, 5, H - 20);
-
-        // 가지
-        ctx.strokeStyle = '#5a3525';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(36, 35);
-        ctx.quadraticCurveTo(20, 25, 10, 20);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(38, 45);
-        ctx.quadraticCurveTo(55, 35, 65, 30);
-        ctx.stroke();
-
-        // 벚꽃 구름
-        ctx.fillStyle = '#ffb0c8';
-        _drawFlowerCloud(ctx, 25, 15, 20, 14);
-        _drawFlowerCloud(ctx, 50, 25, 18, 12);
-        _drawFlowerCloud(ctx, 15, 35, 16, 10);
-        _drawFlowerCloud(ctx, 55, 45, 15, 10);
-
-        // 하이라이트
-        ctx.fillStyle = '#ffc8d8';
-        _drawFlowerCloud(ctx, 28, 12, 12, 8);
-        _drawFlowerCloud(ctx, 52, 22, 10, 7);
-
-        // 떨어지는 꽃잎
-        ctx.fillStyle = '#ffb0c8';
-        _drawPetal(ctx, 20, 70, 3);
-        _drawPetal(ctx, 50, 80, 2.5);
-        _drawPetal(ctx, 65, 65, 2);
-
-        if (card.type === 'gwang') {
-            // 막 (커튼)
-            _drawCurtain(ctx);
-        } else if (card.type === 'tti-hong') {
-            _drawRibbon(ctx, '#c41e3a', '桜');
-        }
-    }
-
-    function _drawFlowerCloud(ctx, x, y, w, h) {
-        ctx.beginPath();
-        ctx.ellipse(x, y, w / 2, h / 2, 0, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawPetal(ctx, x, y, size) {
-        ctx.beginPath();
-        ctx.ellipse(x, y, size, size * 0.6, Math.random() * Math.PI, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawCurtain(ctx) {
-        const y = H - 50;
-        // 커튼 본체
-        for (let i = 0; i < 5; i++) {
-            ctx.fillStyle = i % 2 === 0 ? '#c0203a' : '#ffffff';
-            ctx.fillRect(3, y + i * 8, W - 6, 8);
-        }
-        // 상단 봉
-        ctx.fillStyle = '#8b6914';
-        ctx.fillRect(3, y - 3, W - 6, 4);
-        // 술
-        ctx.fillStyle = '#8b6914';
-        ctx.fillRect(8, y - 8, 2, 8);
-        ctx.fillRect(W - 10, y - 8, 2, 8);
-        // 둥근 장식
-        ctx.beginPath();
-        ctx.arc(9, y - 8, 3, 0, Math.PI * 2);
-        ctx.arc(W - 9, y - 8, 3, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  4월 - 등나무 / 두견 (Wisteria / Cuckoo)
-    // ========================================
-    function _drawMonth4(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#d5c8e8');
-        sky.addColorStop(1, '#c0b0d8');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 등나무 줄기
-        ctx.strokeStyle = '#5a3a25';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(10, 0);
-        ctx.quadraticCurveTo(30, 10, 50, 5);
-        ctx.quadraticCurveTo(70, 0, W, 8);
-        ctx.stroke();
-
-        // 등나무 꽃 (늘어지는 보라색 꽃송이)
-        _drawWisteriaCluster(ctx, 15, 8, 35);
-        _drawWisteriaCluster(ctx, 35, 5, 42);
-        _drawWisteriaCluster(ctx, 55, 10, 38);
-        _drawWisteriaCluster(ctx, 70, 6, 30);
-
-        // 잎
-        ctx.fillStyle = '#4a8040';
-        _drawLeaf(ctx, 8, 5, 8, 4, -0.3);
-        _drawLeaf(ctx, 45, 3, 7, 3, 0.2);
-        _drawLeaf(ctx, 65, 8, 8, 3.5, 0.4);
-
-        if (card.type === 'yeol') {
-            _drawCuckoo(ctx, 30, 65);
-        } else if (card.type === 'tti-cho') {
-            _drawRibbon(ctx, '#2d7d46', '');
-        }
-    }
-
-    function _drawWisteriaCluster(ctx, x, y, len) {
-        const colors = ['#8040a0', '#9050b0', '#a060c0', '#b080d0'];
-        for (let i = 0; i < len; i += 3) {
-            const ci = Math.floor(i / len * colors.length);
-            ctx.fillStyle = colors[Math.min(ci, colors.length - 1)];
-            const w = Math.max(4, 10 - i * 0.15);
-            ctx.beginPath();
-            ctx.ellipse(x + Math.sin(i * 0.3) * 2, y + i, w / 2, 2, 0, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function _drawCuckoo(ctx, x, y) {
-        // 몸통
-        ctx.fillStyle = '#5a4540';
-        ctx.beginPath();
-        ctx.ellipse(x, y, 7, 5, -0.1, 0, Math.PI * 2);
-        ctx.fill();
-        // 머리
-        ctx.fillStyle = '#6a5550';
-        ctx.beginPath();
-        ctx.arc(x + 7, y - 3, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-        // 눈
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(x + 8.5, y - 3.5, 1.2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(x + 9, y - 3.5, 0.6, 0, Math.PI * 2);
-        ctx.fill();
-        // 부리
-        ctx.fillStyle = '#c0a030';
-        ctx.beginPath();
-        ctx.moveTo(x + 10.5, y - 3);
-        ctx.lineTo(x + 14, y - 2.5);
-        ctx.lineTo(x + 10.5, y - 1.5);
-        ctx.fill();
-        // 꼬리
-        ctx.fillStyle = '#4a3530';
-        ctx.beginPath();
-        ctx.moveTo(x - 5, y);
-        ctx.lineTo(x - 13, y + 2);
-        ctx.lineTo(x - 11, y - 2);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  5월 - 창포 / 다리 (Iris / Bridge)
-    // ========================================
-    function _drawMonth5(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#d0d8f0');
-        sky.addColorStop(1, '#b0c0e0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 물
-        ctx.fillStyle = 'rgba(100,140,200,0.3)';
-        ctx.fillRect(0, H - 35, W, 35);
-
-        // 창포 잎
-        ctx.strokeStyle = '#308040';
-        ctx.lineWidth = 2;
-        for (let i = 0; i < 6; i++) {
-            const bx = 10 + i * 11;
-            ctx.beginPath();
-            ctx.moveTo(bx, H - 30);
-            ctx.quadraticCurveTo(bx + (i % 2 ? 3 : -3), H - 70, bx + (i % 2 ? 5 : -5), 20);
-            ctx.stroke();
-        }
-
-        // 창포 꽃
-        _drawIrisFlower(ctx, 18, 30, 8);
-        _drawIrisFlower(ctx, 50, 25, 7);
-        _drawIrisFlower(ctx, 35, 40, 6);
-
-        if (card.type === 'yeol') {
-            _drawBridge(ctx);
-        } else if (card.type === 'tti-cho') {
-            _drawRibbon(ctx, '#2d7d46', '');
-        }
-    }
-
-    function _drawIrisFlower(ctx, x, y, size) {
-        // 꽃잎 3장
-        ctx.fillStyle = '#6040b0';
-        for (let i = 0; i < 3; i++) {
-            const angle = (i / 3) * Math.PI * 2 - Math.PI / 2;
-            ctx.beginPath();
-            ctx.ellipse(
-                x + Math.cos(angle) * size * 0.4,
-                y + Math.sin(angle) * size * 0.4,
-                size * 0.5, size * 0.3, angle + 0.3, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-        // 안쪽 꽃잎
-        ctx.fillStyle = '#8060d0';
-        for (let i = 0; i < 3; i++) {
-            const angle = (i / 3) * Math.PI * 2;
-            ctx.beginPath();
-            ctx.ellipse(
-                x + Math.cos(angle) * size * 0.2,
-                y + Math.sin(angle) * size * 0.2,
-                size * 0.3, size * 0.2, angle, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-        // 중심
-        ctx.fillStyle = '#ffe060';
-        ctx.beginPath();
-        ctx.arc(x, y, size * 0.12, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawBridge(ctx) {
-        const y = H - 45;
-        ctx.fillStyle = '#8b6914';
-        // 판자
-        for (let i = 0; i < 6; i++) {
-            ctx.fillRect(8, y + i * 5, W - 16, 4);
-        }
-        // 난간
-        ctx.fillRect(8, y - 4, 3, 34);
-        ctx.fillRect(W - 11, y - 4, 3, 34);
-        ctx.fillRect(6, y - 6, W - 12, 3);
-    }
-
-    // ========================================
-    //  6월 - 모란 / 나비 (Peony / Butterfly)
-    // ========================================
-    function _drawMonth6(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#f0d8d8');
-        sky.addColorStop(1, '#e0c0c0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 잎
-        ctx.fillStyle = '#308038';
-        _drawLeaf(ctx, 15, 70, 15, 8, -0.5);
-        _drawLeaf(ctx, 55, 75, 14, 7, 0.4);
-        _drawLeaf(ctx, 10, 55, 12, 6, -0.3);
-        _drawLeaf(ctx, 60, 60, 11, 6, 0.5);
-
-        // 모란 (큰 겹꽃)
-        _drawPeony(ctx, 38, 48, 18);
-
-        if (card.type === 'yeol') {
-            _drawButterfly(ctx, 50, 20);
-        } else if (card.type === 'tti-cheong') {
-            _drawRibbon(ctx, '#1a5fb4', '牡丹');
-        }
-    }
-
-    function _drawPeony(ctx, x, y, size) {
-        // 바깥 꽃잎 (진한 빨강)
-        ctx.fillStyle = '#c02040';
-        for (let i = 0; i < 8; i++) {
-            const a = (i / 8) * Math.PI * 2;
-            ctx.beginPath();
-            ctx.ellipse(
-                x + Math.cos(a) * size * 0.4,
-                y + Math.sin(a) * size * 0.4,
-                size * 0.45, size * 0.3, a, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-        // 중간 꽃잎
-        ctx.fillStyle = '#e04060';
-        for (let i = 0; i < 6; i++) {
-            const a = (i / 6) * Math.PI * 2 + 0.3;
-            ctx.beginPath();
-            ctx.ellipse(
-                x + Math.cos(a) * size * 0.2,
-                y + Math.sin(a) * size * 0.2,
-                size * 0.35, size * 0.22, a, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-        // 안쪽
-        ctx.fillStyle = '#f06080';
-        ctx.beginPath();
-        ctx.arc(x, y, size * 0.2, 0, Math.PI * 2);
-        ctx.fill();
-        // 꽃술
-        ctx.fillStyle = '#ffe060';
-        ctx.beginPath();
-        ctx.arc(x, y, size * 0.08, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawButterfly(ctx, x, y) {
-        // 날개
-        ctx.fillStyle = '#ff8040';
-        ctx.beginPath();
-        ctx.ellipse(x - 5, y - 2, 7, 5, -0.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(x + 5, y - 2, 7, 5, 0.4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 아래 날개
-        ctx.fillStyle = '#ffA060';
-        ctx.beginPath();
-        ctx.ellipse(x - 4, y + 3, 5, 3.5, -0.6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(x + 4, y + 3, 5, 3.5, 0.6, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 날개 무늬
-        ctx.fillStyle = '#a04020';
-        ctx.beginPath();
-        ctx.arc(x - 5, y - 2, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(x + 5, y - 2, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 몸통
-        ctx.fillStyle = '#333';
-        ctx.fillRect(x - 0.8, y - 6, 1.6, 12);
-
-        // 더듬이
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(x, y - 6);
-        ctx.quadraticCurveTo(x - 4, y - 12, x - 6, y - 10);
-        ctx.moveTo(x, y - 6);
-        ctx.quadraticCurveTo(x + 4, y - 12, x + 6, y - 10);
-        ctx.stroke();
-    }
-
-    // ========================================
-    //  7월 - 싸리 / 멧돼지 (Bush Clover / Boar)
-    // ========================================
-    function _drawMonth7(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#d8e8d0');
-        sky.addColorStop(1, '#c0d8b0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 풀밭
-        ctx.fillStyle = '#70a060';
-        ctx.fillRect(0, H - 20, W, 20);
-
-        // 싸리 줄기 (아치형)
-        ctx.strokeStyle = '#4a6030';
-        ctx.lineWidth = 1.5;
-        for (let i = 0; i < 4; i++) {
-            const sx = 10 + i * 18;
-            ctx.beginPath();
-            ctx.moveTo(sx, H - 20);
-            ctx.quadraticCurveTo(sx + 5, 20, sx + 15, 15 + i * 5);
-            ctx.stroke();
-        }
-
-        // 싸리꽃 (작은 붉은 점들)
-        ctx.fillStyle = '#c04060';
-        for (let i = 0; i < 30; i++) {
-            const fx = 10 + Math.random() * 60;
-            const fy = 20 + Math.random() * 60;
-            ctx.beginPath();
-            ctx.arc(fx, fy, 1.5 + Math.random(), 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // 잎
-        ctx.fillStyle = '#508040';
-        for (let i = 0; i < 15; i++) {
-            const lx = 8 + Math.random() * 64;
-            const ly = 25 + Math.random() * 55;
-            _drawLeaf(ctx, lx, ly, 5, 2, Math.random() * Math.PI);
-        }
-
-        if (card.type === 'yeol') {
-            _drawBoar(ctx, 30, H - 38);
-        } else if (card.type === 'tti-cho') {
-            _drawRibbon(ctx, '#2d7d46', '');
-        }
-    }
-
-    function _drawBoar(ctx, x, y) {
-        // 몸통
-        ctx.fillStyle = '#3a3030';
-        ctx.beginPath();
-        ctx.ellipse(x + 10, y + 5, 14, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 머리
-        ctx.fillStyle = '#4a3838';
-        ctx.beginPath();
-        ctx.ellipse(x + 26, y + 2, 8, 7, 0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 코
-        ctx.fillStyle = '#b08080';
-        ctx.beginPath();
-        ctx.ellipse(x + 33, y + 3, 3, 2.5, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 눈
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(x + 28, y - 1, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(x + 28.5, y - 1, 0.7, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 다리
-        ctx.fillStyle = '#2a2020';
-        ctx.fillRect(x + 2, y + 12, 3, 8);
-        ctx.fillRect(x + 8, y + 12, 3, 8);
-        ctx.fillRect(x + 14, y + 12, 3, 8);
-        ctx.fillRect(x + 20, y + 12, 3, 8);
-
-        // 엄니
-        ctx.fillStyle = '#eee';
-        ctx.beginPath();
-        ctx.moveTo(x + 32, y + 1);
-        ctx.lineTo(x + 36, y - 2);
-        ctx.lineTo(x + 33, y + 0);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  8월 - 억새 / 달 (Pampas / Moon)
-    // ========================================
-    function _drawMonth8(ctx, card) {
-        const isGwang = card.type === 'gwang';
-
-        // 밤하늘 (광) / 저녁하늘 (기타)
-        if (isGwang) {
-            const sky = ctx.createLinearGradient(0, 0, 0, H);
-            sky.addColorStop(0, '#1a1a3a');
-            sky.addColorStop(0.6, '#2a2a5a');
-            sky.addColorStop(1, '#3a3a40');
-            ctx.fillStyle = sky;
-        } else {
-            const sky = ctx.createLinearGradient(0, 0, 0, H);
-            sky.addColorStop(0, '#e8d8a0');
-            sky.addColorStop(1, '#c0b070');
-            ctx.fillStyle = sky;
-        }
-        ctx.fillRect(0, 0, W, H);
-
-        // 언덕
-        ctx.fillStyle = isGwang ? '#2a3020' : '#8a7830';
-        ctx.beginPath();
-        ctx.moveTo(0, H - 25);
-        ctx.quadraticCurveTo(W / 2, H - 40, W, H - 20);
-        ctx.lineTo(W, H);
-        ctx.lineTo(0, H);
-        ctx.fill();
-
-        // 억새
-        const grassColor = isGwang ? '#a09040' : '#c0a850';
-        ctx.strokeStyle = grassColor;
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 8; i++) {
-            const gx = 8 + i * 9;
-            ctx.beginPath();
-            ctx.moveTo(gx, H - 25);
-            ctx.quadraticCurveTo(gx + (i % 2 ? 3 : -3), H - 60, gx + (i % 2 ? 8 : -8), H - 80 + i * 3);
-            ctx.stroke();
-            // 이삭
-            ctx.fillStyle = grassColor;
-            ctx.beginPath();
-            ctx.ellipse(gx + (i % 2 ? 8 : -8), H - 82 + i * 3, 2, 5, i % 2 ? 0.3 : -0.3, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        if (isGwang) {
-            // 보름달
-            ctx.fillStyle = '#ffffd0';
-            ctx.beginPath();
-            ctx.arc(W / 2, 30, 18, 0, Math.PI * 2);
-            ctx.fill();
-            // 달 그림자
-            ctx.fillStyle = 'rgba(200,180,100,0.3)';
-            ctx.beginPath();
-            ctx.arc(W / 2 + 3, 28, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(W / 2 - 5, 34, 3, 0, Math.PI * 2);
-            ctx.fill();
-            // 달 빛
-            ctx.fillStyle = 'rgba(255,255,200,0.08)';
-            ctx.beginPath();
-            ctx.arc(W / 2, 30, 28, 0, Math.PI * 2);
-            ctx.fill();
-        } else if (card.type === 'yeol') {
-            // 기러기
-            _drawGeese(ctx, 30, 20);
-        }
-    }
-
-    function _drawGeese(ctx, x, y) {
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1.5;
-        // 기러기 3마리 (V자)
-        for (let i = 0; i < 3; i++) {
-            const gx = x + i * 12;
-            const gy = y + (i === 1 ? -5 : 3);
-            ctx.beginPath();
-            ctx.moveTo(gx - 5, gy + 2);
-            ctx.quadraticCurveTo(gx, gy - 2, gx, gy);
-            ctx.quadraticCurveTo(gx, gy - 2, gx + 5, gy + 2);
-            ctx.stroke();
-        }
-    }
-
-    // ========================================
-    //  9월 - 국화 / 잔 (Chrysanthemum / Cup)
-    // ========================================
-    function _drawMonth9(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#f5ecd0');
-        sky.addColorStop(1, '#e8d8a0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 잎
-        ctx.fillStyle = '#408838';
-        _drawLeaf(ctx, 15, 80, 14, 7, -0.4);
-        _drawLeaf(ctx, 55, 85, 13, 6, 0.3);
-        _drawLeaf(ctx, 30, 90, 12, 6, 0.1);
-
-        // 줄기
-        ctx.strokeStyle = '#408838';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(35, H);
-        ctx.quadraticCurveTo(33, 60, 35, 40);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(50, H);
-        ctx.quadraticCurveTo(52, 55, 50, 35);
-        ctx.stroke();
-
-        // 국화 (노란 겹꽃)
-        _drawChrysanthemum(ctx, 35, 35, 14);
-        _drawChrysanthemum(ctx, 55, 45, 11);
-
-        if (card.type === 'yeol') {
-            _drawSakeCup(ctx, 50, 75);
-        } else if (card.type === 'tti-cheong') {
-            _drawRibbon(ctx, '#1a5fb4', '菊');
-        }
-    }
-
-    function _drawChrysanthemum(ctx, x, y, size) {
-        // 바깥 꽃잎 (길쭉한 꽃잎)
-        ctx.fillStyle = '#e0a020';
-        for (let i = 0; i < 14; i++) {
-            const a = (i / 14) * Math.PI * 2;
-            ctx.beginPath();
-            ctx.ellipse(
-                x + Math.cos(a) * size * 0.45,
-                y + Math.sin(a) * size * 0.45,
-                size * 0.4, size * 0.12, a, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-        // 안쪽
-        ctx.fillStyle = '#f0c030';
-        for (let i = 0; i < 10; i++) {
-            const a = (i / 10) * Math.PI * 2 + 0.2;
-            ctx.beginPath();
-            ctx.ellipse(
-                x + Math.cos(a) * size * 0.2,
-                y + Math.sin(a) * size * 0.2,
-                size * 0.25, size * 0.08, a, 0, Math.PI * 2
-            );
-            ctx.fill();
-        }
-        // 중심
-        ctx.fillStyle = '#c08018';
-        ctx.beginPath();
-        ctx.arc(x, y, size * 0.12, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawSakeCup(ctx, x, y) {
-        // 잔 (빨간 술잔)
-        ctx.fillStyle = '#c03030';
-        ctx.beginPath();
-        ctx.moveTo(x - 8, y);
-        ctx.quadraticCurveTo(x - 6, y + 8, x, y + 10);
-        ctx.quadraticCurveTo(x + 6, y + 8, x + 8, y);
-        ctx.quadraticCurveTo(x + 4, y + 2, x, y + 2);
-        ctx.quadraticCurveTo(x - 4, y + 2, x - 8, y);
-        ctx.fill();
-
-        // 잔 안쪽 (술)
-        ctx.fillStyle = '#f0e0a0';
-        ctx.beginPath();
-        ctx.ellipse(x, y + 1, 6, 2, 0, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  10월 - 단풍 / 사슴 (Maple / Deer)
-    // ========================================
-    function _drawMonth10(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#f0d8c0');
-        sky.addColorStop(1, '#e0c0a0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 가지
-        ctx.strokeStyle = '#5a3a20';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(-5, 30);
-        ctx.quadraticCurveTo(30, 20, 50, 25);
-        ctx.quadraticCurveTo(70, 30, W + 5, 20);
-        ctx.stroke();
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(25, 22);
-        ctx.quadraticCurveTo(20, 40, 15, 55);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(55, 27);
-        ctx.quadraticCurveTo(60, 45, 65, 55);
-        ctx.stroke();
-
-        // 단풍잎
-        const mapleColors = ['#d04020', '#e06030', '#c03010', '#e8803c', '#b02818'];
-        for (let i = 0; i < 18; i++) {
-            const mx = 5 + Math.random() * 70;
-            const my = 10 + Math.random() * 70;
-            ctx.fillStyle = mapleColors[i % mapleColors.length];
-            _drawMapleLeaf(ctx, mx, my, 5 + Math.random() * 3);
-        }
-
-        if (card.type === 'yeol') {
-            _drawDeer(ctx, 22, 60);
-        } else if (card.type === 'tti-cheong') {
-            _drawRibbon(ctx, '#1a5fb4', '楓');
-        }
-    }
-
-    function _drawMapleLeaf(ctx, x, y, size) {
-        ctx.beginPath();
-        // 5갈래 단풍잎 (간략화)
-        for (let i = 0; i < 5; i++) {
-            const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
-            const px = x + Math.cos(a) * size;
-            const py = y + Math.sin(a) * size;
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-            // 갈래 사이
-            const a2 = ((i + 0.5) / 5) * Math.PI * 2 - Math.PI / 2;
-            ctx.lineTo(x + Math.cos(a2) * size * 0.4, y + Math.sin(a2) * size * 0.4);
-        }
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    function _drawDeer(ctx, x, y) {
-        // 몸통
-        ctx.fillStyle = '#b07040';
-        ctx.beginPath();
-        ctx.ellipse(x + 10, y + 5, 12, 8, -0.1, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 머리/목
-        ctx.fillStyle = '#c08050';
-        ctx.beginPath();
-        ctx.ellipse(x + 24, y - 8, 5, 4, 0.3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 목
-        ctx.fillStyle = '#b07040';
-        ctx.beginPath();
-        ctx.moveTo(x + 18, y);
-        ctx.quadraticCurveTo(x + 22, y - 5, x + 22, y - 8);
-        ctx.lineTo(x + 26, y - 6);
-        ctx.quadraticCurveTo(x + 24, y - 2, x + 20, y + 2);
-        ctx.fill();
-
-        // 눈
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(x + 26, y - 9, 1, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 뿔
-        ctx.strokeStyle = '#5a3a20';
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.moveTo(x + 22, y - 12);
-        ctx.lineTo(x + 18, y - 22);
-        ctx.lineTo(x + 15, y - 18);
-        ctx.moveTo(x + 18, y - 22);
-        ctx.lineTo(x + 20, y - 26);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x + 25, y - 11);
-        ctx.lineTo(x + 28, y - 20);
-        ctx.lineTo(x + 31, y - 17);
-        ctx.moveTo(x + 28, y - 20);
-        ctx.lineTo(x + 27, y - 24);
-        ctx.stroke();
-
-        // 다리
-        ctx.fillStyle = '#906030';
-        ctx.fillRect(x + 3, y + 12, 2.5, 10);
-        ctx.fillRect(x + 9, y + 12, 2.5, 10);
-        ctx.fillRect(x + 14, y + 12, 2.5, 10);
-        ctx.fillRect(x + 19, y + 11, 2.5, 10);
-
-        // 반점
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.beginPath();
-        ctx.arc(x + 6, y + 3, 1.5, 0, Math.PI * 2);
-        ctx.arc(x + 12, y + 1, 1.2, 0, Math.PI * 2);
-        ctx.arc(x + 9, y + 7, 1, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  11월 - 오동 / 봉황 (Paulownia / Phoenix)
-    // ========================================
-    function _drawMonth11(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#d8c8e8');
-        sky.addColorStop(1, '#c0b0d0');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 오동 줄기
-        ctx.fillStyle = '#5a4030';
-        ctx.fillRect(36, 30, 5, H - 30);
-
-        // 오동잎 (하트 모양)
-        ctx.fillStyle = '#4a8050';
-        _drawPaulowniaLeaf(ctx, 20, 40, 15);
-        _drawPaulowniaLeaf(ctx, 52, 38, 14);
-        _drawPaulowniaLeaf(ctx, 15, 60, 12);
-        _drawPaulowniaLeaf(ctx, 58, 58, 11);
-
-        // 오동꽃 (보라 종 모양)
-        _drawPaulowniaFlowers(ctx, 30, 20);
-        _drawPaulowniaFlowers(ctx, 48, 25);
-
-        if (card.type === 'gwang') {
-            _drawPhoenix(ctx, 25, 60);
-        }
-    }
-
-    function _drawPaulowniaLeaf(ctx, x, y, size) {
-        ctx.beginPath();
-        ctx.moveTo(x, y - size * 0.1);
-        ctx.quadraticCurveTo(x - size * 0.6, y - size * 0.5, x, y - size);
-        ctx.quadraticCurveTo(x + size * 0.6, y - size * 0.5, x, y - size * 0.1);
-        ctx.fill();
-    }
-
-    function _drawPaulowniaFlowers(ctx, x, y) {
-        ctx.fillStyle = '#8050a0';
-        for (let i = 0; i < 4; i++) {
-            ctx.beginPath();
-            ctx.ellipse(x + i * 5 - 7, y + Math.abs(i - 1.5) * 2, 3, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        // 꽃 끝
-        ctx.fillStyle = '#a070c0';
-        for (let i = 0; i < 4; i++) {
-            ctx.beginPath();
-            ctx.arc(x + i * 5 - 7, y + Math.abs(i - 1.5) * 2 + 4, 2.5, 0, Math.PI);
-            ctx.fill();
-        }
-    }
-
-    function _drawPhoenix(ctx, x, y) {
-        // 꼬리깃
-        const tailColors = ['#e04040', '#ff8040', '#e0c020', '#40c040', '#4080e0'];
-        for (let i = 0; i < 5; i++) {
-            ctx.strokeStyle = tailColors[i];
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(x - 5, y + 5);
-            ctx.quadraticCurveTo(x - 15 - i * 3, y + 15 + i * 5, x - 10 - i * 5, y + 30 + i * 4);
-            ctx.stroke();
-        }
-
-        // 몸통
-        ctx.fillStyle = '#c04040';
-        ctx.beginPath();
-        ctx.ellipse(x + 5, y, 10, 7, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 날개
-        ctx.fillStyle = '#e06040';
-        ctx.beginPath();
-        ctx.ellipse(x - 2, y - 5, 8, 4, -0.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 머리
-        ctx.fillStyle = '#d04040';
-        ctx.beginPath();
-        ctx.arc(x + 16, y - 6, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 볏
-        ctx.fillStyle = '#ffe040';
-        ctx.beginPath();
-        ctx.moveTo(x + 16, y - 11);
-        ctx.lineTo(x + 14, y - 18);
-        ctx.lineTo(x + 18, y - 14);
-        ctx.lineTo(x + 16, y - 20);
-        ctx.lineTo(x + 20, y - 15);
-        ctx.fill();
-
-        // 눈
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(x + 18, y - 7, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(x + 18.5, y - 7, 0.8, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 부리
-        ctx.fillStyle = '#e0a020';
-        ctx.beginPath();
-        ctx.moveTo(x + 21, y - 6);
-        ctx.lineTo(x + 27, y - 5);
-        ctx.lineTo(x + 21, y - 4);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  12월 - 비/버들 (Willow / Rain)
-    // ========================================
-    function _drawMonth12(ctx, card) {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#707880');
-        sky.addColorStop(1, '#505860');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W, H);
-
-        // 비 (대각선)
-        ctx.strokeStyle = 'rgba(180,200,220,0.4)';
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < 25; i++) {
-            const rx = Math.random() * W;
-            const ry = Math.random() * H;
-            ctx.beginPath();
-            ctx.moveTo(rx, ry);
-            ctx.lineTo(rx - 3, ry + 8);
-            ctx.stroke();
-        }
-
-        // 버들 줄기
-        ctx.fillStyle = '#4a5040';
-        ctx.fillRect(10, 0, 4, H);
-
-        // 버들 가지 (늘어지는 녹색)
-        ctx.strokeStyle = '#5a7050';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 6; i++) {
-            const sx = 12;
-            const sy = 10 + i * 12;
-            ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.quadraticCurveTo(sx + 20 + i * 5, sy + 20, sx + 15 + i * 8, sy + 40 + i * 5);
-            ctx.stroke();
-        }
-
-        if (card.type === 'gwang') {
-            // 우산 쓴 사람
-            _drawRainMan(ctx, 45, 50);
-            // 제비
-            _drawSwallow(ctx, 55, 20);
-        } else if (card.type === 'yeol') {
-            // 제비
-            _drawSwallow(ctx, 45, 35);
-            _drawSwallow(ctx, 55, 50);
-        }
-    }
-
-    function _drawRainMan(ctx, x, y) {
-        // 우산
-        ctx.fillStyle = '#c03030';
-        ctx.beginPath();
-        ctx.arc(x, y - 15, 16, Math.PI, 0);
-        ctx.fill();
-        // 우산 꼭지
-        ctx.fillStyle = '#8b6914';
-        ctx.fillRect(x - 1, y - 32, 2, 5);
-        ctx.beginPath();
-        ctx.arc(x, y - 32, 2, 0, Math.PI * 2);
-        ctx.fill();
-        // 우산 살대
-        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < 5; i++) {
-            const a = Math.PI + (i / 4) * Math.PI;
-            ctx.beginPath();
-            ctx.moveTo(x, y - 15);
-            ctx.lineTo(x + Math.cos(a) * 16, y - 15 + Math.sin(a) * 16);
-            ctx.stroke();
-        }
-        // 우산대
-        ctx.strokeStyle = '#5a3a20';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(x, y - 15);
-        ctx.lineTo(x, y + 10);
-        ctx.quadraticCurveTo(x, y + 15, x - 3, y + 15);
-        ctx.stroke();
-
-        // 몸
-        ctx.fillStyle = '#2a3a5a';
-        ctx.beginPath();
-        ctx.moveTo(x - 6, y);
-        ctx.lineTo(x + 6, y);
-        ctx.lineTo(x + 5, y + 25);
-        ctx.lineTo(x - 5, y + 25);
-        ctx.fill();
-
-        // 다리
-        ctx.fillRect(x - 5, y + 25, 3, 10);
-        ctx.fillRect(x + 2, y + 25, 3, 10);
-    }
-
-    function _drawSwallow(ctx, x, y) {
-        // 몸통
-        ctx.fillStyle = '#1a1a2a';
-        ctx.beginPath();
-        ctx.ellipse(x, y, 5, 3, 0.1, 0, Math.PI * 2);
-        ctx.fill();
-        // 날개
-        ctx.beginPath();
-        ctx.moveTo(x - 3, y - 1);
-        ctx.lineTo(x - 12, y - 6);
-        ctx.lineTo(x - 4, y + 1);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(x + 3, y - 1);
-        ctx.lineTo(x + 12, y - 6);
-        ctx.lineTo(x + 4, y + 1);
-        ctx.fill();
-        // 꼬리 (갈라진)
-        ctx.beginPath();
-        ctx.moveTo(x - 3, y + 2);
-        ctx.lineTo(x - 8, y + 8);
-        ctx.lineTo(x - 1, y + 4);
-        ctx.lineTo(x + 1, y + 4);
-        ctx.lineTo(x + 8, y + 8);
-        ctx.lineTo(x + 3, y + 2);
-        ctx.fill();
-        // 배 (흰색)
-        ctx.fillStyle = '#e0d0c0';
-        ctx.beginPath();
-        ctx.ellipse(x, y + 1, 3, 1.5, 0, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // ========================================
-    //  공통 요소 그리기
-    // ========================================
-
-    function _drawSun(ctx, x, y) {
-        // 태양 빛살
-        ctx.fillStyle = 'rgba(255,200,50,0.15)';
-        ctx.beginPath();
-        ctx.arc(x, y, 14, 0, Math.PI * 2);
-        ctx.fill();
-        // 태양
-        ctx.fillStyle = '#e04020';
-        ctx.beginPath();
-        ctx.arc(x, y, 8, 0, Math.PI * 2);
-        ctx.fill();
-        // 하이라이트
-        ctx.fillStyle = '#f06030';
-        ctx.beginPath();
-        ctx.arc(x - 2, y - 2, 4, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function _drawRibbon(ctx, color, text) {
-        const ry = H * 0.52;
-        const rh = 18;
-
-        // 리본 본체
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(4, ry);
-        ctx.lineTo(W - 4, ry);
-        ctx.lineTo(W - 4, ry + rh);
-        ctx.lineTo(4, ry + rh);
-        ctx.closePath();
-        ctx.fill();
-
-        // 리본 광택
-        ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        ctx.fillRect(4, ry, W - 8, rh * 0.4);
-
-        // 리본 테두리
-        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(4, ry, W - 8, rh);
-
-        // 텍스트 (한자)
-        if (text) {
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 10px serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, W / 2, ry + rh / 2 + 0.5);
-        }
-    }
-
-    function _drawLeaf(ctx, x, y, w, h, angle) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(angle || 0);
-        ctx.beginPath();
-        ctx.moveTo(-w / 2, 0);
-        ctx.quadraticCurveTo(0, -h, w / 2, 0);
-        ctx.quadraticCurveTo(0, h, -w / 2, 0);
-        ctx.fill();
-        ctx.restore();
-    }
-
-    function _drawMonthLabel(ctx, card) {
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.font = 'bold 7px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText(card.month + '월', 5, 4);
-    }
-
-    function _drawTypeBadge(ctx, card) {
-        let label = '';
-        let bgColor = '';
-
-        switch (card.type) {
-            case 'gwang':
-                label = '光';
-                bgColor = '#b8860b';
-                break;
-            case 'yeol':
-                label = '열';
-                bgColor = '#6a3aad';
-                break;
-            case 'tti-hong':
-                label = '홍';
-                bgColor = '#c41e3a';
-                break;
-            case 'tti-cheong':
-                label = '청';
-                bgColor = '#1a5fb4';
-                break;
-            case 'tti-cho':
-                label = '초';
-                bgColor = '#2d7d46';
-                break;
-            case 'ssang-pi':
-                label = '쌍';
-                bgColor = '#666';
-                break;
-            default:
-                return; // 일반 피는 뱃지 없음
-        }
-
-        const bx = W - 15;
-        const by = 3;
-
-        // 뱃지 배경
-        ctx.fillStyle = bgColor;
-        _roundRect(ctx, bx, by, 12, 12, 3);
-        ctx.fill();
-
-        // 뱃지 테두리
-        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-        ctx.lineWidth = 0.5;
-        _roundRect(ctx, bx, by, 12, 12, 3);
-        ctx.stroke();
-
-        // 뱃지 텍스트
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 8px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, bx + 6, by + 6.5);
-    }
-
-    // === 카드 뒷면 ===
-    function _drawCardBack(ctx) {
-        // 배경 (짙은 붉은색)
-        _roundRect(ctx, 0, 0, W, H, 5);
-        const bg = ctx.createLinearGradient(0, 0, W, H);
-        bg.addColorStop(0, '#8b0000');
-        bg.addColorStop(0.5, '#600000');
-        bg.addColorStop(1, '#8b0000');
-        ctx.fillStyle = bg;
-        ctx.fill();
-
-        // 테두리
-        _roundRect(ctx, 2, 2, W - 4, H - 4, 3);
-        ctx.strokeStyle = '#b04040';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // 장식 패턴 (격자)
-        ctx.strokeStyle = 'rgba(180,60,60,0.3)';
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i < 10; i++) {
-            ctx.beginPath();
-            ctx.moveTo(6 + i * 7, 6);
-            ctx.lineTo(6 + i * 7, H - 6);
-            ctx.stroke();
-        }
-        for (let i = 0; i < 14; i++) {
-            ctx.beginPath();
-            ctx.moveTo(6, 6 + i * 7.5);
-            ctx.lineTo(W - 6, 6 + i * 7.5);
-            ctx.stroke();
-        }
-
-        // 중앙 장식 원
-        ctx.fillStyle = 'rgba(180,60,60,0.3)';
-        ctx.beginPath();
-        ctx.arc(W / 2, H / 2, 16, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#b04040';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(W / 2, H / 2, 16, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // 花 글자
-        ctx.fillStyle = 'rgba(200,80,80,0.6)';
-        ctx.font = 'bold 16px serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('花', W / 2, H / 2 + 1);
-    }
-
-    // === 유틸 ===
-    function _roundRect(ctx, x, y, w, h, r) {
+    function roundRect(ctx, x, y, w, h, r) {
         ctx.beginPath();
         ctx.moveTo(x + r, y);
         ctx.lineTo(x + w - r, y);
@@ -1539,7 +63,1203 @@ const HwatuRenderer = (() => {
         ctx.lineTo(x, y + r);
         ctx.quadraticCurveTo(x, y, x + r, y);
         ctx.closePath();
+        ctx.fill();
     }
 
+    function drawCardBase(ctx) {
+        ctx.fillStyle = C.border;
+        roundRect(ctx, 0, 0, CW, CH, 12);
+        ctx.fillStyle = C.inner;
+        roundRect(ctx, BX, BY, IW, IH, 6);
+    }
+
+    function clipInner(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(BX, BY, IW, IH, 6) : ctx.rect(BX, BY, IW, IH);
+        ctx.clip();
+    }
+
+    // ===== Drawing Helpers =====
+
+    // 별/단풍잎 (pointed star)
+    function drawStar(ctx, cx, cy, outerR, innerR, points, color) {
+        ctx.fillStyle = color || C.red;
+        ctx.beginPath();
+        for (let i = 0; i < points * 2; i++) {
+            const r = i % 2 === 0 ? outerR : innerR;
+            const a = (i * Math.PI / points) - Math.PI / 2;
+            const x = cx + Math.cos(a) * r;
+            const y = cy + Math.sin(a) * r;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // 5잎 꽃 (매화, 벚꽃 등)
+    function drawFlower5(ctx, cx, cy, size, color, centerColor) {
+        ctx.fillStyle = color;
+        for (let i = 0; i < 5; i++) {
+            const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+            ctx.beginPath();
+            ctx.ellipse(
+                cx + Math.cos(a) * size * 0.35,
+                cy + Math.sin(a) * size * 0.35,
+                size * 0.35, size * 0.28, a, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+        if (centerColor) {
+            ctx.fillStyle = centerColor;
+            ctx.beginPath();
+            ctx.arc(cx, cy, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // 모란꽃 (layered peonies)
+    function drawPeony(ctx, cx, cy, size) {
+        // 외곽 꽃잎 (빨강)
+        ctx.fillStyle = C.red;
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.arc(
+                cx + Math.cos(a) * size * 0.45,
+                cy + Math.sin(a) * size * 0.45,
+                size * 0.4, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+        // 내부 꽃잎 (밝은 빨강)
+        ctx.fillStyle = C.crimson;
+        for (let i = 0; i < 5; i++) {
+            const a = (i / 5) * Math.PI * 2 + 0.4;
+            ctx.beginPath();
+            ctx.arc(
+                cx + Math.cos(a) * size * 0.25,
+                cy + Math.sin(a) * size * 0.25,
+                size * 0.3, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+        // 중심 (노랑)
+        ctx.fillStyle = C.yellow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 국화꽃 (많은 가는 꽃잎)
+    function drawChrysanthemum(ctx, cx, cy, size) {
+        ctx.fillStyle = C.yellow;
+        for (let i = 0; i < 16; i++) {
+            const a = (i / 16) * Math.PI * 2;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(a);
+            ctx.beginPath();
+            ctx.ellipse(0, -size * 0.4, size * 0.12, size * 0.38, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+        ctx.fillStyle = C.gold;
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 검정 잎 (타원형)
+    function drawBlackLeaf(ctx, cx, cy, w, h, angle) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle || 0);
+        ctx.fillStyle = C.black;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, w / 2, h / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // 잎맥
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, -h / 2 + 2);
+        ctx.lineTo(0, h / 2 - 2);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // 가지/줄기
+    function drawBranch(ctx, points, width, color) {
+        ctx.strokeStyle = color || C.black;
+        ctx.lineWidth = width || 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], points[0][1]);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i][0], points[i][1]);
+        }
+        ctx.stroke();
+    }
+
+    // 곡선 가지
+    function drawCurvedBranch(ctx, x1, y1, cpx, cpy, x2, y2, w, color) {
+        ctx.strokeStyle = color || C.black;
+        ctx.lineWidth = w || 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.quadraticCurveTo(cpx, cpy, x2, y2);
+        ctx.stroke();
+    }
+
+    // 둥근 언덕/덤불 (싸리 등)
+    function drawMound(ctx, cx, cy, w, h, color) {
+        ctx.fillStyle = color || C.black;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + h * 0.3, w / 2, h / 2, 0, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // 리본 (띠)
+    function drawRibbon(ctx, x, y, w, h, color, text) {
+        // 그림자
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillRect(x + 3, y + 3, w, h);
+        // 리본 본체
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, w, h);
+        // 테두리
+        ctx.strokeStyle = color === C.blue ? C.darkBlue : C.darkRed;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+        // 텍스트 (세로)
+        if (text) {
+            ctx.fillStyle = C.white;
+            ctx.font = 'bold 20px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const chars = text.split('');
+            const gap = h / (chars.length + 1);
+            chars.forEach((ch, i) => {
+                ctx.fillText(ch, x + w / 2, y + gap * (i + 1));
+            });
+        }
+    }
+
+    // 광 마크
+    function drawGwangMark(ctx) {
+        const cx = CW - BX - 30;
+        const cy = CH - BY - 30;
+        // 노란 원 + 빨간 테두리
+        ctx.fillStyle = C.yellow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = C.red;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = C.white;
+        ctx.font = 'bold 24px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('광', cx, cy + 1);
+    }
+
+    // 소나무 바늘 클러스터
+    function drawPineCluster(ctx, cx, cy, size) {
+        ctx.fillStyle = C.darkGreen;
+        for (let i = 0; i < 7; i++) {
+            const a = (i / 7) * Math.PI - Math.PI / 2 - 0.3;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(a);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-size * 0.08, -size);
+            ctx.lineTo(size * 0.08, -size);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    // ===== 월별 그리기 함수 =====
+    // 모든 좌표는 캔버스 기준 (160x232)
+
+    // --- 1월: 소나무 + 학 ---
+    function draw_1(ctx, type) {
+        // 줄기
+        ctx.fillStyle = C.darkBrown;
+        ctx.beginPath();
+        ctx.moveTo(50, CH); ctx.lineTo(35, CH - 60);
+        ctx.quadraticCurveTo(30, CH - 100, 40, CH - 150);
+        ctx.quadraticCurveTo(50, CH - 180, 55, CH - 170);
+        ctx.quadraticCurveTo(60, CH - 100, 70, CH - 60);
+        ctx.lineTo(65, CH);
+        ctx.fill();
+
+        // 소나무 잎 클러스터
+        drawPineCluster(ctx, 40, 30, 35);
+        drawPineCluster(ctx, 90, 50, 30);
+        drawPineCluster(ctx, 30, 80, 28);
+        drawPineCluster(ctx, 100, 90, 32);
+        drawPineCluster(ctx, 55, 55, 25);
+
+        if (type === 'gwang') {
+            // 태양
+            ctx.fillStyle = '#FF3333';
+            ctx.beginPath();
+            ctx.arc(125, 35, 26, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FF6644';
+            ctx.beginPath();
+            ctx.arc(125, 35, 18, 0, Math.PI * 2);
+            ctx.fill();
+            // 학 (흰 몸체)
+            ctx.fillStyle = C.white;
+            ctx.beginPath();
+            ctx.ellipse(80, 160, 28, 20, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // 목
+            ctx.strokeStyle = C.white;
+            ctx.lineWidth = 8;
+            drawCurvedBranch(ctx, 80, 145, 95, 120, 105, 105, 8, C.white);
+            // 머리 빨간 점
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.arc(105, 100, 6, 0, Math.PI * 2);
+            ctx.fill();
+            // 부리
+            ctx.fillStyle = C.yellow;
+            ctx.beginPath();
+            ctx.moveTo(105, 97);
+            ctx.lineTo(120, 93);
+            ctx.lineTo(105, 103);
+            ctx.fill();
+            // 꼬리 (검정)
+            ctx.fillStyle = C.black;
+            ctx.beginPath();
+            ctx.ellipse(55, 165, 15, 10, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            // 다리
+            ctx.strokeStyle = C.black;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(75, 178); ctx.lineTo(70, 205);
+            ctx.moveTo(85, 178); ctx.lineTo(90, 205);
+            ctx.stroke();
+        } else if (type === 'tti-hong') {
+            drawRibbon(ctx, 55, 55, 50, 110, C.red, '홍단');
+        }
+    }
+
+    // --- 2월: 매화 + 꾀꼬리 ---
+    function draw_2(ctx, type) {
+        // 매화 가지 (곡선)
+        drawCurvedBranch(ctx, 15, CH, 20, CH - 80, 80, 40, 6, C.darkBrown);
+        drawCurvedBranch(ctx, 60, 100, 100, 60, 145, 30, 4, C.darkBrown);
+        drawCurvedBranch(ctx, 40, 130, 30, 100, 25, 50, 3, C.darkBrown);
+
+        // 매화꽃 (빨강/분홍)
+        const flowers = [[75, 45, 16], [35, 55, 14], [110, 35, 13],
+                         [55, 90, 12], [95, 75, 15], [25, 120, 11],
+                         [120, 100, 13], [80, 130, 12]];
+        flowers.forEach(([fx, fy, fs]) => {
+            drawFlower5(ctx, fx, fy, fs, C.red, C.yellow);
+        });
+
+        if (type === 'yeol') {
+            // 꾀꼬리 (노란-초록 새)
+            ctx.fillStyle = '#7CB342';
+            ctx.beginPath();
+            ctx.ellipse(95, 140, 18, 14, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // 머리
+            ctx.beginPath();
+            ctx.arc(108, 128, 10, 0, Math.PI * 2);
+            ctx.fill();
+            // 부리
+            ctx.fillStyle = C.yellow;
+            ctx.beginPath();
+            ctx.moveTo(116, 125);
+            ctx.lineTo(128, 124);
+            ctx.lineTo(116, 130);
+            ctx.fill();
+            // 눈
+            ctx.fillStyle = C.black;
+            ctx.beginPath();
+            ctx.arc(112, 126, 2, 0, Math.PI * 2);
+            ctx.fill();
+            // 꼬리
+            ctx.fillStyle = '#558B2F';
+            ctx.beginPath();
+            ctx.moveTo(78, 140);
+            ctx.lineTo(55, 155);
+            ctx.lineTo(60, 145);
+            ctx.lineTo(78, 145);
+            ctx.fill();
+        } else if (type === 'tti-hong') {
+            drawRibbon(ctx, 55, 55, 50, 110, C.red, '홍단');
+        }
+    }
+
+    // --- 3월: 벚꽃 + 만막 ---
+    function draw_3(ctx, type) {
+        // 벚꽃 가지
+        drawCurvedBranch(ctx, 10, CH - 30, 40, CH - 80, 80, 20, 5, C.darkBrown);
+        drawCurvedBranch(ctx, 50, 80, 90, 50, 140, 25, 3, C.darkBrown);
+
+        // 벚꽃 (분홍)
+        const blossoms = [[65, 30, 15], [30, 50, 14], [105, 25, 13],
+                          [45, 75, 12], [90, 60, 14], [120, 50, 11],
+                          [70, 100, 13], [25, 100, 12], [110, 85, 11]];
+        blossoms.forEach(([bx, by, bs]) => {
+            drawFlower5(ctx, bx, by, bs, C.lightPink, C.pink);
+        });
+
+        if (type === 'gwang') {
+            // 만막 (커튼)
+            const curtainY = 100;
+            // 커튼 상단 바
+            ctx.fillStyle = C.red;
+            ctx.fillRect(BX, curtainY, IW, 12);
+            // 커튼 본체 (빨강 + 검정 줄무늬)
+            for (let i = 0; i < 6; i++) {
+                const sx = BX + i * (IW / 6);
+                const sw = IW / 6;
+                ctx.fillStyle = i % 2 === 0 ? C.red : C.darkRed;
+                ctx.fillRect(sx, curtainY + 12, sw, CH - curtainY - BY - 12);
+            }
+            // 커튼 술 (하단)
+            ctx.fillStyle = C.yellow;
+            for (let i = 0; i < 8; i++) {
+                const tx = BX + 10 + i * 16;
+                ctx.beginPath();
+                ctx.arc(tx, CH - BY - 10, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else if (type === 'tti-hong') {
+            drawRibbon(ctx, 55, 80, 50, 110, C.red, '홍단');
+        }
+    }
+
+    // --- 4월: 등나무 + 두견 ---
+    function draw_4(ctx, type) {
+        // 등나무 줄기 (위에서 아래로)
+        drawCurvedBranch(ctx, 40, BY, 35, 60, 50, 120, 5, C.black);
+        drawCurvedBranch(ctx, 100, BY, 110, 50, 95, 110, 4, C.black);
+        drawCurvedBranch(ctx, 65, BY, 70, 80, 75, 150, 3, C.black);
+
+        // 등나무 꽃 (보라/검정 덩이)
+        const clusters = [[40, 70, 20, 35], [100, 60, 18, 30],
+                          [65, 100, 22, 38], [45, 140, 16, 28],
+                          [110, 120, 15, 25]];
+        clusters.forEach(([cx, cy, w, h]) => {
+            ctx.fillStyle = '#4A2080';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w, h, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 내부 점 텍스처
+            ctx.fillStyle = '#3A1060';
+            for (let i = 0; i < 5; i++) {
+                const dx = (Math.random() - 0.5) * w;
+                const dy = (Math.random() - 0.5) * h * 0.8;
+                ctx.beginPath();
+                ctx.arc(cx + dx, cy + dy, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        if (type === 'yeol') {
+            // 두견새 (작은 새)
+            ctx.fillStyle = C.black;
+            ctx.beginPath();
+            ctx.ellipse(90, 170, 16, 12, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(102, 160, 9, 0, Math.PI * 2);
+            ctx.fill();
+            // 부리
+            ctx.fillStyle = C.orange;
+            ctx.beginPath();
+            ctx.moveTo(109, 157); ctx.lineTo(120, 158); ctx.lineTo(109, 163);
+            ctx.fill();
+            // 눈
+            ctx.fillStyle = C.white;
+            ctx.beginPath();
+            ctx.arc(105, 158, 2, 0, Math.PI * 2);
+            ctx.fill();
+            // 꼬리
+            ctx.beginPath();
+            ctx.moveTo(75, 172); ctx.lineTo(55, 180); ctx.lineTo(58, 170); ctx.lineTo(75, 168);
+            ctx.fillStyle = C.black; ctx.fill();
+        } else if (type === 'tti-cho') {
+            drawRibbon(ctx, 55, 65, 50, 100, C.red, '');
+        }
+    }
+
+    // --- 5월: 난초(창포) + 다리 ---
+    function draw_5(ctx, type) {
+        // 난초 잎 (길고 가느다란)
+        const leaves = [
+            [50, CH, 30, 20, -0.2], [70, CH, 40, 22, 0.1],
+            [90, CH, 35, 18, 0.3], [60, CH, 45, 20, -0.1],
+            [80, CH, 38, 16, 0.25], [40, CH, 32, 19, -0.35]
+        ];
+        leaves.forEach(([lx, ly, lh, lw]) => {
+            ctx.fillStyle = C.darkGreen;
+            ctx.beginPath();
+            ctx.moveTo(lx, ly);
+            ctx.quadraticCurveTo(lx - lw, ly - lh * 2, lx - lw * 0.5, ly - lh * 4);
+            ctx.quadraticCurveTo(lx, ly - lh * 3.5, lx + 3, ly);
+            ctx.fill();
+        });
+
+        // 난초 꽃 (보라/파랑)
+        drawFlower5(ctx, 55, 60, 18, '#6A3DAD', C.yellow);
+        drawFlower5(ctx, 95, 45, 16, '#6A3DAD', C.yellow);
+        drawFlower5(ctx, 40, 100, 14, '#7B4DB8', C.yellow);
+
+        if (type === 'yeol') {
+            // 팔교 (나무 다리)
+            ctx.fillStyle = C.brown;
+            ctx.fillRect(20, 145, 120, 10);
+            // 다리 기둥
+            ctx.fillRect(35, 145, 8, 35);
+            ctx.fillRect(75, 145, 8, 35);
+            ctx.fillRect(115, 145, 8, 35);
+            // 난간
+            ctx.fillRect(20, 135, 120, 6);
+            // 물결
+            ctx.strokeStyle = C.blue;
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                const wy = 190 + i * 12;
+                ctx.moveTo(BX, wy);
+                ctx.quadraticCurveTo(50, wy - 6, 80, wy);
+                ctx.quadraticCurveTo(110, wy + 6, CW - BX, wy);
+                ctx.stroke();
+            }
+        } else if (type === 'tti-cho') {
+            drawRibbon(ctx, 55, 65, 50, 100, C.red, '');
+        }
+    }
+
+    // --- 6월: 모란 + 나비 ---
+    function draw_6(ctx, type) {
+        // 큰 검정 잎들 (모란 특유의 큰 잎)
+        drawBlackLeaf(ctx, 30, 50, 45, 55, -0.4);
+        drawBlackLeaf(ctx, 130, 60, 42, 50, 0.5);
+        drawBlackLeaf(ctx, 25, 140, 40, 50, -0.3);
+        drawBlackLeaf(ctx, 135, 150, 38, 48, 0.4);
+        drawBlackLeaf(ctx, 80, 200, 50, 40, 0);
+        drawBlackLeaf(ctx, 30, 195, 35, 35, -0.2);
+        drawBlackLeaf(ctx, 130, 200, 35, 35, 0.2);
+
+        // 모란꽃 (크고 화려하게)
+        drawPeony(ctx, 80, 95, 45);
+        drawPeony(ctx, 45, 155, 35);
+        drawPeony(ctx, 115, 160, 32);
+
+        if (type === 'yeol') {
+            // 나비 2마리
+            _drawButterfly(ctx, 60, 40, 18);
+            _drawButterfly(ctx, 110, 30, 15);
+        } else if (type === 'tti-cheong') {
+            drawRibbon(ctx, 55, 55, 50, 110, C.blue, '청단');
+        }
+    }
+
+    function _drawButterfly(ctx, cx, cy, size) {
+        // 날개 (노란 + 검정)
+        ctx.fillStyle = C.yellow;
+        ctx.beginPath();
+        ctx.ellipse(cx - size * 0.6, cy - size * 0.3, size * 0.7, size * 0.5, -0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cx + size * 0.6, cy - size * 0.3, size * 0.7, size * 0.5, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        // 아래 날개
+        ctx.fillStyle = C.orange;
+        ctx.beginPath();
+        ctx.ellipse(cx - size * 0.4, cy + size * 0.3, size * 0.45, size * 0.35, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(cx + size * 0.4, cy + size * 0.3, size * 0.45, size * 0.35, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        // 몸통
+        ctx.fillStyle = C.black;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 3, size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // 더듬이
+        ctx.strokeStyle = C.black;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx - 2, cy - size * 0.5);
+        ctx.quadraticCurveTo(cx - size * 0.4, cy - size, cx - size * 0.5, cy - size * 1.1);
+        ctx.moveTo(cx + 2, cy - size * 0.5);
+        ctx.quadraticCurveTo(cx + size * 0.4, cy - size, cx + size * 0.5, cy - size * 1.1);
+        ctx.stroke();
+    }
+
+    // --- 7월: 싸리 + 멧돼지 ---
+    function draw_7(ctx, type) {
+        // 검정 덤불/언덕 (하단)
+        drawMound(ctx, 80, CH - 30, 150, 80, C.black);
+
+        // 싸리 줄기 (가는 검정 선)
+        const stems = [
+            [[45, CH - 55], [40, CH - 100], [35, 60]],
+            [[65, CH - 55], [60, CH - 110], [55, 50]],
+            [[85, CH - 55], [90, CH - 95], [95, 55]],
+            [[105, CH - 55], [110, CH - 90], [120, 65]],
+            [[55, CH - 55], [48, CH - 105], [42, 80]],
+            [[95, CH - 55], [100, CH - 100], [108, 70]],
+        ];
+        stems.forEach(pts => {
+            ctx.strokeStyle = C.black;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            ctx.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]);
+            ctx.stroke();
+        });
+
+        // 작은 잎들 (줄기를 따라)
+        stems.forEach(pts => {
+            for (let t = 0.2; t < 0.9; t += 0.2) {
+                const x = pts[0][0] + (pts[2][0] - pts[0][0]) * t + (Math.random() - 0.5) * 8;
+                const y = pts[0][1] + (pts[2][1] - pts[0][1]) * t;
+                ctx.fillStyle = C.black;
+                ctx.beginPath();
+                ctx.ellipse(x - 5, y, 5, 3, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(x + 5, y, 5, 3, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // 파란 꽃 (별 모양)
+        const blueFlowers = [[35, 65, 8], [55, 50, 7], [95, 58, 8],
+                             [120, 68, 7], [42, 85, 6], [108, 75, 7]];
+        blueFlowers.forEach(([fx, fy, fs]) => {
+            drawStar(ctx, fx, fy, fs, fs * 0.4, 5, C.blue);
+        });
+
+        if (type === 'yeol') {
+            // 멧돼지 (검정)
+            ctx.fillStyle = '#2A2A2A';
+            ctx.beginPath();
+            ctx.ellipse(80, 160, 32, 22, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 머리
+            ctx.beginPath();
+            ctx.ellipse(115, 155, 16, 14, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // 코
+            ctx.fillStyle = C.pink;
+            ctx.beginPath();
+            ctx.ellipse(128, 158, 6, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 눈
+            ctx.fillStyle = C.white;
+            ctx.beginPath();
+            ctx.arc(118, 150, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = C.black;
+            ctx.beginPath();
+            ctx.arc(118, 150, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            // 다리
+            ctx.fillStyle = '#2A2A2A';
+            [60, 72, 88, 100].forEach(lx => {
+                ctx.fillRect(lx, 178, 6, 16);
+            });
+            // 엄니
+            ctx.fillStyle = C.white;
+            ctx.beginPath();
+            ctx.moveTo(128, 155); ctx.lineTo(135, 148); ctx.lineTo(130, 152);
+            ctx.fill();
+        } else if (type === 'tti-cho') {
+            drawRibbon(ctx, 55, 55, 50, 100, C.red, '');
+        }
+    }
+
+    // --- 8월: 억새 + 달/기러기 ---
+    function draw_8(ctx, type) {
+        if (type === 'gwang') {
+            // 밤하늘 배경
+            ctx.fillStyle = '#1A1A3A';
+            ctx.fillRect(BX, BY, IW, IH);
+
+            // 달 (큰 원)
+            ctx.fillStyle = '#FFE87C';
+            ctx.beginPath();
+            ctx.arc(80, 80, 45, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFF5B0';
+            ctx.beginPath();
+            ctx.arc(80, 80, 38, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 억새 (갈색/금색 줄기)
+        const grassColor = type === 'gwang' ? '#B89040' : C.darkBrown;
+        const plumeColor = type === 'gwang' ? '#E8D090' : C.gold;
+
+        for (let i = 0; i < 7; i++) {
+            const gx = 20 + i * 20;
+            const topY = 40 + (i % 3) * 20;
+            ctx.strokeStyle = grassColor;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(gx, CH - BY);
+            ctx.quadraticCurveTo(gx + (i % 2 ? 5 : -5), CH - 80, gx, topY);
+            ctx.stroke();
+
+            // 이삭 (plume)
+            ctx.fillStyle = plumeColor;
+            ctx.beginPath();
+            ctx.ellipse(gx, topY, 6, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        if (type === 'yeol') {
+            // 기러기 3마리 (V자)
+            const geese = [[50, 60], [80, 45], [110, 60]];
+            geese.forEach(([gx, gy]) => {
+                ctx.strokeStyle = C.black;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(gx - 12, gy + 5);
+                ctx.quadraticCurveTo(gx, gy - 5, gx + 12, gy + 5);
+                ctx.stroke();
+                // 몸통
+                ctx.fillStyle = C.black;
+                ctx.beginPath();
+                ctx.ellipse(gx, gy + 2, 5, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+    }
+
+    // --- 9월: 국화 + 잔 ---
+    function draw_9(ctx, type) {
+        // 국화 잎 (검정)
+        drawBlackLeaf(ctx, 35, 130, 40, 50, -0.3);
+        drawBlackLeaf(ctx, 125, 140, 38, 45, 0.3);
+        drawBlackLeaf(ctx, 80, 190, 45, 35, 0);
+        drawBlackLeaf(ctx, 30, 190, 32, 35, -0.2);
+        drawBlackLeaf(ctx, 130, 195, 30, 32, 0.2);
+
+        // 국화꽃 (노란색 방사형)
+        drawChrysanthemum(ctx, 80, 80, 38);
+        drawChrysanthemum(ctx, 45, 140, 28);
+        drawChrysanthemum(ctx, 115, 130, 25);
+
+        // 줄기
+        drawCurvedBranch(ctx, 80, 110, 60, 140, 45, 155, 3, C.darkGreen);
+        drawCurvedBranch(ctx, 80, 110, 100, 130, 115, 145, 3, C.darkGreen);
+
+        if (type === 'yeol') {
+            // 국잔 (술잔)
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.moveTo(60, 45); ctx.lineTo(100, 45);
+            ctx.lineTo(95, 70); ctx.lineTo(65, 70);
+            ctx.closePath();
+            ctx.fill();
+            // 잔 받침
+            ctx.fillStyle = C.darkRed;
+            ctx.fillRect(70, 70, 20, 5);
+            ctx.fillRect(65, 75, 30, 4);
+            // 잔 안 무늬
+            ctx.fillStyle = C.yellow;
+            ctx.beginPath();
+            ctx.arc(80, 55, 8, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (type === 'tti-cheong') {
+            drawRibbon(ctx, 55, 55, 50, 110, C.blue, '청단');
+        }
+    }
+
+    // --- 10월: 단풍 + 사슴 ---
+    function draw_10(ctx, type) {
+        // 검정 가지들
+        drawCurvedBranch(ctx, 15, CH, 30, CH - 70, 80, 30, 5, C.black);
+        drawCurvedBranch(ctx, 60, 80, 100, 50, 140, 25, 3, C.black);
+        drawCurvedBranch(ctx, 50, 100, 30, 70, 20, 40, 3, C.black);
+
+        // 단풍잎 (빨간 6각 별)
+        const mapleLeaves = [
+            [40, 40, 16, C.red], [80, 30, 18, C.red],
+            [120, 35, 15, C.red], [30, 75, 14, C.crimson],
+            [100, 55, 17, C.red], [55, 55, 13, C.orange],
+            [130, 70, 14, C.red], [70, 90, 16, C.crimson],
+            [20, 110, 12, C.red], [110, 90, 15, C.red],
+            [45, 120, 13, C.yellow], [90, 115, 14, C.red],
+            [140, 105, 12, C.orange], [65, 145, 11, C.red],
+        ];
+        mapleLeaves.forEach(([mx, my, ms, mc]) => {
+            drawStar(ctx, mx, my, ms, ms * 0.4, 6, mc);
+            // 중심 줄기
+            ctx.strokeStyle = C.black;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(mx, my - ms * 0.3);
+            ctx.lineTo(mx, my + ms * 0.3);
+            ctx.stroke();
+        });
+
+        if (type === 'yeol') {
+            // 사슴 (갈색/흰색)
+            ctx.fillStyle = C.brown;
+            // 몸통
+            ctx.beginPath();
+            ctx.ellipse(75, 170, 30, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 머리
+            ctx.beginPath();
+            ctx.ellipse(110, 150, 14, 12, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            // 흰 점무늬
+            ctx.fillStyle = C.white;
+            [[65, 165], [75, 175], [85, 165], [70, 172]].forEach(([dx, dy]) => {
+                ctx.beginPath();
+                ctx.arc(dx, dy, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            // 눈
+            ctx.fillStyle = C.black;
+            ctx.beginPath();
+            ctx.arc(115, 147, 2, 0, Math.PI * 2);
+            ctx.fill();
+            // 뿔 (Y자)
+            ctx.strokeStyle = C.darkBrown;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(108, 142);
+            ctx.lineTo(105, 120);
+            ctx.moveTo(105, 128);
+            ctx.lineTo(95, 115);
+            ctx.moveTo(105, 132);
+            ctx.lineTo(115, 118);
+            ctx.stroke();
+            // 다리
+            ctx.strokeStyle = C.brown;
+            ctx.lineWidth = 4;
+            [[62, 188], [72, 188], [82, 188], [90, 186]].forEach(([lx, ly]) => {
+                ctx.beginPath();
+                ctx.moveTo(lx, ly);
+                ctx.lineTo(lx, ly + 20);
+                ctx.stroke();
+            });
+        } else if (type === 'tti-cheong') {
+            drawRibbon(ctx, 55, 55, 50, 110, C.blue, '청단');
+        }
+    }
+
+    // --- 11월: 오동 + 봉황 ---
+    function draw_11(ctx, type) {
+        // 오동 잎 (큰 부채꼴 잎)
+        function drawPaulowniaLeaf(cx, cy, size, angle) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            ctx.fillStyle = C.black;
+            ctx.beginPath();
+            ctx.moveTo(0, size * 0.8);
+            ctx.quadraticCurveTo(-size, size * 0.2, -size * 0.8, -size * 0.5);
+            ctx.quadraticCurveTo(-size * 0.3, -size, 0, -size);
+            ctx.quadraticCurveTo(size * 0.3, -size, size * 0.8, -size * 0.5);
+            ctx.quadraticCurveTo(size, size * 0.2, 0, size * 0.8);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        drawPaulowniaLeaf(50, 80, 40, -0.2);
+        drawPaulowniaLeaf(110, 90, 38, 0.2);
+        drawPaulowniaLeaf(80, 150, 42, 0);
+        drawPaulowniaLeaf(35, 170, 30, -0.3);
+        drawPaulowniaLeaf(125, 165, 28, 0.3);
+
+        // 줄기
+        drawBranch(ctx, [[80, BY + 10], [80, 60], [50, 90]], 4, C.black);
+        drawBranch(ctx, [[80, 60], [110, 100]], 3, C.black);
+        drawBranch(ctx, [[80, 90], [80, 155]], 3, C.black);
+
+        // 오동 꽃 (작은 보라/노란 방울)
+        [[60, 40, 8], [100, 35, 7], [45, 55, 6], [115, 50, 7], [80, 30, 8]].forEach(([fx, fy, fs]) => {
+            ctx.fillStyle = C.purple;
+            ctx.beginPath();
+            ctx.arc(fx, fy, fs, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = C.yellow;
+            ctx.beginPath();
+            ctx.arc(fx, fy + fs * 0.3, fs * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        if (type === 'gwang') {
+            // 봉황 (화려한 새)
+            // 몸통 (빨강/금)
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.ellipse(80, 135, 20, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 날개
+            ctx.fillStyle = C.yellow;
+            ctx.beginPath();
+            ctx.ellipse(60, 128, 18, 10, -0.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(100, 128, 18, 10, 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            // 머리
+            ctx.fillStyle = C.green;
+            ctx.beginPath();
+            ctx.arc(80, 115, 10, 0, Math.PI * 2);
+            ctx.fill();
+            // 볏
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.moveTo(80, 105); ctx.lineTo(75, 95); ctx.lineTo(80, 100);
+            ctx.lineTo(85, 92); ctx.lineTo(80, 100);
+            ctx.fill();
+            // 꼬리 (화려한 깃)
+            [C.red, C.yellow, C.green, C.blue].forEach((tc, i) => {
+                ctx.fillStyle = tc;
+                ctx.beginPath();
+                ctx.moveTo(80, 148);
+                ctx.quadraticCurveTo(65 - i * 5, 170 + i * 8, 50 - i * 8, 200 + i * 5);
+                ctx.lineTo(55 - i * 8, 198 + i * 5);
+                ctx.quadraticCurveTo(68 - i * 3, 168 + i * 6, 82, 148);
+                ctx.fill();
+            });
+            // 눈
+            ctx.fillStyle = C.black;
+            ctx.beginPath();
+            ctx.arc(83, 113, 2, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (type === 'ssang-pi') {
+            // 쌍피 표시 (빨간 동그라미 2개)
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.arc(70, CH - 35, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(90, CH - 35, 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // --- 12월: 비/버들 + 우산/제비 ---
+    function draw_12(ctx, type) {
+        // 비 배경
+        ctx.fillStyle = '#D0D4D8';
+        ctx.fillRect(BX, BY, IW, IH);
+
+        // 빗줄기
+        ctx.strokeStyle = 'rgba(100,110,120,0.5)';
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 15; i++) {
+            const rx = BX + 10 + i * 10;
+            ctx.beginPath();
+            ctx.moveTo(rx, BY);
+            ctx.lineTo(rx - 8, CH - BY);
+            ctx.stroke();
+        }
+
+        // 버들 가지 (늘어지는)
+        for (let i = 0; i < 5; i++) {
+            const bx = 25 + i * 28;
+            ctx.strokeStyle = '#556B2F';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(bx, BY + 20);
+            ctx.quadraticCurveTo(bx - 10, BY + 80, bx - 15, BY + 150);
+            ctx.stroke();
+            // 잎
+            for (let j = 0; j < 4; j++) {
+                const ly = BY + 40 + j * 30;
+                const lx = bx - 3 - j * 3;
+                ctx.fillStyle = '#556B2F';
+                ctx.beginPath();
+                ctx.ellipse(lx, ly, 3, 8, -0.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        if (type === 'gwang') {
+            // 비를 맞는 사람 (우산)
+            // 우산
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.arc(80, 100, 35, Math.PI, 0);
+            ctx.closePath();
+            ctx.fill();
+            // 우산 살
+            ctx.strokeStyle = C.darkRed;
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i < 5; i++) {
+                const a = Math.PI + (i / 4) * Math.PI;
+                ctx.beginPath();
+                ctx.moveTo(80, 100);
+                ctx.lineTo(80 + Math.cos(a) * 35, 100 + Math.sin(a) * 35);
+                ctx.stroke();
+            }
+            // 우산 막대
+            ctx.strokeStyle = C.darkBrown;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(80, 65); ctx.lineTo(80, 190);
+            ctx.stroke();
+            // 우산 꼭대기
+            ctx.fillStyle = C.yellow;
+            ctx.beginPath();
+            ctx.arc(80, 63, 4, 0, Math.PI * 2);
+            ctx.fill();
+            // 사람 (검정 실루엣)
+            ctx.fillStyle = C.black;
+            // 몸통
+            ctx.beginPath();
+            ctx.ellipse(80, 150, 18, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 머리
+            ctx.beginPath();
+            ctx.arc(80, 118, 12, 0, Math.PI * 2);
+            ctx.fill();
+            // 갓 (모자)
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.ellipse(80, 112, 16, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (type === 'yeol') {
+            // 제비 (검은 새)
+            ctx.fillStyle = C.black;
+            // 몸통
+            ctx.beginPath();
+            ctx.ellipse(80, 80, 12, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 날개
+            ctx.beginPath();
+            ctx.moveTo(70, 78);
+            ctx.quadraticCurveTo(45, 65, 35, 55);
+            ctx.lineTo(40, 60);
+            ctx.quadraticCurveTo(50, 68, 72, 82);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(90, 78);
+            ctx.quadraticCurveTo(115, 65, 125, 55);
+            ctx.lineTo(120, 60);
+            ctx.quadraticCurveTo(110, 68, 88, 82);
+            ctx.fill();
+            // 꼬리 (갈라진)
+            ctx.beginPath();
+            ctx.moveTo(80, 88);
+            ctx.lineTo(70, 110);
+            ctx.lineTo(80, 100);
+            ctx.lineTo(90, 110);
+            ctx.closePath();
+            ctx.fill();
+            // 배 (흰색)
+            ctx.fillStyle = C.white;
+            ctx.beginPath();
+            ctx.ellipse(80, 82, 6, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 빨간 턱
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.arc(80, 74, 4, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (type === 'ssang-pi') {
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.arc(70, CH - 40, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(90, CH - 40, 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // ===== Month Dispatcher =====
+    const DRAWERS = {
+        1: draw_1, 2: draw_2, 3: draw_3, 4: draw_4,
+        5: draw_5, 6: draw_6, 7: draw_7, 8: draw_8,
+        9: draw_9, 10: draw_10, 11: draw_11, 12: draw_12
+    };
+
+    // ===== 메인 렌더 함수 =====
+    function render(card) {
+        const key = 'card_' + card.id;
+        if (cache.has(key)) return cache.get(key);
+
+        const canvas = createCanvas();
+        const ctx = canvas.getContext('2d');
+
+        drawCardBase(ctx);
+        clipInner(ctx);
+
+        if (DRAWERS[card.month]) {
+            DRAWERS[card.month](ctx, card.type);
+        }
+
+        ctx.restore(); // unclip
+
+        // 광 마크
+        if (card.type === 'gwang') {
+            drawGwangMark(ctx);
+        }
+
+        // 월 표시 (좌상단)
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(card.month + '월', BX + 6, BY + 5);
+
+        const url = canvas.toDataURL();
+        cache.set(key, url);
+        return url;
+    }
+
+    // ===== 뒷면 렌더 =====
+    function renderBack() {
+        if (cache.has('back')) return cache.get('back');
+
+        const canvas = createCanvas();
+        const ctx = canvas.getContext('2d');
+
+        // 빨간 테두리
+        ctx.fillStyle = C.border;
+        roundRect(ctx, 0, 0, CW, CH, 12);
+
+        // 검은 내부
+        ctx.fillStyle = '#2A1A10';
+        roundRect(ctx, BX, BY, IW, IH, 6);
+
+        // 중앙 장식 원
+        ctx.strokeStyle = C.gold;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(CW / 2, CH / 2, 30, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 花 글자
+        ctx.fillStyle = C.gold;
+        ctx.font = 'bold 36px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('花', CW / 2, CH / 2 + 2);
+
+        // 모서리 장식
+        const corners = [[BX + 15, BY + 15], [CW - BX - 15, BY + 15],
+                         [BX + 15, CH - BY - 15], [CW - BX - 15, CH - BY - 15]];
+        corners.forEach(([cx, cy]) => {
+            ctx.fillStyle = C.red;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // 테두리 라인
+        ctx.strokeStyle = C.gold;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(BX + 8, BY + 8, IW - 16, IH - 16);
+
+        const url = canvas.toDataURL();
+        cache.set('back', url);
+        return url;
+    }
+
+    // ===== 미니 카드 렌더 =====
+    function renderMini(card) {
+        const key = 'mini_' + card.id;
+        if (cache.has(key)) return cache.get(key);
+
+        const mw = MW * S, mh = MH * S; // 72 x 104
+        const canvas = createCanvas(mw, mh);
+        const ctx = canvas.getContext('2d');
+
+        // 빨간 테두리
+        ctx.fillStyle = C.border;
+        roundRect(ctx, 0, 0, mw, mh, 8);
+
+        // 흰 내부
+        const mbx = 5, mby = 5;
+        ctx.fillStyle = C.inner;
+        roundRect(ctx, mbx, mby, mw - mbx * 2, mh - mby * 2, 4);
+
+        // 월별 색상 배경 (살짝)
+        const monthColors = {
+            1: '#E8F0E0', 2: '#F5E6E8', 3: '#FCE4EC', 4: '#E8DFF0',
+            5: '#E0E8F5', 6: '#F5E0E0', 7: '#E0F0E8', 8: '#F5F0D0',
+            9: '#F5F0D8', 10: '#F5E0D0', 11: '#E8D8F0', 12: '#D8DCE0'
+        };
+        ctx.fillStyle = monthColors[card.month] || '#F0F0F0';
+        roundRect(ctx, mbx + 2, mby + 2, mw - mbx * 2 - 4, mh - mby * 2 - 4, 3);
+
+        // 타입별 아이콘/색상
+        const typeSymbols = {
+            'gwang': { symbol: '광', color: C.red, bg: C.yellow },
+            'tti-hong': { symbol: '홍', color: C.white, bg: C.red },
+            'tti-cheong': { symbol: '청', color: C.white, bg: C.blue },
+            'tti-cho': { symbol: '초', color: C.white, bg: C.red },
+            'yeol': { symbol: '열', color: C.white, bg: C.darkGreen },
+            'pi': { symbol: '', color: C.black, bg: null },
+            'ssang-pi': { symbol: '쌍', color: C.red, bg: null },
+        };
+
+        const ts = typeSymbols[card.type] || typeSymbols['pi'];
+
+        // 월 표시
+        ctx.fillStyle = C.black;
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(card.month + '월', mw / 2, mby + 4);
+
+        // 타입 뱃지
+        if (ts.bg) {
+            ctx.fillStyle = ts.bg;
+            ctx.beginPath();
+            ctx.arc(mw / 2, mh / 2 + 8, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = ts.color;
+            ctx.font = 'bold 18px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(ts.symbol, mw / 2, mh / 2 + 9);
+        } else if (ts.symbol) {
+            ctx.fillStyle = ts.color;
+            ctx.font = 'bold 18px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(ts.symbol, mw / 2, mh / 2 + 8);
+        }
+
+        // 광 카드 특별 표시
+        if (card.type === 'gwang') {
+            ctx.strokeStyle = C.gold;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(mw / 2, mh / 2 + 8, 18, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        const url = canvas.toDataURL();
+        cache.set(key, url);
+        return url;
+    }
+
+    // ===== Public API =====
     return { render, renderBack, renderMini };
 })();
